@@ -1,8 +1,7 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { GeistSans } from "geist/font/sans";
 import "./globals.css";
-
-const inter = Inter({ subsets: ["latin"] });
+import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Engage",
@@ -11,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#1e40af",
+  themeColor: "#0f172a",
 };
 
 export default function RootLayout({
@@ -20,8 +19,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>{children}</body>
+    <html lang="en" className={cn("font-sans", GeistSans.variable)}>
+      <body className="min-h-screen bg-background antialiased">{children}</body>
     </html>
   );
 }
