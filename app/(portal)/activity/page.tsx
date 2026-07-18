@@ -2,24 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-
-interface ActivityItem {
-  id: string;
-  source_app: string;
-  event_type: string;
-  title: string;
-  description: string | null;
-  created_at: string;
-  user_name: string;
-  user_avatar: string | null;
-}
-
-const appIcons: Record<string, string> = {
-  ideahub: "💡",
-  skillshub: "🎯",
-  birthdayhub: "🎂",
-  engage: "⚡",
-};
+import { ActivityItem, timeAgo, type ActivityItemData } from "@/components/activity-item";
 
 const filters = [
   { value: "", label: "All" },
@@ -28,16 +11,8 @@ const filters = [
   { value: "birthdayhub", label: "BirthdayHub" },
 ];
 
-function timeAgo(dateStr: string) {
-  const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
-  if (seconds < 60) return "just now";
-  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-  return `${Math.floor(seconds / 86400)}d ago`;
-}
-
 export default function ActivityPage() {
-  const [items, setItems] = useState<ActivityItem[]>([]);
+  const [items, setItems] = useState<ActivityItemData[]>([]);
   const [filter, setFilter] = useState("");
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -63,7 +38,7 @@ export default function ActivityPage() {
         </p>
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         {filters.map((f) => (
           <Button
             key={f.value}
@@ -81,30 +56,9 @@ export default function ActivityPage() {
       ) : items.length === 0 ? (
         <p className="text-sm text-muted-foreground">No activity found</p>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-2">
           {items.map((item) => (
-            <div
-              key={item.id}
-              className="flex items-start gap-3 rounded-lg border bg-card p-4"
-            >
-              <span className="mt-0.5 text-lg">
-                {appIcons[item.source_app] ?? "⚡"}
-              </span>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium">{item.title}</p>
-                {item.description && (
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {item.description}
-                  </p>
-                )}
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {item.user_name} &middot; {timeAgo(item.created_at)}
-                </p>
-              </div>
-              <span className="shrink-0 rounded-full bg-secondary px-2 py-0.5 text-xs capitalize text-muted-foreground">
-                {item.source_app}
-              </span>
-            </div>
+            <ActivityItem key={item.id} item={item} />
           ))}
         </div>
       )}
