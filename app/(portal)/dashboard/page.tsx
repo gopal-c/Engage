@@ -4,49 +4,95 @@ import { AppCard } from "@/components/app-card";
 import { ActivityItem, type ActivityItemData } from "@/components/activity-item";
 import Link from "next/link";
 
-const appCards = [
-  {
-    title: "IdeaHub",
-    description: "Share and vote on innovative ideas",
-    icon: "💡",
-    colorClasses: "bg-amber-50 border-amber-200 dark:bg-amber-950/30 dark:border-amber-800",
-    href: process.env.IDEAHUB_URL || "/apps/ideahub",
-    external: !!process.env.IDEAHUB_URL,
-  },
-  {
-    title: "SkillsHub",
-    description: "Track and develop your professional skills",
-    icon: "🎯",
-    colorClasses: "bg-blue-50 border-blue-200 dark:bg-blue-950/30 dark:border-blue-800",
-    href: process.env.SKILLSHUB_URL || "/apps/skillshub",
-    external: !!process.env.SKILLSHUB_URL,
-  },
-  {
-    title: "BirthdayHub",
-    description: "Celebrate team birthdays and milestones",
-    icon: "🎂",
-    colorClasses: "bg-pink-50 border-pink-200 dark:bg-pink-950/30 dark:border-pink-800",
-    href: process.env.BIRTHDAYHUB_URL || "/apps/birthdayhub",
-    external: !!process.env.BIRTHDAYHUB_URL,
-  },
-];
+async function getBirthdayStats() {
+  try {
+    const now = new Date();
+    const currentMonth = String(now.getMonth() + 1).padStart(2, "0");
+    const todayMMDD = `${currentMonth}-${String(now.getDate()).padStart(2, "0")}`;
+
+    const monthCount = await sql`
+      SELECT COUNT(*)::int AS count FROM birthdayhub.employees
+      WHERE birthday LIKE ${currentMonth + "-%"}
+    `;
+
+    const upcoming = await sql`
+      SELECT name, birthday FROM birthdayhub.employees
+      ORDER BY
+        CASE WHEN birthday >= ${todayMMDD} THEN 0 ELSE 1 END,
+        birthday ASC
+      LIMIT 1
+    `;
+
+    if (upcoming.length === 0) return null;
+
+    const emp = upcoming[0] as { name: string; birthday: string };
+    const [mm, dd] = emp.birthday.split("-").map(Number);
+    const nextDate = new Date(now.getFullYear(), mm - 1, dd);
+    if (nextDate < now) nextDate.setFullYear(now.getFullYear() + 1);
+    const daysUntil = Math.ceil((nextDate.getTime() - now.getTime()) / 86400000);
+
+    return {
+      thisMonthCount: (monthCount[0] as { count: number }).count,
+      nextName: emp.name,
+      daysUntil: daysUntil === 0 ? "Today!" : `${daysUntil}d away`,
+    };
+  } catch {
+    return null;
+  }
+}
 
 export default async function DashboardPage() {
   const session = await auth();
 
-  let recentActivity: ActivityItemData[] = [];
-  try {
-    recentActivity = (await sql`
-      SELECT af.id, af.source_app, af.event_type, af.title, af.description, af.created_at,
-             u.name AS user_name, u.avatar_url AS user_avatar
-      FROM engage.activity_feed af
-      JOIN auth.users u ON u.id = af.user_id
-      ORDER BY af.created_at DESC
-      LIMIT 10
-    `) as ActivityItemData[];
-  } catch {
-    // table may not exist yet
-  }
+  const [birthdayStats, recentActivity] = await Promise.all([
+    getBirthdayStats(),
+    (async () => {
+      try {
+        return (await sql`
+          SELECT af.id, af.source_app, af.event_type, af.title, af.description, af.created_at,
+                 u.name AS user_name, u.avatar_url AS user_avatar
+          FROM engage.activity_feed af
+          JOIN auth.users u ON u.id = af.user_id
+          ORDER BY af.created_at DESC
+          LIMIT 10
+        `) as ActivityItemData[];
+      } catch {
+        return [] as ActivityItemData[];
+      }
+    })(),
+  ]);
+
+  const appCards = [
+    {
+      title: "IdeaHub",
+      description: "Share and vote on innovative ideas",
+      icon: "💡",
+      colorClasses: "bg-amber-50 border-amber-200 dark:bg-amber-950/30 dark:border-amber-800",
+      href: process.env.IDEAHUB_URL || "/apps/ideahub",
+      external: !!process.env.IDEAHUB_URL,
+    },
+    {
+      title: "SkillsHub",
+      description: "Track and develop your professional skills",
+      icon: "🎯",
+      colorClasses: "bg-blue-50 border-blue-200 dark:bg-blue-950/30 dark:border-blue-800",
+      href: process.env.SKILLSHUB_URL || "/apps/skillshub",
+      external: !!process.env.SKILLSHUB_URL,
+    },
+    {
+      title: "BirthdayHub",
+      description: "Celebrate team birthdays and milestones",
+      icon: "🎂",
+      colorClasses: "bg-pink-50 border-pink-200 dark:bg-pink-950/30 dark:border-pink-800",
+      href: "/apps/birthdayhub",
+      stat: birthdayStats
+        ? { label: "birthdays this month", value: birthdayStats.thisMonthCount }
+        : undefined,
+      latestItem: birthdayStats
+        ? `Next: ${birthdayStats.nextName} (${birthdayStats.daysUntil})`
+        : undefined,
+    },
+  ];
 
   return (
     <div className="space-y-8">
