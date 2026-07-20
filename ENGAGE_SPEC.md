@@ -370,7 +370,7 @@ BIRTHDAYHUB_URL=https://birthdayhub.vercel.app
 GROQ_API_KEY=
 
 # App
-NEXTAUTH_URL=https://engage.vercel.app
+NEXTAUTH_URL=https://z-index-9999-engage.vercel.app
 ```
 
 ---
