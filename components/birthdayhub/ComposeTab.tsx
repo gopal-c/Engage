@@ -92,13 +92,14 @@ export default function ComposeTab({
       const illData = await illRes.json();
       setImageUrl(illData.imageUrl ?? "");
 
-      /* Fetch preview */
+      /* Fetch preview with a fresh random palette */
       await refreshPreview(
         target,
         genData.message,
         genData.mood,
         genData.fuel,
-        illData.imageUrl
+        illData.imageUrl,
+        true
       );
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : "Generation failed");
@@ -113,7 +114,8 @@ export default function ComposeTab({
     msg: string,
     m: string,
     f: string,
-    img?: string
+    img?: string,
+    forceNewPalette?: boolean
   ) {
     try {
       const res = await fetch("/api/birthdayhub/preview", {
@@ -127,7 +129,7 @@ export default function ComposeTab({
           mood: m,
           fuel: f,
           imageUrl: img || imageUrl,
-          paletteId: paletteId || undefined,
+          paletteId: forceNewPalette ? undefined : paletteId || undefined,
         }),
       });
       const data = await res.json();
