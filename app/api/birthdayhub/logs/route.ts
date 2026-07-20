@@ -1,23 +1,14 @@
-import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import { sql } from "@/lib/db";
+import { NextResponse } from "next/server";
+import { getLogs, clearLogs } from "@/lib/birthdayhub/storage";
 
-export async function GET(request: NextRequest) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+export const dynamic = "force-dynamic";
 
-  const { searchParams } = request.nextUrl;
-  const year = searchParams.get("year") || new Date().getFullYear().toString();
+export async function GET() {
+  const logs = await getLogs();
+  return NextResponse.json(logs);
+}
 
-  const rows = await sql`
-    SELECT sl.*, e.email AS employee_email, e.department
-    FROM birthdayhub.send_logs sl
-    JOIN birthdayhub.employees e ON e.id = sl.employee_id
-    WHERE sl.year = ${parseInt(year)}
-    ORDER BY sl.sent_at DESC
-  `;
-
-  return NextResponse.json({ logs: rows });
+export async function DELETE() {
+  await clearLogs();
+  return NextResponse.json({ ok: true });
 }

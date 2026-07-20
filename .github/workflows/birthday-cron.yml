@@ -1,0 +1,15 @@
+name: Birthday Auto-Send
+
+on:
+  schedule:
+    - cron: '30 3 * * *'
+  workflow_dispatch:
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger birthday cron
+        run: |
+          curl -X GET "${{ secrets.APP_URL }}/api/birthdayhub/cron" \
+          -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"

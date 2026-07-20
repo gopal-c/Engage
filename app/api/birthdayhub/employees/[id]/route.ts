@@ -1,77 +1,24 @@
-import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import { sql } from "@/lib/db";
+import { NextResponse } from "next/server";
+import { getEmployee, upsertEmployee, deleteEmployee } from "@/lib/birthdayhub/storage";
 
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+export const dynamic = "force-dynamic";
+
+export async function PUT(req: Request, { params }: { params: { id: string } }) {
+  const existing = await getEmployee(params.id);
+  if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  const body = await req.json();
+  const updated = { ...existing, ...body, id: existing.id, createdAt: existing.createdAt };
+
+  if (updated.birthday && !/^\d{2}-\d{2}$/.test(updated.birthday)) {
+    return NextResponse.json({ error: "birthday must be MM-DD" }, { status: 400 });
   }
 
-  const rows = await sql`
-    SELECT * FROM birthdayhub.employees WHERE id = ${params.id}
-  `;
-
-  if (rows.length === 0) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
-  }
-
-  return NextResponse.json({ employee: rows[0] });
+  await upsertEmployee(updated);
+  return NextResponse.json(updated);
 }
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const body = await request.json();
-  const { name, email, department, birthday, notes } = body;
-
-  if (!name || !email || !birthday) {
-    return NextResponse.json(
-      { error: "name, email, and birthday (MM-DD) are required" },
-      { status: 400 }
-    );
-  }
-
-  const rows = await sql`
-    UPDATE birthdayhub.employees
-    SET name = ${name}, email = ${email}, department = ${department ?? null},
-        birthday = ${birthday}, notes = ${notes ?? null}
-    WHERE id = ${params.id}
-    RETURNING *
-  `;
-
-  if (rows.length === 0) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
-  }
-
-  return NextResponse.json({ employee: rows[0] });
-}
-
-export async function DELETE(
-  _request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const rows = await sql`
-    DELETE FROM birthdayhub.employees WHERE id = ${params.id} RETURNING id
-  `;
-
-  if (rows.length === 0) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
-  }
-
-  return NextResponse.json({ success: true });
+export async function DELETE(_: Request, { params }: { params: { id: string } }) {
+  await deleteEmployee(params.id);
+  return NextResponse.json({ ok: true });
 }

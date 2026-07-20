@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "generate:illustrations": "tsx scripts/generate-illustrations.ts",
+    "prebuild": "tsx scripts/generate-illustrations.ts",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -27,6 +29,7 @@
     "next": "^14.2.35",
     "next-auth": "^5.0.0-beta.25",
     "nodemailer": "^6.10.1",
+    "papaparse": "^5.5.4",
     "postcss": "^8.5.18",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -36,6 +39,9 @@
     "typescript": "5.3"
   },
   "devDependencies": {
-    "@types/nodemailer": "^8.0.1"
+    "@types/nodemailer": "^8.0.1",
+    "@types/papaparse": "^5.5.2",
+    "sharp": "^0.35.3",
+    "tsx": "^4.23.1"
   }
 }

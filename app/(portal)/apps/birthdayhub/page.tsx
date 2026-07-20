@@ -1,146 +1,244 @@
-import { sql } from "@/lib/db";
-import Link from "next/link";
+"use client";
+import { useState, useEffect, useCallback, useRef } from "react";
+import type { Employee, SendLog, ScheduledSend } from "@/lib/birthdayhub/types";
+import Dashboard from "@/components/birthdayhub/Dashboard";
+import TeamTab from "@/components/birthdayhub/TeamTab";
+import ComposeTab from "@/components/birthdayhub/ComposeTab";
+import ScheduledTab from "@/components/birthdayhub/ScheduledTab";
+import SettingsTab from "@/components/birthdayhub/SettingsTab";
+import ImportModal from "@/components/birthdayhub/ImportModal";
 
-interface Employee {
-  id: string;
-  name: string;
-  email: string;
-  department: string | null;
-  birthday: string;
-}
+type Tab = "dashboard" | "team" | "compose" | "scheduled" | "settings";
 
-function getUpcomingBirthdays(employees: Employee[]) {
-  const now = new Date();
-  const todayMMDD = `${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+export default function BirthdayHubPage() {
+  const [tab, setTab] = useState<Tab>("dashboard");
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [logs, setLogs] = useState<SendLog[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [composeTarget, setComposeTarget] = useState<Employee | null>(null);
+  const [showImport, setShowImport] = useState(false);
+  const [scheduledRefreshKey, setScheduledRefreshKey] = useState(0);
+  const [toasts, setToasts] = useState<{ id: string; text: string }[]>([]);
+  const checkingRef = useRef(false);
 
-  return employees
-    .map((emp) => {
-      const [mm, dd] = emp.birthday.split("-").map(Number);
-      const thisYear = new Date(now.getFullYear(), mm - 1, dd);
-      if (thisYear < now) thisYear.setFullYear(now.getFullYear() + 1);
-      const daysUntil = Math.ceil((thisYear.getTime() - now.getTime()) / 86400000);
-      const isToday = emp.birthday === todayMMDD;
-      return { ...emp, daysUntil, isToday };
-    })
-    .sort((a, b) => a.daysUntil - b.daysUntil);
-}
-
-export default async function BirthdayHubPage() {
-  let employees: Employee[] = [];
-  let thisMonthCount = 0;
-
-  try {
-    employees = (await sql`
-      SELECT id, name, email, department, birthday
-      FROM birthdayhub.employees
-      ORDER BY birthday ASC
-    `) as Employee[];
-
-    const currentMonth = String(new Date().getMonth() + 1).padStart(2, "0");
-    thisMonthCount = employees.filter((e) => e.birthday.startsWith(currentMonth)).length;
-  } catch {
-    // tables may not exist
+  function addToast(text: string) {
+    const id = Math.random().toString(36).slice(2);
+    setToasts((prev) => [...prev, { id, text }]);
+    setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 5000);
   }
 
-  const upcoming = getUpcomingBirthdays(employees).slice(0, 10);
-  const todaysBirthdays = upcoming.filter((e) => e.isToday);
+  const checkScheduled = useCallback(async () => {
+    if (checkingRef.current) return;
+    checkingRef.current = true;
+    try {
+      const res = await fetch("/api/birthdayhub/schedule/due");
+      if (!res.ok) return;
+      const due: ScheduledSend[] = await res.json();
+      if (due.length === 0) return;
+
+      let sentCount = 0;
+      await Promise.all(
+        due.map(async (job) => {
+          try {
+            const sendRes = await fetch("/api/birthdayhub/send", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                employeeId: job.employeeId,
+                message: job.message,
+                gmailUser: job.gmailUser,
+                gmailAppPassword: job.gmailAppPassword,
+                fromName: job.fromName,
+                mood: job.mood,
+                fuel: job.fuel,
+                heroImageUrl: job.heroImageUrl,
+                paletteId: job.paletteId,
+                cc: job.cc,
+                ccBehavior: job.ccBehavior || "cc",
+                scheduledJobId: job.id,
+              }),
+            });
+            if (sendRes.ok) {
+              addToast(`Scheduled email sent to ${job.employeeName}`);
+              sentCount++;
+            }
+          } catch { /* silent */ }
+        })
+      );
+
+      if (sentCount > 0) {
+        setScheduledRefreshKey((k) => k + 1);
+      }
+    } catch { /* silent */ }
+    finally { checkingRef.current = false; }
+  }, []);
+
+  const fetchData = useCallback(async () => {
+    const [empRes, logRes] = await Promise.all([
+      fetch("/api/birthdayhub/employees"),
+      fetch("/api/birthdayhub/logs"),
+    ]);
+    setEmployees(await empRes.json());
+    setLogs(await logRes.json());
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { fetchData(); }, [fetchData]);
+
+  useEffect(() => {
+    checkScheduled();
+    window.addEventListener("focus", checkScheduled);
+    return () => window.removeEventListener("focus", checkScheduled);
+  }, [checkScheduled]);
+
+  async function handleAdd(data: Omit<Employee, "id" | "createdAt">) {
+    const res = await fetch("/api/birthdayhub/employees", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) { alert(`Failed to add employee: ${res.status} ${await res.text()}`); return; }
+    const created: Employee = await res.json();
+    setEmployees((prev) => [...prev, created]);
+  }
+
+  async function handleEdit(id: string, data: Omit<Employee, "id" | "createdAt">) {
+    const res = await fetch(`/api/birthdayhub/employees/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) { alert(`Failed to update employee: ${res.status} ${await res.text()}`); return; }
+    const updated: Employee = await res.json();
+    setEmployees((prev) => prev.map((e) => e.id === id ? updated : e));
+  }
+
+  async function handleDelete(id: string) {
+    const res = await fetch(`/api/birthdayhub/employees/${id}`, { method: "DELETE" });
+    if (!res.ok) { alert(`Failed to delete employee: ${res.status} ${await res.text()}`); return; }
+    setEmployees((prev) => prev.filter((e) => e.id !== id));
+  }
+
+  function handleCompose(emp: Employee) {
+    setComposeTarget(emp);
+    setTab("compose");
+  }
+
+  const tabs: { key: Tab; label: string; icon: string }[] = [
+    { key: "dashboard", label: "Dashboard", icon: "🏠" },
+    { key: "team",      label: "Team",      icon: "👥" },
+    { key: "compose",   label: "Compose",   icon: "✉️" },
+    { key: "scheduled", label: "Scheduled", icon: "⏰" },
+    { key: "settings",  label: "Settings",  icon: "⚙️" },
+  ];
+
+  const todayCount = employees.filter((e) => {
+    const n = new Date();
+    const today = String(n.getMonth() + 1).padStart(2, "0") + "-" + String(n.getDate()).padStart(2, "0");
+    return e.birthday === today;
+  }).length;
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-semibold">BirthdayHub</h2>
-          <p className="mt-1 text-muted-foreground">
-            {employees.length} employees &middot; {thisMonthCount} birthdays this month
-          </p>
+    <div className="space-y-6">
+      {/* Header with tabs */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center text-base"
+            style={{ background: "#2D1B69" }}>
+            <span className="text-white text-sm">&#x1f382;</span>
+          </div>
+          <span className="font-semibold text-gray-900 dark:text-gray-100 text-lg">Birthday Hub</span>
         </div>
-        <div className="flex gap-2">
-          <Link
-            href="/apps/birthdayhub/compose"
-            className="inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-          >
-            Compose
-          </Link>
-          <Link
-            href="/apps/birthdayhub/employees"
-            className="inline-flex items-center rounded-md border px-4 py-2 text-sm font-medium hover:bg-accent"
-          >
-            Manage Employees
-          </Link>
-          <Link
-            href="/apps/birthdayhub/settings"
-            className="inline-flex items-center rounded-md border px-4 py-2 text-sm font-medium hover:bg-accent"
-          >
-            Settings
-          </Link>
-        </div>
+
+        <nav className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-full p-1 overflow-x-auto">
+          {tabs.map(({ key, label, icon }) => (
+            <button
+              key={key}
+              onClick={() => { setTab(key); if (key !== "compose") setComposeTarget(null); }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap ${
+                tab === key
+                  ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm"
+                  : "text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+              }`}
+            >
+              <span>{icon}</span>
+              {label}
+              {key === "dashboard" && todayCount > 0 && (
+                <span className="w-4 h-4 rounded-full text-white text-[10px] flex items-center justify-center font-semibold"
+                  style={{ background: "#EF9F27" }}>
+                  {todayCount}
+                </span>
+              )}
+            </button>
+          ))}
+        </nav>
       </div>
 
-      {todaysBirthdays.length > 0 && (
-        <div className="rounded-xl border-2 border-pink-300 bg-pink-50 p-6 dark:border-pink-700 dark:bg-pink-950/30">
-          <h3 className="text-lg font-semibold">Today&apos;s Birthdays!</h3>
-          <div className="mt-3 space-y-2">
-            {todaysBirthdays.map((emp) => (
-              <div key={emp.id} className="flex items-center gap-3">
-                <span className="text-2xl">🎂</span>
-                <div>
-                  <p className="font-medium">{emp.name}</p>
-                  <p className="text-sm text-muted-foreground">{emp.department || "—"}</p>
-                </div>
-                <Link
-                  href={`/apps/birthdayhub/compose?employee=${emp.id}`}
-                  className="ml-auto rounded-md bg-pink-600 px-3 py-1.5 text-sm text-white hover:bg-pink-700"
-                >
-                  Send Wish
-                </Link>
-              </div>
-            ))}
-          </div>
+      {/* Tab content */}
+      {loading ? (
+        <div className="flex items-center justify-center py-24 gap-3">
+          <span className="text-2xl animate-spin">&#x1f382;</span>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Loading Birthday Hub...</p>
         </div>
+      ) : (
+        <>
+          {tab === "dashboard" && (
+            <Dashboard employees={employees} logs={logs} onCompose={handleCompose} />
+          )}
+          {tab === "team" && (
+            <TeamTab
+              employees={employees}
+              onAdd={handleAdd}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onImport={() => setShowImport(true)}
+              onCompose={handleCompose}
+            />
+          )}
+          {tab === "compose" && (
+            <ComposeTab
+              employees={employees}
+              initialEmployee={composeTarget}
+              onSent={fetchData}
+              onScheduled={() => {
+                setScheduledRefreshKey((k) => k + 1);
+                setTab("scheduled");
+              }}
+            />
+          )}
+          {tab === "scheduled" && (
+            <ScheduledTab refreshKey={scheduledRefreshKey} />
+          )}
+          {tab === "settings" && (
+            <SettingsTab />
+          )}
+        </>
       )}
 
-      <div>
-        <h3 className="mb-4 text-lg font-semibold">Upcoming Birthdays</h3>
-        {upcoming.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No employees added yet</p>
-        ) : (
-          <div className="overflow-x-auto rounded-lg border">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b bg-muted/50">
-                  <th className="px-4 py-3 text-left font-medium">Name</th>
-                  <th className="px-4 py-3 text-left font-medium">Department</th>
-                  <th className="px-4 py-3 text-left font-medium">Birthday</th>
-                  <th className="px-4 py-3 text-right font-medium">Days Until</th>
-                </tr>
-              </thead>
-              <tbody>
-                {upcoming.map((emp) => (
-                  <tr key={emp.id} className="border-b last:border-0">
-                    <td className="px-4 py-3 font-medium">
-                      {emp.isToday && <span className="mr-1">🎂</span>}
-                      {emp.name}
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground">{emp.department || "—"}</td>
-                    <td className="px-4 py-3 text-muted-foreground">
-                      {emp.birthday.replace("-", "/")}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      {emp.isToday ? (
-                        <span className="rounded-full bg-pink-100 px-2 py-0.5 text-xs font-medium text-pink-700 dark:bg-pink-900 dark:text-pink-300">
-                          Today!
-                        </span>
-                      ) : (
-                        <span className="text-muted-foreground">{emp.daysUntil}d</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+      {/* Import modal */}
+      {showImport && (
+        <ImportModal
+          onClose={() => setShowImport(false)}
+          onImported={async () => {
+            await fetchData();
+            setShowImport(false);
+          }}
+        />
+      )}
+
+      {/* Toast notifications */}
+      {toasts.length > 0 && (
+        <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-2">
+          {toasts.map((t) => (
+            <div
+              key={t.id}
+              className="bg-gray-900 text-white text-sm px-4 py-3 rounded-xl shadow-lg flex items-center gap-2.5"
+            >
+              {t.text}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
