@@ -67,6 +67,7 @@ export default function ComposeTab({
     setGenerating(true);
     setStatus("idle");
     setErrorMsg("");
+    setPaletteId("");
 
     try {
       /* Generate message */
