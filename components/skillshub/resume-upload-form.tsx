@@ -4,12 +4,10 @@ import { useState, useTransition, useRef } from "react";
 import { toast } from "sonner";
 import { Upload as UploadIcon, FileText, X } from "lucide-react";
 
-const MAX_RESUME_BYTES = 10 * 1024 * 1024; // 10 MB — mirrors lib/extract.ts
+const MAX_RESUME_BYTES = 10 * 1024 * 1024;
 
 type Props = {
-  /** Route to POST the multipart form to. */
   endpoint: string;
-  /** Extra string fields appended to the FormData alongside `file` (e.g. a pre-approval token). */
   extraFields?: Record<string, string>;
   heading?: string;
   lede?: string;
@@ -19,18 +17,12 @@ type Props = {
   onError?: (message: string) => void;
 };
 
-/**
- * The dropzone + file-row + submit UI shared by every resume upload entry
- * point: /upload (employee self-update), the /verify-email pre-approval
- * upload, and HR's replace-resume action in the review/edit form. Only the
- * endpoint, extra fields, and copy change between call sites.
- */
 export function ResumeUploadForm({
   endpoint,
   extraFields,
   heading = "Upload a resume",
   lede = "PDF only, please. We'll handle the rest.",
-  submitIdleLabel = "Extract & submit →",
+  submitIdleLabel = "Extract & submit",
   submitBusyLabel = "Extracting…",
   onSuccess,
   onError,
@@ -89,15 +81,17 @@ export function ResumeUploadForm({
   }
 
   return (
-    <section className="form-card">
-      <h2>{heading}</h2>
-      <p className="lede">{lede}</p>
+    <div className="rounded-xl border bg-card p-6 shadow-sm">
+      <h3 className="text-lg font-semibold">{heading}</h3>
+      <p className="mt-1 text-sm text-muted-foreground">{lede}</p>
 
-      <label className="field-label">Resume PDF</label>
-
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="mt-4 space-y-4">
         <label
-          className={`dropzone ${dragging ? "dragging" : ""}`}
+          className={`flex cursor-pointer flex-col items-center gap-2 rounded-lg border-2 border-dashed p-8 text-center transition-colors ${
+            dragging
+              ? "border-primary bg-primary/5"
+              : "border-muted-foreground/25 hover:border-primary/50"
+          }`}
           onDragEnter={(e) => { e.preventDefault(); setDragging(true); }}
           onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
           onDragLeave={() => setDragging(false)}
@@ -109,50 +103,44 @@ export function ResumeUploadForm({
             accept="application/pdf,.pdf"
             onChange={(e) => pickFile(e.target.files?.[0] ?? null)}
             disabled={isPending}
+            className="hidden"
           />
-          <span className="dz-icon">
-            <UploadIcon />
-          </span>
-          <div className="dz-title">
-            Drag &amp; drop your resume, or <b>click to choose</b>
-          </div>
-          <div className="dz-hint">A clean PDF works best. We support up to 10 MB.</div>
-          <div className="dz-meta">
-            <span>PDF only</span><span className="pip"></span>
-            <span>10 MB max</span><span className="pip"></span>
-            <span>Single file</span>
-          </div>
+          <UploadIcon className="size-8 text-muted-foreground" />
+          <p className="text-sm">
+            Drag & drop your resume, or <span className="font-medium text-primary">click to choose</span>
+          </p>
+          <p className="text-xs text-muted-foreground">PDF only · 10 MB max · Single file</p>
         </label>
 
         {file && (
-          <div className="file-row">
-            <span className="file-icon">
-              <FileText className="size-[18px]" />
-            </span>
-            <div>
-              <div className="file-name">{file.name}</div>
-              <div className="file-meta">
+          <div className="flex items-center gap-3 rounded-lg border bg-muted/50 px-3 py-2">
+            <FileText className="size-5 flex-shrink-0 text-muted-foreground" />
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium">{file.name}</p>
+              <p className="text-xs text-muted-foreground">
                 {(file.size / (1024 * 1024)).toFixed(2)} MB · {isPending ? "Extracting…" : "Ready to extract"}
-              </div>
+              </p>
             </div>
             <button
               type="button"
-              className="file-clear"
               onClick={clearFile}
               aria-label="Remove file"
               disabled={isPending}
+              className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-50"
             >
-              <X className="size-[14px]" />
+              <X className="size-4" />
             </button>
           </div>
         )}
 
-        <div className="form-actions">
-          <button type="submit" className="btn-primary" disabled={!file || isPending}>
-            {isPending ? submitBusyLabel : submitIdleLabel}
-          </button>
-        </div>
+        <button
+          type="submit"
+          disabled={!file || isPending}
+          className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+        >
+          {isPending ? submitBusyLabel : submitIdleLabel}
+        </button>
       </form>
-    </section>
+    </div>
   );
 }

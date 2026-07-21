@@ -2,10 +2,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
 const AVATAR_GRADIENTS = [
-  "linear-gradient(135deg, var(--brand-coral),  var(--brand-amber))",
-  "linear-gradient(135deg, var(--brand-indigo), var(--brand-teal))",
-  "linear-gradient(135deg, var(--brand-teal),   var(--brand-amber))",
-  "linear-gradient(135deg, var(--brand-indigo), var(--brand-coral))",
+  "linear-gradient(135deg, #FF6B6B, #FFB347)",
+  "linear-gradient(135deg, #6366F1, #2DD4BF)",
+  "linear-gradient(135deg, #2DD4BF, #FFB347)",
+  "linear-gradient(135deg, #6366F1, #FF6B6B)",
 ];
 
 function gradientFor(name: string): string {

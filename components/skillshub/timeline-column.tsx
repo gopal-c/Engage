@@ -9,16 +9,15 @@ function formatMonthYear(dateStr: string): string {
 }
 
 const CATEGORY_COLOR: Record<string, string> = {
-  achievement: "var(--brand-coral)",
-  promotion: "var(--brand-coral)",
-  milestone: "var(--brand-teal)",
-  certification: "var(--brand-indigo)",
-  education: "var(--brand-indigo)",
-  celebration: "var(--brand-coral)",
-  other: "var(--brand-indigo)",
+  achievement: "#FF9A82",
+  promotion: "#FF9A82",
+  milestone: "#7CD3C5",
+  certification: "#8B7BE8",
+  education: "#8B7BE8",
+  celebration: "#FF9A82",
+  other: "#8B7BE8",
 };
 
-// "Your Journey" column uses project-card style; "Professional Growth" uses edu-card style
 export function TimelineColumn({
   items,
   emptyText,
@@ -30,36 +29,56 @@ export function TimelineColumn({
 }) {
   if (items.length === 0) {
     return (
-      <div className="timeline-empty">
-        <p>{emptyText}</p>
-      </div>
+      <p className="py-8 text-center text-sm text-muted-foreground">{emptyText}</p>
     );
   }
 
   return (
-    <div className="timeline-track">
-      {items.map((item, i) => (
-        <div
-          key={item.id}
-          className="timeline-item"
-          style={{ animationDelay: `${Math.min(i, 5) * 0.1}s` }}
-        >
-          <div className="timeline-dot" style={{ background: CATEGORY_COLOR[item.category] ?? "var(--brand-indigo)" }} />
-          {/* Visual style sourced from ProjectCard (journey) / EducationCard (growth) */}
-          <article className={variant === "journey" ? "tl-project-card" : "tl-edu-card"}>
-            <div className="tl-card-head">
-              <span className="tl-card-icon" style={{ background: CATEGORY_COLOR[item.category] ?? "var(--brand-indigo)" }}>
-                {item.icon}
-              </span>
-              <h3 className="tl-card-title">{item.title}</h3>
+    <div className="relative space-y-4 pl-6">
+      {/* Vertical track line */}
+      <div className="absolute bottom-0 left-[9px] top-0 w-px bg-border" />
+
+      {items.map((item) => {
+        const color = CATEGORY_COLOR[item.category] ?? "#8B7BE8";
+        const isJourney = variant === "journey";
+
+        return (
+          <div key={item.id} className="relative">
+            {/* Dot */}
+            <div
+              className="absolute -left-6 top-3 size-[10px] rounded-full ring-2 ring-background"
+              style={{ background: color }}
+            />
+
+            {/* Card */}
+            <div
+              className={`rounded-lg border p-3 ${
+                isJourney
+                  ? "bg-card shadow-sm"
+                  : "bg-muted/50"
+              }`}
+            >
+              <div className="flex items-start gap-2">
+                <span
+                  className="flex size-7 flex-shrink-0 items-center justify-center rounded-md text-sm"
+                  style={{ background: `${color}20`, color }}
+                >
+                  {item.icon}
+                </span>
+                <h3 className="text-sm font-medium leading-tight">{item.title}</h3>
+              </div>
+              <div className="mt-2 flex items-center gap-2">
+                <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium capitalize text-muted-foreground">
+                  {item.category}
+                </span>
+                <span className="text-[11px] text-muted-foreground">
+                  {formatMonthYear(item.milestoneDate)}
+                </span>
+              </div>
             </div>
-            <div className="tl-card-meta">
-              <span className="tl-card-badge">{item.category}</span>
-              <span className="tl-card-date">{formatMonthYear(item.milestoneDate)}</span>
-            </div>
-          </article>
-        </div>
-      ))}
+          </div>
+        );
+      })}
     </div>
   );
 }

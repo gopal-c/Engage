@@ -132,14 +132,14 @@ export function EditableAvatar({
   }
 
   return (
-    <div className="flex flex-col items-start gap-s-2">
+    <div className="flex flex-col items-start gap-2">
       <button
         type="button"
         onClick={pick}
         aria-label="Change profile photo"
         className={cn(
-          "group relative cursor-pointer overflow-hidden rounded-pill outline-none",
-          "ring-offset-2 focus-visible:ring-2 focus-visible:ring-indigo",
+          "group relative cursor-pointer overflow-hidden rounded-full outline-none",
+          "ring-offset-2 focus-visible:ring-2 focus-visible:ring-primary",
         )}
       >
         <ProfileAvatar
@@ -149,10 +149,10 @@ export function EditableAvatar({
         />
         <span
           aria-hidden
-          className="absolute inset-0 flex flex-col items-center justify-center rounded-pill bg-ink-900/65 opacity-0 transition-opacity duration-base ease-out group-hover:opacity-100 group-focus-visible:opacity-100"
+          className="absolute inset-0 flex flex-col items-center justify-center rounded-full bg-black/65 opacity-0 transition-opacity duration-200 ease-out group-hover:opacity-100 group-focus-visible:opacity-100"
         >
           <Camera className="size-5 text-white" />
-          <span className="mt-s-1 font-mono text-[9px] uppercase tracking-eyebrow text-white">
+          <span className="mt-1 font-mono text-[9px] uppercase tracking-widest text-white">
             Change photo
           </span>
         </span>
@@ -163,7 +163,7 @@ export function EditableAvatar({
           type="button"
           onClick={remove}
           disabled={isRemoving}
-          className="text-[11px] text-fg-2 underline-offset-2 transition-colors hover:text-coral-deep hover:underline disabled:opacity-50"
+          className="text-[11px] text-muted-foreground underline-offset-2 transition-colors hover:text-destructive hover:underline disabled:opacity-50"
         >
           {isRemoving ? "Removing…" : "Remove photo"}
         </button>
@@ -194,12 +194,12 @@ export function EditableAvatar({
           </DialogHeader>
 
           {preview && (
-            <div className="flex justify-center py-s-2">
+            <div className="flex justify-center py-2">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={preview}
                 alt="Profile preview"
-                className="size-32 rounded-pill object-cover ring-1 ring-border-hairline"
+                className="size-32 rounded-full object-cover ring-1 ring-border"
               />
             </div>
           )}

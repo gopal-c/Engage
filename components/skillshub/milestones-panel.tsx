@@ -64,12 +64,12 @@ export function MilestonesPanel({ profileId, initialMilestones }: Props) {
   return (
     <Card>
       <CardHeader><CardTitle>Milestones &amp; Achievements ({milestones.length})</CardTitle></CardHeader>
-      <CardContent className="space-y-s-3">
+      <CardContent className="space-y-3">
         {milestones.length === 0 && (
-          <p className="text-[13px] text-fg-2">No milestones yet. Add one below.</p>
+          <p className="text-[13px] text-muted-foreground">No milestones yet. Add one below.</p>
         )}
         {milestones.map((m) => (
-          <div key={m.id} className="grid grid-cols-1 items-end gap-s-2 sm:grid-cols-[1fr_130px_140px_auto]">
+          <div key={m.id} className="grid grid-cols-1 items-end gap-2 sm:grid-cols-[1fr_130px_140px_auto]">
             <Input value={m.title} disabled />
             <Input value={m.category} disabled className="capitalize" />
             <Input type="date" value={m.milestoneDate} disabled />
@@ -86,7 +86,7 @@ export function MilestonesPanel({ profileId, initialMilestones }: Props) {
           </div>
         ))}
         {/* Add row — same inline layout as existing items */}
-        <div className="grid grid-cols-1 items-end gap-s-2 sm:grid-cols-[1fr_130px_140px_auto]">
+        <div className="grid grid-cols-1 items-end gap-2 sm:grid-cols-[1fr_130px_140px_auto]">
           <Input
             placeholder="Achievement or milestone title"
             value={newTitle}

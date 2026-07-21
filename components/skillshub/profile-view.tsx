@@ -49,53 +49,61 @@ export function ProfileView({
   const isPending = profile.status === "pending";
 
   return (
-    <div className="profile-v2">
+    <div className="mx-auto max-w-3xl space-y-10 py-8">
       {/* HERO */}
-      <section className="hero">
-        <div className="hero-avatar-wrap" style={heroStyle}>
+      <section className="flex flex-col items-center gap-5 text-center sm:flex-row sm:text-left">
+        <div className="relative shrink-0" style={heroStyle}>
           {editableAvatar ? (
-            <EditableAvatar profile={profile} className="size-32 hero-avatar" />
+            <EditableAvatar profile={profile} className="size-32 rounded-full object-cover ring-4 ring-[var(--halo)]" />
           ) : profile.avatarUrl ? (
             /* eslint-disable-next-line @next/next/no-img-element */
-            <img src={profile.avatarUrl} alt={profile.name} className="hero-avatar" />
+            <img src={profile.avatarUrl} alt={profile.name} className="size-32 rounded-full object-cover ring-4 ring-[var(--halo)]" />
           ) : (
             <div
-              className="hero-avatar"
+              className="flex size-32 items-center justify-center rounded-full text-3xl font-bold text-white ring-4 ring-[var(--halo)]"
               style={{ background: `linear-gradient(135deg, ${palette.grad[0]}, ${palette.grad[1]})` }}
             >
               {initials(profile.name)}
             </div>
           )}
-          <span className={`hero-status-dot ${isPending ? "pending" : ""}`} />
+          <span
+            className={`absolute bottom-1 right-1 size-4 rounded-full border-2 border-background ${
+              isPending ? "bg-orange-400" : "bg-green-500"
+            }`}
+          />
         </div>
 
-        <div className="identity">
-          <div className="ey">{profile.seniority}</div>
-          <h1 className="name">{profile.name}</h1>
-          <div className="meta">
+        <div className="flex-1 space-y-1">
+          <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{profile.seniority}</div>
+          <h1 className="text-2xl font-bold tracking-tight">{profile.name}</h1>
+          <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm text-muted-foreground sm:justify-start">
             <span>{profile.email}</span>
-            <span className="sep">·</span>
+            <span className="hidden sm:inline">·</span>
             <span>{profile.city}</span>
-            <span className="sep">·</span>
+            <span className="hidden sm:inline">·</span>
             <span>{profile.yearsExperience} yrs experience</span>
             {profile.joiningDate && (
               <>
-                <span className="sep">·</span>
+                <span className="hidden sm:inline">·</span>
                 <span>Joined {formatDate(profile.joiningDate)}</span>
               </>
             )}
             {profile.dateOfBirth && (
               <>
-                <span className="sep">·</span>
+                <span className="hidden sm:inline">·</span>
                 <span>DOB {formatDate(profile.dateOfBirth)}</span>
               </>
             )}
-            {isPending && <span className="pending-pill">Pending review</span>}
+            {isPending && (
+              <span className="ml-2 inline-flex items-center rounded-full bg-orange-100 px-2.5 py-0.5 text-xs font-medium text-orange-700 dark:bg-orange-900/30 dark:text-orange-400">
+                Pending review
+              </span>
+            )}
           </div>
         </div>
 
         {canManage && (
-          <div className="actions">
+          <div className="flex shrink-0 items-center gap-2">
             <Link
               href={`/apps/skillshub/review/${profile.id}`}
               className={buttonVariants({ variant: "outline", size: "sm" })}
@@ -108,22 +116,37 @@ export function ProfileView({
       </section>
 
       {/* SKILLS */}
-      <section className="section">
-        <div className="ey">Skills</div>
-        <div className="count">{profile.skills.length} {profile.skills.length === 1 ? "skill" : "skills"}</div>
+      <section className="space-y-2">
+        <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Skills</div>
+        <div className="text-sm text-muted-foreground">{profile.skills.length} {profile.skills.length === 1 ? "skill" : "skills"}</div>
 
         {profile.skills.length === 0 ? (
-          <p className="text-[14px] text-fg-2">No skills on record.</p>
+          <p className="text-sm text-muted-foreground">No skills on record.</p>
         ) : (
           grouped.map(([cat, items]) => (
             <div key={cat} className="mt-6">
-              <div className="cat">{CATEGORY_LABEL[cat] ?? cat}</div>
-              <div className="skill-row">
+              <div className="mb-2 text-sm font-medium text-foreground">{CATEGORY_LABEL[cat] ?? cat}</div>
+              <div className="flex flex-wrap gap-2">
                 {items.map((s) => (
-                  <span key={s.name} className="skill-pill">
+                  <span
+                    key={s.name}
+                    className="inline-flex items-center gap-1.5 rounded-full border bg-secondary/50 px-3 py-1 text-sm"
+                  >
                     {s.name}
-                    <span className={`lvl ${s.proficiency}`}>{s.proficiency}</span>
-                    <span className="yrs">{s.yearsExperience} yr</span>
+                    <span
+                      className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold uppercase leading-none ${
+                        s.proficiency === "expert"
+                          ? "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400"
+                          : s.proficiency === "advanced"
+                            ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400"
+                            : s.proficiency === "intermediate"
+                              ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400"
+                              : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      {s.proficiency}
+                    </span>
+                    <span className="text-xs text-muted-foreground">{s.yearsExperience} yr</span>
                   </span>
                 ))}
               </div>
@@ -133,25 +156,27 @@ export function ProfileView({
       </section>
 
       {/* PROJECTS */}
-      <section className="section">
-        <div className="ey">Projects</div>
-        <div className="count">{profile.projects.length} {profile.projects.length === 1 ? "project" : "projects"}</div>
+      <section className="space-y-2">
+        <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Projects</div>
+        <div className="text-sm text-muted-foreground">{profile.projects.length} {profile.projects.length === 1 ? "project" : "projects"}</div>
 
         {profile.projects.length === 0 ? (
-          <p className="text-[14px] text-fg-2">No projects on record.</p>
+          <p className="text-sm text-muted-foreground">No projects on record.</p>
         ) : (
-          <div className="projects">
+          <div className="grid gap-4 sm:grid-cols-2">
             {profile.projects.map((p, i) => (
-              <article key={i} className="project-card">
-                <div className="head">
-                  <h3 className="title">{p.name}</h3>
-                  <span className="when">{p.duration}</span>
+              <article key={i} className="rounded-lg border bg-card p-4 shadow-sm">
+                <div className="flex items-start justify-between gap-2">
+                  <h3 className="font-semibold leading-snug">{p.name}</h3>
+                  <span className="shrink-0 text-xs text-muted-foreground">{p.duration}</span>
                 </div>
-                <p className="desc">{p.description}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{p.description}</p>
                 {p.skillsUsed.length > 0 && (
-                  <div className="tags">
+                  <div className="mt-3 flex flex-wrap gap-1">
                     {p.skillsUsed.map((s) => (
-                      <span key={s} className="tag">{s}</span>
+                      <span key={s} className="rounded-full bg-secondary px-2 py-0.5 text-xs text-muted-foreground">
+                        {s}
+                      </span>
                     ))}
                   </div>
                 )}
@@ -162,21 +187,23 @@ export function ProfileView({
       </section>
 
       {/* EDUCATION */}
-      <section className="section">
-        <div className="ey">Education</div>
-        <div className="count">{profile.education.length} {profile.education.length === 1 ? "entry" : "entries"}</div>
+      <section className="space-y-2">
+        <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Education</div>
+        <div className="text-sm text-muted-foreground">{profile.education.length} {profile.education.length === 1 ? "entry" : "entries"}</div>
 
         {profile.education.length === 0 ? (
-          <p className="text-[14px] text-fg-2">No education on record.</p>
+          <p className="text-sm text-muted-foreground">No education on record.</p>
         ) : (
-          <div className="education">
+          <div className="grid gap-4 sm:grid-cols-2">
             {profile.education.map((e, i) => (
-              <article key={i} className="edu-card">
-                <div className="edu-body">
-                  <div className="school">{e.degree}</div>
-                  <div className="place">{e.institution}</div>
+              <article key={i} className="flex items-start justify-between rounded-lg border bg-card p-4 shadow-sm">
+                <div>
+                  <div className="font-semibold">{e.degree}</div>
+                  <div className="text-sm text-muted-foreground">{e.institution}</div>
                 </div>
-                <span className="year">{e.month ? `${new Date(2000, e.month - 1).toLocaleString("en-US", { month: "short" })} ${e.year}` : e.year}</span>
+                <span className="shrink-0 text-xs text-muted-foreground">
+                  {e.month ? `${new Date(2000, e.month - 1).toLocaleString("en-US", { month: "short" })} ${e.year}` : e.year}
+                </span>
               </article>
             ))}
           </div>

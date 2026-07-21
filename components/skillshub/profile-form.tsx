@@ -92,23 +92,23 @@ export function ProfileForm({ profile, mode, onSaved, initialMilestones = [] }: 
   }
 
   return (
-    <div className="space-y-s-6">
+    <div className="space-y-6">
       {/* Basics */}
       <Card>
         <CardHeader><CardTitle>Basics</CardTitle></CardHeader>
-        <CardContent className="grid gap-s-4 md:grid-cols-2">
-          <div className="space-y-s-2">
+        <CardContent className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-2">
             <Label htmlFor="name">Name</Label>
             <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
           </div>
           {mode !== "self" && (
-            <div className="space-y-s-2">
+            <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
             </div>
           )}
           {(mode === "review" || mode === "self") && (
-            <div className="space-y-s-2">
+            <div className="space-y-2">
               <Label htmlFor="work-email">Work email</Label>
               <Input
                 id="work-email"
@@ -119,18 +119,18 @@ export function ProfileForm({ profile, mode, onSaved, initialMilestones = [] }: 
                 placeholder="name@valueaddsofttech.com"
               />
               {workEmailLocked && (
-                <p className="text-[12px] text-fg-2">Verified — contact HR to change this email.</p>
+                <p className="text-[12px] text-muted-foreground">Verified — contact HR to change this email.</p>
               )}
               {mode === "self" && !workEmailLocked && workEmail && (
-                <p className="text-[12px] text-fg-2">Changing this re-sends a verification email.</p>
+                <p className="text-[12px] text-muted-foreground">Changing this re-sends a verification email.</p>
               )}
             </div>
           )}
-          <div className="space-y-s-2">
+          <div className="space-y-2">
             <Label htmlFor="city">City</Label>
             <Input id="city" value={city} onChange={(e) => setCity(e.target.value)} />
           </div>
-          <div className="space-y-s-2">
+          <div className="space-y-2">
             <Label htmlFor="yrs">Years of experience</Label>
             <Input
               id="yrs"
@@ -140,7 +140,7 @@ export function ProfileForm({ profile, mode, onSaved, initialMilestones = [] }: 
               onChange={(e) => setYearsExperience(Number(e.target.value) || 0)}
             />
           </div>
-          <div className="space-y-s-2">
+          <div className="space-y-2">
             <Label htmlFor="seniority">Seniority</Label>
             <Select value={seniority} onValueChange={(v) => setSeniority(v as Seniority)}>
               <SelectTrigger id="seniority"><SelectValue /></SelectTrigger>
@@ -157,8 +157,8 @@ export function ProfileForm({ profile, mode, onSaved, initialMilestones = [] }: 
       {/* Employment Details */}
       <Card>
         <CardHeader><CardTitle>Employment Details</CardTitle></CardHeader>
-        <CardContent className="grid gap-s-4 md:grid-cols-2">
-          <div className="space-y-s-2">
+        <CardContent className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-2">
             <Label htmlFor="joining-date">Joining Date</Label>
             <Input
               id="joining-date"
@@ -167,7 +167,7 @@ export function ProfileForm({ profile, mode, onSaved, initialMilestones = [] }: 
               onChange={(e) => setJoiningDate(e.target.value)}
             />
           </div>
-          <div className="space-y-s-2">
+          <div className="space-y-2">
             <Label htmlFor="dob">Date of Birth</Label>
             <Input
               id="dob"
@@ -176,7 +176,7 @@ export function ProfileForm({ profile, mode, onSaved, initialMilestones = [] }: 
               max={maxDateOfBirth()}
               onChange={(e) => setDateOfBirth(e.target.value)}
             />
-            <p className="text-[12px] text-fg-2">Must be at least 16 years ago.</p>
+            <p className="text-[12px] text-muted-foreground">Must be at least 16 years ago.</p>
           </div>
         </CardContent>
       </Card>
@@ -193,12 +193,12 @@ export function ProfileForm({ profile, mode, onSaved, initialMilestones = [] }: 
       {/* Skills */}
       <Card>
         <CardHeader><CardTitle>Skills ({skills.length})</CardTitle></CardHeader>
-        <CardContent className="space-y-s-3">
+        <CardContent className="space-y-3">
           {skills.length === 0 && (
-            <p className="text-[13px] text-fg-2">No skills yet. Add one below.</p>
+            <p className="text-[13px] text-muted-foreground">No skills yet. Add one below.</p>
           )}
           {skills.map((s, i) => (
-            <div key={i} className="grid grid-cols-1 items-end gap-s-2 sm:grid-cols-[1fr_120px_140px_90px_auto]">
+            <div key={i} className="grid grid-cols-1 items-end gap-2 sm:grid-cols-[1fr_120px_140px_90px_auto]">
               <Input
                 placeholder="Skill name"
                 value={s.name}
@@ -258,13 +258,13 @@ export function ProfileForm({ profile, mode, onSaved, initialMilestones = [] }: 
       {/* Projects */}
       <Card>
         <CardHeader><CardTitle>Projects ({projects.length})</CardTitle></CardHeader>
-        <CardContent className="space-y-s-4">
+        <CardContent className="space-y-4">
           {projects.length === 0 && (
-            <p className="text-[13px] text-fg-2">No projects yet. Add one below.</p>
+            <p className="text-[13px] text-muted-foreground">No projects yet. Add one below.</p>
           )}
           {projects.map((p, i) => (
-            <div key={i} className="space-y-s-2 rounded-md border border-border-hairline p-s-3">
-              <div className="grid gap-s-2 sm:grid-cols-[1fr_150px_auto]">
+            <div key={i} className="space-y-2 rounded-md border border p-3">
+              <div className="grid gap-2 sm:grid-cols-[1fr_150px_auto]">
                 <Input
                   placeholder="Project name"
                   value={p.name}
@@ -322,12 +322,12 @@ export function ProfileForm({ profile, mode, onSaved, initialMilestones = [] }: 
       {/* Education */}
       <Card>
         <CardHeader><CardTitle>Education ({education.length})</CardTitle></CardHeader>
-        <CardContent className="space-y-s-3">
+        <CardContent className="space-y-3">
           {education.length === 0 && (
-            <p className="text-[13px] text-fg-2">No education entries yet.</p>
+            <p className="text-[13px] text-muted-foreground">No education entries yet.</p>
           )}
           {education.map((e, i) => (
-            <div key={i} className="grid items-end gap-s-2 sm:grid-cols-[1fr_1fr_110px_100px_auto]">
+            <div key={i} className="grid items-end gap-2 sm:grid-cols-[1fr_1fr_110px_100px_auto]">
               <Input
                 placeholder="Degree"
                 value={e.degree}
@@ -391,7 +391,7 @@ export function ProfileForm({ profile, mode, onSaved, initialMilestones = [] }: 
       </Card>
 
       {/* Actions */}
-      <div className="flex flex-wrap items-center justify-end gap-s-3 border-t border-border-hairline pt-s-5">
+      <div className="flex flex-wrap items-center justify-end gap-3 border-t border pt-5">
         {mode === "review" ? (
           <>
             <Button

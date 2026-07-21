@@ -23,18 +23,19 @@ export function DirectoryGrid({ profiles }: { profiles: Profile[] }) {
 
   return (
     <div>
-      <div className="toolbar">
-        <div className="search">
-          <Search className="icon size-4" />
+      <div className="mb-4">
+        <div className="relative flex items-center">
+          <Search className="pointer-events-none absolute left-3 size-4 text-muted-foreground" />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Find anyone — name, skill, location, or status…"
+            className="h-10 w-full rounded-md border border-input bg-background pl-9 pr-9 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           />
           {query && (
             <button
               type="button"
-              className="clear-btn"
+              className="absolute right-3 flex items-center justify-center rounded-sm text-muted-foreground hover:text-foreground"
               onClick={() => setQuery("")}
               aria-label="Clear filter"
             >
@@ -44,22 +45,22 @@ export function DirectoryGrid({ profiles }: { profiles: Profile[] }) {
         </div>
       </div>
 
-      <p className="count-strip">
+      <p className="mb-4 text-xs text-muted-foreground">
         Showing {filtered.length} of {profiles.length} {profiles.length === 1 ? "employee" : "employees"}
       </p>
 
       {filtered.length === 0 ? (
         <Card>
-          <CardContent className="py-s-10 text-center">
-            <p className="font-mono text-[11px] uppercase tracking-eyebrow text-fg-3">No matches</p>
-            <h3 className="mt-s-2">Nobody matches yet. Try fewer constraints?</h3>
-            <p className="mt-s-2 text-[14px] text-fg-2">
-              Filtered by: <span className="serif-italic">&ldquo;{query}&rdquo;</span>
+          <CardContent className="py-10 text-center">
+            <p className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">No matches</p>
+            <h3 className="mt-2">Nobody matches yet. Try fewer constraints?</h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Filtered by: <span className="italic">&ldquo;{query}&rdquo;</span>
             </p>
           </CardContent>
         </Card>
       ) : (
-        <div className="grid">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((p, i) => (
             <ProfileCard
               key={p.id}
