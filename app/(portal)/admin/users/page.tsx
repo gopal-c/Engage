@@ -3,6 +3,17 @@
 import { useState, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Trash2 } from "lucide-react";
 
 interface User {
   id: string;
@@ -21,6 +32,10 @@ export default function AdminUsersPage() {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
   const [message, setMessage] = useState("");
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<User | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetch("/api/users")
@@ -28,10 +43,16 @@ export default function AdminUsersPage() {
         if (res.status === 403) throw new Error("Forbidden");
         return res.json();
       })
-      .then((data) => setUsers(data.users ?? []))
+      .then((data) => {
+        setUsers(data.users ?? []);
+        setCurrentUserId(data.currentUserId ?? null);
+        setCurrentUserRole(data.currentUserRole ?? null);
+      })
       .catch(() => setUsers([]))
       .finally(() => setLoading(false));
   }, []);
+
+  const isAdmin = currentUserRole === "admin";
 
   async function changeRole(userId: string, role: string) {
     setUpdating(userId);
@@ -55,6 +76,29 @@ export default function AdminUsersPage() {
       setMessage(data.error || "Failed to update role");
     }
     setUpdating(null);
+  }
+
+  async function confirmDelete() {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    setMessage("");
+
+    const res = await fetch("/api/users", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: deleteTarget.id }),
+    });
+
+    if (res.ok) {
+      setUsers((prev) => prev.filter((u) => u.id !== deleteTarget.id));
+      setMessage(`Deleted ${deleteTarget.name}`);
+      setTimeout(() => setMessage(""), 3000);
+    } else {
+      const data = await res.json();
+      setMessage(data.error || "Failed to delete user");
+    }
+    setDeleting(false);
+    setDeleteTarget(null);
   }
 
   if (loading) {
@@ -93,6 +137,7 @@ export default function AdminUsersPage() {
                 .join("")
                 .toUpperCase()
                 .slice(0, 2);
+              const isSelf = user.id === currentUserId;
 
               return (
                 <tr key={user.id} className="border-b last:border-0">
@@ -122,21 +167,33 @@ export default function AdminUsersPage() {
                     {new Date(user.created_at).toLocaleDateString()}
                   </td>
                   <td className="px-4 py-3">
-                    <div className="flex justify-end gap-1">
-                      {ROLES.map((role) => (
+                    <div className="flex items-center justify-end gap-1">
+                      {isAdmin &&
+                        ROLES.map((role) => (
+                          <Button
+                            key={role}
+                            size="sm"
+                            variant={user.role === role ? "default" : "outline"}
+                            disabled={
+                              user.role === role || updating === user.id || isSelf
+                            }
+                            onClick={() => changeRole(user.id, role)}
+                            className="capitalize"
+                          >
+                            {role}
+                          </Button>
+                        ))}
+                      {isAdmin && !isSelf && (
                         <Button
-                          key={role}
                           size="sm"
-                          variant={user.role === role ? "default" : "outline"}
-                          disabled={
-                            user.role === role || updating === user.id
-                          }
-                          onClick={() => changeRole(user.id, role)}
-                          className="capitalize"
+                          variant="ghost"
+                          onClick={() => setDeleteTarget(user)}
+                          className="ml-1 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                          title="Delete user"
                         >
-                          {role}
+                          <Trash2 className="size-4" />
                         </Button>
-                      ))}
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -145,6 +202,29 @@ export default function AdminUsersPage() {
           </tbody>
         </table>
       </div>
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete user</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete{" "}
+              <span className="font-medium text-foreground">{deleteTarget?.name}</span> ({deleteTarget?.email})?
+              This will remove their account and clean up all related data. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              disabled={deleting}
+              className="bg-destructive text-white hover:bg-destructive/90"
+            >
+              {deleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -4,7 +4,7 @@ import { sql } from "@/lib/db";
 
 export async function GET() {
   const session = await auth();
-  if (!session?.user?.id || session.user.role !== "admin") {
+  if (!session?.user?.id || !["admin", "hr"].includes(session.user.role ?? "")) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -14,7 +14,11 @@ export async function GET() {
     ORDER BY created_at DESC
   `;
 
-  return NextResponse.json({ users: rows });
+  return NextResponse.json({
+    users: rows,
+    currentUserId: session.user.id,
+    currentUserRole: session.user.role,
+  });
 }
 
 export async function PATCH(request: NextRequest) {
@@ -60,4 +64,36 @@ export async function PATCH(request: NextRequest) {
   }
 
   return NextResponse.json({ user: rows[0] });
+}
+
+export async function DELETE(request: NextRequest) {
+  const session = await auth();
+  if (!session?.user?.id || session.user.role !== "admin") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const body = await request.json();
+  const { userId } = body;
+
+  if (!userId) {
+    return NextResponse.json({ error: "userId is required" }, { status: 400 });
+  }
+
+  if (userId === session.user.id) {
+    return NextResponse.json({ error: "Cannot delete your own account" }, { status: 400 });
+  }
+
+  const existing = await sql`SELECT id FROM auth.users WHERE id = ${userId}`;
+  if (existing.length === 0) {
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
+  }
+
+  await sql`DELETE FROM engage.activity_feed WHERE user_id = ${userId}`;
+  await sql`DELETE FROM engage.notifications WHERE user_id = ${userId}`;
+  await sql`DELETE FROM engage.app_settings WHERE user_id = ${userId}`;
+  await sql`UPDATE skillshub.profiles SET user_id = NULL WHERE user_id = ${userId}`;
+  await sql`UPDATE birthdayhub.employees SET user_id = NULL WHERE user_id = ${userId}`;
+  await sql`DELETE FROM auth.users WHERE id = ${userId}`;
+
+  return NextResponse.json({ ok: true });
 }
