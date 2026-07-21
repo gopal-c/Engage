@@ -362,9 +362,9 @@ AUTH_GOOGLE_SECRET=
 AUTH_SECRET=
 
 # App URLs (for link-out phase)
-IDEAHUB_URL=https://ideahub.vercel.app
-SKILLSHUB_URL=https://skillshub.vercel.app
-BIRTHDAYHUB_URL=https://birthdayhub.vercel.app
+IDEAHUB_URL=https://z-index-9999-idea-hub.vercel.app
+SKILLSHUB_URL=https://z-index-9999-skills-hub.vercel.app
+BIRTHDAYHUB_URL=https://z-index-9999-birthday-hub.vercel.app
 
 # AI (future)
 GROQ_API_KEY=
