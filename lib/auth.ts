@@ -4,8 +4,8 @@ import Credentials from "next-auth/providers/credentials";
 import { sql } from "./db";
 
 const DEV_USERS = [
-  { email: "hr@demo.com", password: "demo123", name: "HR Demo", role: "admin" },
-  { email: "admin@demo.com", password: "demo123", name: "Admin Demo", role: "admin" },
+  { email: "hr@valueaddsofttech.com", password: "demo123", name: "HR Demo", role: "admin" },
+  { email: "admin", password: "demo123", name: "Admin Demo", role: "admin" },
 ];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -20,7 +20,7 @@ if (process.env.ENABLE_DEV_LOGIN === "true") {
   providers.push(
     Credentials({
       credentials: {
-        email: { label: "Email", type: "email" },
+        email: { label: "Email or Username", type: "text" },
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
