@@ -1,13 +1,16 @@
 import { signIn, auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { DevLoginForm } from "./dev-login-form";
 
 export default async function LoginPage() {
   const session = await auth();
   if (session) redirect("/dashboard");
 
+  const devLoginEnabled = process.env.ENABLE_DEV_LOGIN === "true";
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50">
-      <div className="w-full max-w-sm space-y-8 rounded-xl bg-white p-8 shadow-lg">
+      <div className="w-full max-w-sm space-y-6 rounded-xl bg-white p-8 shadow-lg">
         <div className="text-center">
           <h1 className="text-3xl font-bold text-gray-900">Engage</h1>
           <p className="mt-2 text-sm text-gray-600">
@@ -48,6 +51,8 @@ export default async function LoginPage() {
         <p className="text-center text-xs text-gray-500">
           Restricted to @valueaddsofttech.com accounts
         </p>
+
+        {devLoginEnabled && <DevLoginForm />}
       </div>
     </div>
   );
