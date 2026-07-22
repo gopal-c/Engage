@@ -9,7 +9,7 @@ export default async function EmployeeDetailPage({ params }: { params: Promise<{
   const profile = await getProfile(id);
   if (!profile) notFound();
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="mx-auto max-w-4xl py-4">
       <ProfileView profile={profile} canManage />
     </div>
   );

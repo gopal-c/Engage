@@ -24,18 +24,18 @@ export function DirectoryGrid({ profiles }: { profiles: Profile[] }) {
   return (
     <div>
       <div className="mb-4">
-        <div className="relative flex items-center">
-          <Search className="pointer-events-none absolute left-3 size-4 text-muted-foreground" />
+        <div className="glass-surface relative flex items-center rounded-full border border-white/70 px-4 shadow-1">
+          <Search className="pointer-events-none size-4 text-ink-400" />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Find anyone — name, skill, location, or status…"
-            className="h-10 w-full rounded-md border border-input bg-background pl-9 pr-9 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            className="h-10 w-full bg-transparent pl-3 pr-8 text-sm text-ink-800 placeholder:text-ink-400 focus:outline-none"
           />
           {query && (
             <button
               type="button"
-              className="absolute right-3 flex items-center justify-center rounded-sm text-muted-foreground hover:text-foreground"
+              className="absolute right-4 flex items-center justify-center rounded-sm text-ink-400 hover:text-ink-700"
               onClick={() => setQuery("")}
               aria-label="Clear filter"
             >
@@ -45,7 +45,7 @@ export function DirectoryGrid({ profiles }: { profiles: Profile[] }) {
         </div>
       </div>
 
-      <p className="mb-4 text-xs text-muted-foreground">
+      <p className="eyebrow mb-4">
         Showing {filtered.length} of {profiles.length} {profiles.length === 1 ? "employee" : "employees"}
       </p>
 

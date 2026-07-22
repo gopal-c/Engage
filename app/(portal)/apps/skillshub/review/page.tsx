@@ -6,16 +6,21 @@ export default async function ReviewPage() {
   await requireSkillsHubRole("hr");
   const profiles = await getPendingProfiles();
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
+    <div className="mx-auto max-w-6xl space-y-6 py-8">
       <div>
-        <h1 className="text-2xl font-bold">Pending Review</h1>
-        <p className="text-sm text-muted-foreground">
-          {profiles.length} {profiles.length === 1 ? "profile" : "profiles"} awaiting approval
+        <p className="eyebrow-coral mb-3">Review Queue</p>
+        <h1 className="display-xl">
+          {profiles.length} pending {profiles.length === 1 ? "profile" : "profiles"}
+        </h1>
+        <p className="mt-2 text-ink-500">
+          Newly uploaded resumes land here. Approve, reject, or edit before they go
+          live in the directory.
         </p>
       </div>
       {profiles.length === 0 ? (
-        <div className="rounded-lg border bg-card p-10 text-center">
-          <p className="text-muted-foreground">No profiles pending review.</p>
+        <div className="glass-surface rounded-2xl border border-white/70 px-8 py-14 text-center shadow-2">
+          <p className="eyebrow mb-2">All clear</p>
+          <h3>No profiles pending review.</h3>
         </div>
       ) : (
         <DirectoryGrid profiles={profiles} />

@@ -6,11 +6,14 @@ export default async function EmployeesPage() {
   await requireSkillsHubRole("hr");
   const profiles = await getApprovedProfiles();
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
+    <div className="mx-auto max-w-6xl space-y-6 py-8">
       <div>
-        <h1 className="text-2xl font-bold">Employee Directory</h1>
-        <p className="text-sm text-muted-foreground">
-          {profiles.length} approved {profiles.length === 1 ? "profile" : "profiles"}
+        <p className="eyebrow mb-3">Directory</p>
+        <h1 className="display-xl">
+          {profiles.length} {profiles.length === 1 ? "person" : "people"}
+        </h1>
+        <p className="mt-2 text-ink-500">
+          Approved profiles, ready to be searched. Click any card to see the full picture.
         </p>
       </div>
       <DirectoryGrid profiles={profiles} />

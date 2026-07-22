@@ -17,6 +17,13 @@ const CATEGORY_LABEL: Record<string, string> = {
   soft:      "Soft skills",
 };
 
+const PROFICIENCY_STYLE: Record<string, string> = {
+  expert:       "bg-teal/30 text-teal-deep border-teal/25",
+  advanced:     "bg-indigo-soft text-indigo-deep border-indigo/20",
+  intermediate: "bg-amber-soft text-amber-deep border-amber/25",
+  beginner:     "bg-coral-soft text-coral-deep border-coral/20",
+};
+
 function groupByCategory(skills: Skill[]): Array<[string, Skill[]]> {
   const buckets = new Map<string, Skill[]>();
   for (const s of skills) {
@@ -49,34 +56,41 @@ export function ProfileView({
   const isPending = profile.status === "pending";
 
   return (
-    <div className="mx-auto max-w-3xl space-y-10 py-8">
+    <div className="mx-auto max-w-3xl space-y-12 py-8">
+      {/* Back link */}
+      {canManage && (
+        <Link href="/apps/skillshub/employees" className="text-sm text-ink-500 hover:text-ink-700">
+          ← Back to directory
+        </Link>
+      )}
+
       {/* HERO */}
       <section className="flex flex-col items-center gap-5 text-center sm:flex-row sm:text-left">
         <div className="relative shrink-0" style={heroStyle}>
           {editableAvatar ? (
-            <EditableAvatar profile={profile} className="size-32 rounded-full object-cover ring-4 ring-[var(--halo)]" />
+            <EditableAvatar profile={profile} className="size-28 rounded-full object-cover ring-4 ring-[var(--halo)]" />
           ) : profile.avatarUrl ? (
             /* eslint-disable-next-line @next/next/no-img-element */
-            <img src={profile.avatarUrl} alt={profile.name} className="size-32 rounded-full object-cover ring-4 ring-[var(--halo)]" />
+            <img src={profile.avatarUrl} alt={profile.name} className="size-28 rounded-full object-cover ring-4 ring-[var(--halo)]" />
           ) : (
             <div
-              className="flex size-32 items-center justify-center rounded-full text-3xl font-bold text-white ring-4 ring-[var(--halo)]"
+              className="flex size-28 items-center justify-center rounded-full text-3xl font-bold text-white ring-4 ring-[var(--halo)]"
               style={{ background: `linear-gradient(135deg, ${palette.grad[0]}, ${palette.grad[1]})` }}
             >
               {initials(profile.name)}
             </div>
           )}
           <span
-            className={`absolute bottom-1 right-1 size-4 rounded-full border-2 border-background ${
-              isPending ? "bg-orange-400" : "bg-green-500"
+            className={`absolute bottom-1 right-1 size-4 rounded-full shadow-[0_0_0_3px_rgba(255,255,255,0.85)] ${
+              isPending ? "bg-coral-deep" : "bg-teal"
             }`}
           />
         </div>
 
         <div className="flex-1 space-y-1">
-          <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{profile.seniority}</div>
-          <h1 className="text-2xl font-bold tracking-tight">{profile.name}</h1>
-          <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm text-muted-foreground sm:justify-start">
+          <p className="eyebrow-indigo">{profile.seniority}</p>
+          <h1 className="display-xl">{profile.name}</h1>
+          <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm text-ink-500 sm:justify-start">
             <span>{profile.email}</span>
             <span className="hidden sm:inline">·</span>
             <span>{profile.city}</span>
@@ -94,12 +108,13 @@ export function ProfileView({
                 <span>DOB {formatDate(profile.dateOfBirth)}</span>
               </>
             )}
-            {isPending && (
-              <span className="ml-2 inline-flex items-center rounded-full bg-coral-soft px-2.5 py-0.5 text-xs font-medium text-coral-deep">
-                Pending review
-              </span>
-            )}
           </div>
+          {isPending && (
+            <span className="mt-1 inline-flex items-center gap-1.5 rounded-full border border-coral/25 bg-coral-soft px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide text-coral-deep">
+              <span className="size-1.5 rounded-full bg-coral-deep" />
+              Pending review
+            </span>
+          )}
         </div>
 
         {canManage && (
@@ -116,37 +131,35 @@ export function ProfileView({
       </section>
 
       {/* SKILLS */}
-      <section className="space-y-2">
-        <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Skills</div>
-        <div className="text-sm text-muted-foreground">{profile.skills.length} {profile.skills.length === 1 ? "skill" : "skills"}</div>
+      <section className="space-y-4">
+        <div>
+          <p className="eyebrow mb-1">Skills</p>
+          <h2 className="display-xl text-3xl">
+            {profile.skills.length} {profile.skills.length === 1 ? "skill" : "skills"}
+          </h2>
+        </div>
 
         {profile.skills.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No skills on record.</p>
+          <p className="text-sm text-ink-500">No skills on record.</p>
         ) : (
           grouped.map(([cat, items]) => (
-            <div key={cat} className="mt-6">
-              <div className="mb-2 text-sm font-medium text-foreground">{CATEGORY_LABEL[cat] ?? cat}</div>
+            <div key={cat} className="mt-4">
+              <p className="eyebrow mb-3">{CATEGORY_LABEL[cat] ?? cat}</p>
               <div className="flex flex-wrap gap-2">
                 {items.map((s) => (
                   <span
                     key={s.name}
-                    className="inline-flex items-center gap-1.5 rounded-full border bg-secondary/50 px-3 py-1 text-sm"
+                    className="inline-flex items-center gap-2 rounded-full border border-ink-200/60 bg-ink-0/60 px-3 py-1.5 text-sm backdrop-blur-sm"
                   >
-                    {s.name}
+                    <span className="text-ink-800">{s.name}</span>
                     <span
-                      className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold uppercase leading-none ${
-                        s.proficiency === "expert"
-                          ? "bg-teal-soft text-teal-deep"
-                          : s.proficiency === "advanced"
-                            ? "bg-indigo-soft text-indigo-deep"
-                            : s.proficiency === "intermediate"
-                              ? "bg-amber-soft text-amber-deep"
-                              : "bg-muted text-muted-foreground"
+                      className={`rounded-full border px-1.5 py-0.5 text-[10px] font-bold uppercase leading-none ${
+                        PROFICIENCY_STYLE[s.proficiency] ?? PROFICIENCY_STYLE.beginner
                       }`}
                     >
                       {s.proficiency}
                     </span>
-                    <span className="text-xs text-muted-foreground">{s.yearsExperience} yr</span>
+                    <span className="text-xs text-ink-400">{s.yearsExperience} yr</span>
                   </span>
                 ))}
               </div>
@@ -156,25 +169,29 @@ export function ProfileView({
       </section>
 
       {/* PROJECTS */}
-      <section className="space-y-2">
-        <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Projects</div>
-        <div className="text-sm text-muted-foreground">{profile.projects.length} {profile.projects.length === 1 ? "project" : "projects"}</div>
+      <section className="space-y-4">
+        <div>
+          <p className="eyebrow mb-1">Projects</p>
+          <h2 className="display-xl text-3xl">
+            {profile.projects.length} {profile.projects.length === 1 ? "project" : "projects"}
+          </h2>
+        </div>
 
         {profile.projects.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No projects on record.</p>
+          <p className="text-sm text-ink-500">No projects on record.</p>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-4">
             {profile.projects.map((p, i) => (
-              <article key={i} className="rounded-lg border bg-card p-4 shadow-sm">
+              <article key={i} className="glass-surface rounded-2xl border border-white/70 p-5 shadow-2">
                 <div className="flex items-start justify-between gap-2">
-                  <h3 className="font-semibold leading-snug">{p.name}</h3>
-                  <span className="shrink-0 text-xs text-muted-foreground">{p.duration}</span>
+                  <h3 className="font-semibold text-ink-800">{p.name}</h3>
+                  <span className="shrink-0 text-xs text-ink-400">{p.duration}</span>
                 </div>
-                <p className="mt-1 text-sm text-muted-foreground">{p.description}</p>
+                <p className="mt-1.5 text-sm text-ink-500">{p.description}</p>
                 {p.skillsUsed.length > 0 && (
-                  <div className="mt-3 flex flex-wrap gap-1">
+                  <div className="mt-3 flex flex-wrap gap-1.5">
                     {p.skillsUsed.map((s) => (
-                      <span key={s} className="rounded-full bg-secondary px-2 py-0.5 text-xs text-muted-foreground">
+                      <span key={s} className="rounded-full border border-ink-200/80 bg-ink-0/60 px-2.5 py-0.5 font-mono text-[11px] text-ink-700">
                         {s}
                       </span>
                     ))}
@@ -187,21 +204,25 @@ export function ProfileView({
       </section>
 
       {/* EDUCATION */}
-      <section className="space-y-2">
-        <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Education</div>
-        <div className="text-sm text-muted-foreground">{profile.education.length} {profile.education.length === 1 ? "entry" : "entries"}</div>
+      <section className="space-y-4">
+        <div>
+          <p className="eyebrow mb-1">Education</p>
+          <h2 className="display-xl text-3xl">
+            {profile.education.length} {profile.education.length === 1 ? "entry" : "entries"}
+          </h2>
+        </div>
 
         {profile.education.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No education on record.</p>
+          <p className="text-sm text-ink-500">No education on record.</p>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-4">
             {profile.education.map((e, i) => (
-              <article key={i} className="flex items-start justify-between rounded-lg border bg-card p-4 shadow-sm">
+              <article key={i} className="flex items-start justify-between rounded-2xl bg-indigo-soft/50 p-5">
                 <div>
-                  <div className="font-semibold">{e.degree}</div>
-                  <div className="text-sm text-muted-foreground">{e.institution}</div>
+                  <p className="font-semibold text-ink-800">{e.degree}</p>
+                  <p className="text-sm text-ink-500">{e.institution}</p>
                 </div>
-                <span className="shrink-0 text-xs text-muted-foreground">
+                <span className="shrink-0 rounded-full bg-ink-0/70 px-2.5 py-0.5 text-xs font-medium text-ink-600">
                   {e.month ? `${new Date(2000, e.month - 1).toLocaleString("en-US", { month: "short" })} ${e.year}` : e.year}
                 </span>
               </article>
