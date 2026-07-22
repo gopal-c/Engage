@@ -10,7 +10,7 @@ export default async function LoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center">
-      <div className="glass-surface w-full max-w-sm space-y-6 rounded-2xl p-8 shadow-3">
+      <div className="glass-surface w-full max-w-sm space-y-6 rounded-2xl border border-white/70 p-8 shadow-3">
         <div className="text-center">
           <h1 className="display-xl text-ink-800">Engage</h1>
           <p className="mt-2 text-sm text-ink-500">

@@ -95,8 +95,8 @@ export function Sidebar({ role }: { role?: string }) {
   const pathname = usePathname();
 
   return (
-    <aside className="glass-surface hidden md:flex md:w-60 md:flex-col md:border-r md:border-ink-200/60">
-      <div className="flex h-14 items-center border-b border-ink-200/60 px-5">
+    <aside className="glass-surface hidden md:flex md:w-60 md:flex-col" style={{ borderRight: "var(--t-bar-border)" }}>
+      <div className="flex h-14 items-center px-5" style={{ borderBottom: "var(--t-bar-border)" }}>
         <Link href="/dashboard" className="flex items-center gap-2">
           <span className="text-xl font-bold tracking-tight text-ink-800">Engage</span>
         </Link>
@@ -121,7 +121,7 @@ export function MobileSidebar({ role }: { role?: string }) {
         </Button>
       </SheetTrigger>
       <SheetContent side="left" className="w-60 p-0">
-        <div className="flex h-14 items-center border-b border-ink-200/60 px-5">
+        <div className="flex h-14 items-center px-5" style={{ borderBottom: "var(--t-bar-border)" }}>
           <span className="text-xl font-bold tracking-tight text-ink-800">Engage</span>
         </div>
         <NavLinks role={role} pathname={pathname} onNavigate={() => setOpen(false)} />
