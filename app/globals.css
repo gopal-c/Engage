@@ -186,6 +186,85 @@
   }
 }
 
+/* ─────────── SkillsHub ID-badge cards ─────────── */
+.id-card {
+  position: relative;
+  border-radius: 22px;
+  cursor: pointer;
+  padding: 22px 20px 18px;
+  background: linear-gradient(160deg,
+                rgba(255, 255, 255, 0.55) 0%,
+                rgba(255, 255, 255, 0.32) 50%,
+                rgba(255, 255, 255, 0.45) 100%);
+  backdrop-filter: blur(40px) saturate(200%);
+  -webkit-backdrop-filter: blur(40px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.95) inset,
+    0 0 0 1px rgba(255, 255, 255, 0.18) inset,
+    0 24px 50px -20px rgba(21, 22, 52, 0.22),
+    0 4px 14px rgba(21, 22, 52, 0.06);
+  transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 200ms cubic-bezier(0.22, 1, 0.36, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  overflow: hidden;
+  color: var(--ink-800);
+  text-decoration: none;
+}
+
+.id-card:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.95) inset,
+    0 0 0 1px rgba(255, 255, 255, 0.18) inset,
+    0 30px 56px -16px rgba(21, 22, 52, 0.28),
+    0 6px 18px rgba(91, 71, 224, 0.14);
+}
+
+/* Shine overlay */
+.id-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(135deg,
+                rgba(255,255,255,0.65) 0%,
+                rgba(255,255,255,0.10) 28%,
+                transparent 50%,
+                rgba(255,255,255,0.10) 75%,
+                rgba(255,255,255,0.35) 100%);
+  pointer-events: none;
+  mix-blend-mode: overlay;
+}
+
+/* Punch-hole notch */
+.id-card::after {
+  content: "";
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 38px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(21, 22, 52, 0.10);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.6);
+  z-index: 1;
+}
+
+/* Avatar radial glow */
+.id-avatar-glow {
+  position: absolute;
+  inset: -16px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--halo, rgba(139,123,232,0.35)) 0%, transparent 65%);
+  filter: blur(8px);
+  z-index: 0;
+}
+
 /* BirthdayHub custom styles */
 .dept-badge {
   display: inline-block;
