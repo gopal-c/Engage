@@ -24,7 +24,7 @@ export default async function HomePage() {
         <p className="mt-1 text-sm text-muted-foreground">
           Your journey with us — here&apos;s your story in milestones and moments.
         </p>
-        <div className="mt-6 rounded-lg border-l-4 border-amber-500 bg-amber-50 p-4 shadow-sm dark:bg-amber-950/30">
+        <div className="mt-6 rounded-lg border-l-4 border-amber bg-amber-soft p-4 shadow-1">
           <p className="text-sm font-medium text-foreground">Your profile hasn&apos;t been created yet.</p>
           <p className="mt-1 text-xs text-muted-foreground">
             Please contact HR or wait for your onboarding.
@@ -53,7 +53,7 @@ export default async function HomePage() {
       {/* Pending / not-approved state */}
       {!approved && (
         <>
-          <div className="mt-6 flex items-start gap-3 rounded-lg border-l-4 border-amber-500 bg-amber-50 p-4 shadow-sm dark:bg-amber-950/30">
+          <div className="mt-6 flex items-start gap-3 rounded-lg border-l-4 border-amber bg-amber-soft p-4 shadow-1">
             <Hourglass className="mt-0.5 size-5 flex-shrink-0 text-amber-600" />
             <div>
               <p className="text-sm font-medium text-foreground">
@@ -139,7 +139,7 @@ export default async function HomePage() {
           {/* Stat cards */}
           <div className="mt-8 grid gap-4 sm:grid-cols-3">
             <div className="flex items-start gap-3 rounded-xl border bg-card p-4 shadow-sm">
-              <div className="flex size-10 items-center justify-center rounded-lg bg-teal-100 text-lg dark:bg-teal-900/40">
+              <div className="flex size-10 items-center justify-center rounded-lg bg-teal-soft text-lg">
                 ⏱️
               </div>
               <div>
@@ -156,7 +156,7 @@ export default async function HomePage() {
               </div>
             </div>
             <div className="flex items-start gap-3 rounded-xl border bg-card p-4 shadow-sm">
-              <div className="flex size-10 items-center justify-center rounded-lg bg-orange-100 text-lg dark:bg-orange-900/40">
+              <div className="flex size-10 items-center justify-center rounded-lg bg-coral-soft text-lg">
                 ↗️
               </div>
               <div>
@@ -167,7 +167,7 @@ export default async function HomePage() {
               </div>
             </div>
             <div className="flex items-start gap-3 rounded-xl border bg-card p-4 shadow-sm">
-              <div className="flex size-10 items-center justify-center rounded-lg bg-amber-100 text-lg dark:bg-amber-900/40">
+              <div className="flex size-10 items-center justify-center rounded-lg bg-amber-soft text-lg">
                 🏅
               </div>
               <div>

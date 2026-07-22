@@ -35,13 +35,13 @@ export function DevLoginForm() {
   }
 
   return (
-    <div className="relative rounded-lg border-2 border-dashed border-amber-300 bg-amber-50 p-4">
-      <span className="absolute -top-2.5 left-3 bg-amber-50 px-1.5 text-[10px] font-semibold uppercase tracking-wider text-amber-600">
+    <div className="relative rounded-lg border-2 border-dashed border-amber-deep/40 bg-amber-soft p-4">
+      <span className="absolute -top-2.5 left-3 bg-amber-soft px-1.5 text-[10px] font-semibold uppercase tracking-wider text-amber-deep">
         Development Only
       </span>
       <form onSubmit={handleSubmit} className="space-y-3">
         <div>
-          <label htmlFor="dev-email" className="block text-xs font-medium text-gray-700">
+          <label htmlFor="dev-email" className="block text-xs font-medium text-foreground">
             Email or Username
           </label>
           <input
@@ -49,11 +49,11 @@ export function DevLoginForm() {
             type="text"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+            className="mt-1 block w-full rounded-md border bg-card px-3 py-2 text-sm shadow-1 focus:border-primary focus:outline-none focus:ring-1 focus:ring-ring"
           />
         </div>
         <div>
-          <label htmlFor="dev-password" className="block text-xs font-medium text-gray-700">
+          <label htmlFor="dev-password" className="block text-xs font-medium text-foreground">
             Password
           </label>
           <input
@@ -61,14 +61,14 @@ export function DevLoginForm() {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+            className="mt-1 block w-full rounded-md border bg-card px-3 py-2 text-sm shadow-1 focus:border-primary focus:outline-none focus:ring-1 focus:ring-ring"
           />
         </div>
-        {error && <p className="text-xs text-red-600">{error}</p>}
+        {error && <p className="text-xs text-destructive">{error}</p>}
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-md bg-amber-500 px-4 py-2 text-sm font-medium text-white hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 disabled:opacity-50"
+          className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-indigo-deep focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50"
         >
           {loading ? "Signing in..." : "Dev Login"}
         </button>

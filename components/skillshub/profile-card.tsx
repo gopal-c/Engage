@@ -76,7 +76,7 @@ export function ProfileCard({
       {/* Bottom row */}
       <div className="mt-auto flex items-center justify-between text-xs text-muted-foreground">
         {isPending ? (
-          <span className="rounded-full bg-orange-100 px-2 py-0.5 text-[11px] font-medium text-orange-700 dark:bg-orange-900/40 dark:text-orange-300">
+          <span className="rounded-full bg-coral-soft px-2 py-0.5 text-[11px] font-medium text-coral-deep">
             Approval Pending
           </span>
         ) : (

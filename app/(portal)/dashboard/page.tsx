@@ -67,7 +67,7 @@ export default async function DashboardPage() {
       title: "IdeaHub",
       description: "Share and vote on innovative ideas",
       icon: "💡",
-      colorClasses: "bg-amber-50 border-amber-200 dark:bg-amber-950/30 dark:border-amber-800",
+      colorClasses: "bg-amber-soft border-amber-deep/20",
       href: process.env.IDEAHUB_URL || "/apps/ideahub",
       external: !!process.env.IDEAHUB_URL,
     },
@@ -75,7 +75,7 @@ export default async function DashboardPage() {
       title: "SkillsHub",
       description: "Track and develop your professional skills",
       icon: "🎯",
-      colorClasses: "bg-blue-50 border-blue-200 dark:bg-blue-950/30 dark:border-blue-800",
+      colorClasses: "bg-indigo-soft border-indigo/20",
       href: process.env.SKILLSHUB_URL || "/apps/skillshub",
       external: !!process.env.SKILLSHUB_URL,
     },
@@ -83,7 +83,7 @@ export default async function DashboardPage() {
       title: "BirthdayHub",
       description: "Celebrate team birthdays and milestones",
       icon: "🎂",
-      colorClasses: "bg-pink-50 border-pink-200 dark:bg-pink-950/30 dark:border-pink-800",
+      colorClasses: "bg-coral-soft border-coral/20",
       href: "/apps/birthdayhub",
       stat: birthdayStats
         ? { label: "birthdays this month", value: birthdayStats.thisMonthCount }

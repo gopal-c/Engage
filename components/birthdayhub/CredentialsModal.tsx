@@ -129,13 +129,13 @@ export default function CredentialsModal({ ccList, onConfirm, onCancel }: Props)
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-lg rounded-2xl border border-gray-100 bg-white shadow-xl">
+      <div className="w-full max-w-lg rounded-2xl border bg-card shadow-xl">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
-          <h2 className="text-lg font-semibold text-gray-800">Send Configuration</h2>
+        <div className="flex items-center justify-between border-b px-6 py-4">
+          <h2 className="text-lg font-semibold text-foreground">Send Configuration</h2>
           <button
             onClick={onCancel}
-            className="text-gray-400 hover:text-gray-600 transition"
+            className="text-muted-foreground hover:text-muted-foreground transition"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -146,14 +146,14 @@ export default function CredentialsModal({ ccList, onConfirm, onCancel }: Props)
         <div className="max-h-[70vh] overflow-y-auto px-6 py-5 space-y-5">
           {/* From Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+            <label className="block text-sm font-medium text-foreground mb-1.5">
               From Name
             </label>
             <input
               value={fromName}
               onChange={(e) => setFromName(e.target.value)}
               placeholder="The HR Team"
-              className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-[#2D1B69] focus:ring-1 focus:ring-[#2D1B69] outline-none transition"
+              className="w-full rounded-lg border bg-secondary px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-ring outline-none transition"
             />
           </div>
 
@@ -161,7 +161,7 @@ export default function CredentialsModal({ ccList, onConfirm, onCancel }: Props)
           {ccList.length > 0 && (
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-sm font-medium text-gray-700">CC Recipients</label>
+                <label className="text-sm font-medium text-foreground">CC Recipients</label>
                 <div className="flex gap-2">
                   <button
                     type="button"
@@ -174,7 +174,7 @@ export default function CredentialsModal({ ccList, onConfirm, onCancel }: Props)
                   <button
                     type="button"
                     onClick={removeAllCc}
-                    className="text-xs font-medium text-gray-400 hover:text-gray-600"
+                    className="text-xs font-medium text-muted-foreground hover:text-muted-foreground"
                   >
                     Remove all
                   </button>
@@ -191,7 +191,7 @@ export default function CredentialsModal({ ccList, onConfirm, onCancel }: Props)
                       className={`rounded-full px-3 py-1 text-xs font-medium transition ${
                         active
                           ? "text-white"
-                          : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                          : "bg-secondary text-muted-foreground hover:bg-muted"
                       }`}
                       style={active ? { backgroundColor: "#2D1B69" } : {}}
                     >
@@ -208,10 +208,10 @@ export default function CredentialsModal({ ccList, onConfirm, onCancel }: Props)
 
           {/* CC Behavior */}
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-1.5 block">
+            <label className="text-sm font-medium text-foreground mb-1.5 block">
               CC Behavior
             </label>
-            <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
+            <div className="inline-flex rounded-lg border overflow-hidden">
               {(["cc", "bcc", "none"] as CcBehavior[]).map((b) => (
                 <button
                   key={b}
@@ -220,7 +220,7 @@ export default function CredentialsModal({ ccList, onConfirm, onCancel }: Props)
                   className={`px-4 py-1.5 text-xs font-semibold uppercase tracking-wide transition ${
                     ccBehavior === b
                       ? "text-white"
-                      : "bg-white text-gray-500 hover:bg-gray-50"
+                      : "bg-card text-muted-foreground hover:bg-secondary"
                   }`}
                   style={ccBehavior === b ? { backgroundColor: "#2D1B69" } : {}}
                 >
@@ -237,17 +237,17 @@ export default function CredentialsModal({ ccList, onConfirm, onCancel }: Props)
                 type="button"
                 onClick={() => setScheduleEnabled((v) => !v)}
                 className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-                  scheduleEnabled ? "" : "bg-gray-200"
+                  scheduleEnabled ? "" : "bg-muted"
                 }`}
                 style={scheduleEnabled ? { backgroundColor: "#2D1B69" } : {}}
               >
                 <span
-                  className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform shadow-sm ${
+                  className={`inline-block h-3.5 w-3.5 transform rounded-full bg-card transition-transform shadow-sm ${
                     scheduleEnabled ? "translate-x-4" : "translate-x-0.5"
                   }`}
                 />
               </button>
-              <span className="text-sm font-medium text-gray-700">Schedule Send</span>
+              <span className="text-sm font-medium text-foreground">Schedule Send</span>
             </div>
             {scheduleEnabled && (
               <div className="flex gap-2 mt-1">
@@ -255,22 +255,22 @@ export default function CredentialsModal({ ccList, onConfirm, onCancel }: Props)
                   type="date"
                   value={scheduleDate}
                   onChange={(e) => setScheduleDate(e.target.value)}
-                  className="flex-1 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-[#2D1B69] focus:ring-1 focus:ring-[#2D1B69] outline-none"
+                  className="flex-1 rounded-lg border bg-secondary px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-ring outline-none"
                 />
                 <input
                   type="time"
                   value={scheduleTime}
                   onChange={(e) => setScheduleTime(e.target.value)}
-                  className="w-28 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-[#2D1B69] focus:ring-1 focus:ring-[#2D1B69] outline-none"
+                  className="w-28 rounded-lg border bg-secondary px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-ring outline-none"
                 />
               </div>
             )}
           </div>
 
           {/* Gmail credentials */}
-          <div className="space-y-3 pt-2 border-t border-gray-100">
+          <div className="space-y-3 pt-2 border-t">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label className="block text-sm font-medium text-foreground mb-1.5">
                 Gmail Address
               </label>
               <input
@@ -278,11 +278,11 @@ export default function CredentialsModal({ ccList, onConfirm, onCancel }: Props)
                 value={gmailUser}
                 onChange={(e) => setGmailUser(e.target.value)}
                 placeholder="you@gmail.com"
-                className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-[#2D1B69] focus:ring-1 focus:ring-[#2D1B69] outline-none transition"
+                className="w-full rounded-lg border bg-secondary px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-ring outline-none transition"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label className="block text-sm font-medium text-foreground mb-1.5">
                 App Password
               </label>
               <div className="relative">
@@ -291,12 +291,12 @@ export default function CredentialsModal({ ccList, onConfirm, onCancel }: Props)
                   value={gmailAppPassword}
                   onChange={(e) => setGmailAppPassword(e.target.value)}
                   placeholder="xxxx xxxx xxxx xxxx"
-                  className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 pr-10 text-sm focus:border-[#2D1B69] focus:ring-1 focus:ring-[#2D1B69] outline-none transition"
+                  className="w-full rounded-lg border bg-secondary px-3 py-2 pr-10 text-sm focus:border-primary focus:ring-1 focus:ring-ring outline-none transition"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-muted-foreground"
                 >
                   {showPassword ? (
                     <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -317,10 +317,10 @@ export default function CredentialsModal({ ccList, onConfirm, onCancel }: Props)
                 type="checkbox"
                 checked={remember}
                 onChange={(e) => setRemember(e.target.checked)}
-                className="h-4 w-4 rounded border-gray-300"
+                className="h-4 w-4 rounded"
                 style={{ accentColor: "#2D1B69" }}
               />
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-muted-foreground">
                 Remember for this session (sessionStorage)
               </span>
             </label>
@@ -328,10 +328,10 @@ export default function CredentialsModal({ ccList, onConfirm, onCancel }: Props)
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-2 border-t border-gray-100 px-6 py-4">
+        <div className="flex items-center justify-end gap-2 border-t px-6 py-4">
           <button
             onClick={onCancel}
-            className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 transition"
+            className="rounded-lg border px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary transition"
           >
             Cancel
           </button>

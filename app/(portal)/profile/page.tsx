@@ -156,7 +156,7 @@ export default function ProfilePage() {
         </div>
 
         {message && (
-          <p className="mt-4 text-sm text-green-600 dark:text-green-400">
+          <p className="mt-4 text-sm text-teal-deep">
             {message}
           </p>
         )}

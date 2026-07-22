@@ -113,13 +113,13 @@ export default function ImportModal({ onClose, onImported }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-lg rounded-2xl border border-gray-100 bg-white shadow-xl">
+      <div className="w-full max-w-lg rounded-2xl border bg-card shadow-xl">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
-          <h2 className="text-lg font-semibold text-gray-800">Import Employees</h2>
+        <div className="flex items-center justify-between border-b px-6 py-4">
+          <h2 className="text-lg font-semibold text-foreground">Import Employees</h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition"
+            className="text-muted-foreground hover:text-muted-foreground transition"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -164,7 +164,7 @@ export default function ImportModal({ onClose, onImported }: Props) {
                 </button>
                 <button
                   onClick={handleTryAgain}
-                  className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 transition"
+                  className="rounded-lg border px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary transition"
                 >
                   Import More
                 </button>
@@ -173,14 +173,14 @@ export default function ImportModal({ onClose, onImported }: Props) {
           ) : (
             <>
               {/* Mode tabs */}
-              <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
+              <div className="inline-flex rounded-lg border overflow-hidden">
                 <button
                   type="button"
                   onClick={() => setMode("upload")}
                   className={`px-4 py-2 text-sm font-medium transition ${
                     mode === "upload"
                       ? "text-white"
-                      : "bg-white text-gray-500 hover:bg-gray-50"
+                      : "bg-card text-muted-foreground hover:bg-secondary"
                   }`}
                   style={mode === "upload" ? { backgroundColor: "#2D1B69" } : {}}
                 >
@@ -192,7 +192,7 @@ export default function ImportModal({ onClose, onImported }: Props) {
                   className={`px-4 py-2 text-sm font-medium transition ${
                     mode === "paste"
                       ? "text-white"
-                      : "bg-white text-gray-500 hover:bg-gray-50"
+                      : "bg-card text-muted-foreground hover:bg-secondary"
                   }`}
                   style={mode === "paste" ? { backgroundColor: "#2D1B69" } : {}}
                 >
@@ -213,17 +213,17 @@ export default function ImportModal({ onClose, onImported }: Props) {
                   <button
                     type="button"
                     onClick={() => fileRef.current?.click()}
-                    className="w-full rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 py-10 text-center hover:border-gray-300 transition"
+                    className="w-full rounded-xl border-2 border-dashed bg-secondary py-10 text-center hover:border-muted-foreground transition"
                   >
                     {file ? (
                       <div>
-                        <p className="text-sm font-medium text-gray-700">{file.name}</p>
-                        <p className="text-xs text-gray-400 mt-1">Click to change file</p>
+                        <p className="text-sm font-medium text-foreground">{file.name}</p>
+                        <p className="text-xs text-muted-foreground mt-1">Click to change file</p>
                       </div>
                     ) : (
                       <div>
                         <svg
-                          className="mx-auto h-8 w-8 text-gray-300"
+                          className="mx-auto h-8 w-8 text-muted-foreground"
                           fill="none"
                           stroke="currentColor"
                           strokeWidth={1.5}
@@ -235,7 +235,7 @@ export default function ImportModal({ onClose, onImported }: Props) {
                             d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"
                           />
                         </svg>
-                        <p className="mt-2 text-sm text-gray-500">
+                        <p className="mt-2 text-sm text-muted-foreground">
                           Click to select a CSV file
                         </p>
                       </div>
@@ -251,13 +251,13 @@ export default function ImportModal({ onClose, onImported }: Props) {
                   onChange={(e) => setCsvText(e.target.value)}
                   rows={8}
                   placeholder={`name,email,department,birthday,notes\nJohn Doe,john@company.com,Engineering,03-15,Loves cake`}
-                  className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm font-mono focus:border-[#2D1B69] focus:ring-1 focus:ring-[#2D1B69] outline-none transition resize-y"
+                  className="w-full rounded-lg border bg-secondary px-3 py-2.5 text-sm font-mono focus:border-primary focus:ring-1 focus:ring-ring outline-none transition resize-y"
                 />
               )}
 
               {/* Accepted formats */}
-              <div className="rounded-lg border border-gray-100 bg-gray-50 p-3">
-                <p className="text-xs font-medium text-gray-500 mb-1">
+              <div className="rounded-lg border bg-secondary p-3">
+                <p className="text-xs font-medium text-muted-foreground mb-1">
                   Accepted birthday formats:
                 </p>
                 <div className="flex flex-wrap gap-1.5">
@@ -265,7 +265,7 @@ export default function ImportModal({ onClose, onImported }: Props) {
                     (fmt) => (
                       <span
                         key={fmt}
-                        className="rounded bg-white border border-gray-200 px-2 py-0.5 text-xs font-mono text-gray-500"
+                        className="rounded bg-card border px-2 py-0.5 text-xs font-mono text-muted-foreground"
                       >
                         {fmt}
                       </span>
@@ -291,7 +291,7 @@ export default function ImportModal({ onClose, onImported }: Props) {
               <div className="flex justify-end gap-2 pt-1">
                 <button
                   onClick={onClose}
-                  className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 transition"
+                  className="rounded-lg border px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary transition"
                 >
                   Cancel
                 </button>

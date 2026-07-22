@@ -115,7 +115,7 @@ export default function AdminUsersPage() {
       </div>
 
       {message && (
-        <p className="text-sm text-green-600 dark:text-green-400">{message}</p>
+        <p className="text-sm text-teal-deep">{message}</p>
       )}
 
       <div className="overflow-x-auto rounded-lg border">

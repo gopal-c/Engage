@@ -113,7 +113,7 @@ export function NotificationBell() {
             >
               <div className="flex w-full items-center gap-2">
                 {!n.read && (
-                  <span className="h-2 w-2 shrink-0 rounded-full bg-blue-500" />
+                  <span className="h-2 w-2 shrink-0 rounded-full bg-primary" />
                 )}
                 <span className={`text-sm ${n.read ? "text-muted-foreground" : "font-medium"}`}>
                   {n.title}

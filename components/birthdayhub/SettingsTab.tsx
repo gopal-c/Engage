@@ -35,12 +35,12 @@ function Toggle({
       type="button"
       onClick={() => onChange(!checked)}
       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-        checked ? "" : "bg-gray-200"
+        checked ? "" : "bg-muted"
       }`}
       style={checked ? { backgroundColor: "#2D1B69" } : {}}
     >
       <span
-        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm ${
+        className={`inline-block h-4 w-4 transform rounded-full bg-card transition-transform shadow-sm ${
           checked ? "translate-x-6" : "translate-x-1"
         }`}
       />
@@ -50,7 +50,7 @@ function Toggle({
 
 function SectionCard({ children }: { children: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
+    <div className="rounded-xl border bg-card p-6 shadow-sm">
       {children}
     </div>
   );
@@ -65,9 +65,9 @@ function SectionHeader({
 }) {
   return (
     <div className="mb-4">
-      <h3 className="text-base font-semibold text-gray-800">{title}</h3>
+      <h3 className="text-base font-semibold text-foreground">{title}</h3>
       {subtitle && (
-        <p className="mt-0.5 text-xs text-gray-400">{subtitle}</p>
+        <p className="mt-0.5 text-xs text-muted-foreground">{subtitle}</p>
       )}
     </div>
   );
@@ -75,7 +75,7 @@ function SectionHeader({
 
 function InfoBox({ children }: { children: React.ReactNode }) {
   return (
-    <div className="rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-xs text-blue-700">
+    <div className="rounded-lg border border-primary/20 bg-accent px-4 py-3 text-xs text-primary">
       {children}
     </div>
   );
@@ -85,7 +85,7 @@ function Skeleton() {
   return (
     <div className="space-y-4 animate-pulse">
       {[1, 2, 3].map((i) => (
-        <div key={i} className="h-32 rounded-xl bg-gray-100" />
+        <div key={i} className="h-32 rounded-xl bg-secondary" />
       ))}
     </div>
   );
@@ -239,17 +239,17 @@ export default function SettingsTab() {
         />
         <div className="space-y-3">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               From Name
             </label>
             <input
               value={settings.fromName}
               onChange={(e) => updateField("fromName", e.target.value)}
-              className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-[#2D1B69] focus:ring-1 focus:ring-[#2D1B69] outline-none transition"
+              className="w-full rounded-lg border bg-secondary px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-ring outline-none transition"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Reply-To
             </label>
             <input
@@ -257,7 +257,7 @@ export default function SettingsTab() {
               value={settings.replyTo}
               onChange={(e) => updateField("replyTo", e.target.value)}
               placeholder="hr@company.com"
-              className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-[#2D1B69] focus:ring-1 focus:ring-[#2D1B69] outline-none transition"
+              className="w-full rounded-lg border bg-secondary px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-ring outline-none transition"
             />
           </div>
         </div>
@@ -275,7 +275,7 @@ export default function SettingsTab() {
               checked={settings.autoSendEnabled}
               onChange={(v) => updateField("autoSendEnabled", v)}
             />
-            <span className="text-sm text-gray-600">
+            <span className="text-sm text-muted-foreground">
               {settings.autoSendEnabled
                 ? "Enabled -- cron will send automatically"
                 : "Disabled -- manual send only"}
@@ -285,28 +285,28 @@ export default function SettingsTab() {
           {settings.autoSendEnabled && (
             <>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   Send Time (IST)
                 </label>
                 <input
                   type="time"
                   value={settings.sendTimeIST}
                   onChange={(e) => updateField("sendTimeIST", e.target.value)}
-                  className="w-48 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-[#2D1B69] focus:ring-1 focus:ring-[#2D1B69] outline-none transition"
+                  className="w-48 rounded-lg border bg-secondary px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-ring outline-none transition"
                 />
-                <p className="mt-1 text-xs text-gray-400">
+                <p className="mt-1 text-xs text-muted-foreground">
                   UTC equivalent: {utcTime}
                 </p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   Cron Expression
                 </label>
                 <input
                   value={settings.cronExpression}
                   onChange={(e) => updateField("cronExpression", e.target.value)}
-                  className="w-64 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-mono focus:border-[#2D1B69] focus:ring-1 focus:ring-[#2D1B69] outline-none transition"
+                  className="w-64 rounded-lg border bg-secondary px-3 py-2 text-sm font-mono focus:border-primary focus:ring-1 focus:ring-ring outline-none transition"
                 />
               </div>
 
@@ -320,12 +320,12 @@ export default function SettingsTab() {
               <button
                 onClick={handleRunNow}
                 disabled={cronRunning}
-                className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 transition disabled:opacity-40"
+                className="rounded-lg border px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary transition disabled:opacity-40"
               >
                 {cronRunning ? "Dispatching..." : "Run Auto-Send Now"}
               </button>
               {cronStatus && (
-                <p className="text-xs text-gray-500">{cronStatus}</p>
+                <p className="text-xs text-muted-foreground">{cronStatus}</p>
               )}
             </>
           )}
@@ -340,7 +340,7 @@ export default function SettingsTab() {
         />
         <div className="space-y-4">
           {/* Segmented control */}
-          <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
+          <div className="inline-flex rounded-lg border overflow-hidden">
             {(["all", "custom", "none"] as const).map((mode) => (
               <button
                 key={mode}
@@ -349,7 +349,7 @@ export default function SettingsTab() {
                 className={`px-5 py-2 text-sm font-medium capitalize transition ${
                   settings.ccMode === mode
                     ? "text-white"
-                    : "bg-white text-gray-500 hover:bg-gray-50"
+                    : "bg-card text-muted-foreground hover:bg-secondary"
                 }`}
                 style={settings.ccMode === mode ? { backgroundColor: "#2D1B69" } : {}}
               >
@@ -390,7 +390,7 @@ export default function SettingsTab() {
                       setCcInput("");
                     }
                   }}
-                  className="flex-1 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-[#2D1B69] focus:ring-1 focus:ring-[#2D1B69] outline-none transition"
+                  className="flex-1 rounded-lg border bg-secondary px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-ring outline-none transition"
                 />
                 <button
                   type="button"
@@ -398,7 +398,7 @@ export default function SettingsTab() {
                     addCcChip(ccInput);
                     setCcInput("");
                   }}
-                  className="rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 transition"
+                  className="rounded-lg border px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary transition"
                 >
                   Add
                 </button>
@@ -407,12 +407,12 @@ export default function SettingsTab() {
           )}
 
           {settings.ccMode === "all" && (
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-muted-foreground">
               All team members will be CC&apos;d on each birthday email.
             </p>
           )}
           {settings.ccMode === "none" && (
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-muted-foreground">
               No one will be CC&apos;d. Emails go to the birthday person only.
             </p>
           )}
@@ -428,7 +428,7 @@ export default function SettingsTab() {
           className={`rounded-lg border px-4 py-2 text-sm font-medium transition ${
             confirmClear
               ? "border-red-300 bg-red-50 text-red-600"
-              : "border-gray-200 text-gray-600 hover:bg-gray-50"
+              : "border text-muted-foreground hover:bg-secondary"
           }`}
         >
           {clearing

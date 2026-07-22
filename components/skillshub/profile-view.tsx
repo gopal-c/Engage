@@ -95,7 +95,7 @@ export function ProfileView({
               </>
             )}
             {isPending && (
-              <span className="ml-2 inline-flex items-center rounded-full bg-orange-100 px-2.5 py-0.5 text-xs font-medium text-orange-700 dark:bg-orange-900/30 dark:text-orange-400">
+              <span className="ml-2 inline-flex items-center rounded-full bg-coral-soft px-2.5 py-0.5 text-xs font-medium text-coral-deep">
                 Pending review
               </span>
             )}
@@ -136,11 +136,11 @@ export function ProfileView({
                     <span
                       className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold uppercase leading-none ${
                         s.proficiency === "expert"
-                          ? "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400"
+                          ? "bg-teal-soft text-teal-deep"
                           : s.proficiency === "advanced"
-                            ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400"
+                            ? "bg-indigo-soft text-indigo-deep"
                             : s.proficiency === "intermediate"
-                              ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400"
+                              ? "bg-amber-soft text-amber-deep"
                               : "bg-muted text-muted-foreground"
                       }`}
                     >

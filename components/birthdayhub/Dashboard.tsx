@@ -83,9 +83,9 @@ function LogRow({ log }: { log: SendLog }) {
             log.status === "sent" ? "bg-green-500" : "bg-red-500"
           }`}
         />
-        <span className="truncate text-sm text-gray-700">{log.employeeName}</span>
+        <span className="truncate text-sm text-foreground">{log.employeeName}</span>
       </div>
-      <span className="text-xs text-gray-400 shrink-0 ml-2">{time}</span>
+      <span className="text-xs text-muted-foreground shrink-0 ml-2">{time}</span>
     </div>
   );
 }
@@ -178,10 +178,10 @@ export default function Dashboard({ employees, logs, onCompose }: Props) {
         ].map((s) => (
           <div
             key={s.label}
-            className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm"
+            className="rounded-xl border bg-card p-5 shadow-sm"
           >
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-gray-500">{s.label}</span>
+              <span className="text-sm font-medium text-muted-foreground">{s.label}</span>
               <span className="text-xl">{s.icon}</span>
             </div>
             <p className="mt-2 text-3xl font-bold" style={{ color: "#2D1B69" }}>
@@ -206,7 +206,7 @@ export default function Dashboard({ employees, logs, onCompose }: Props) {
             {todayBirthdays.map((emp) => (
               <div
                 key={emp.id}
-                className="flex items-center justify-between rounded-xl bg-white/10 px-4 py-3"
+                className="flex items-center justify-between rounded-xl bg-card/10 px-4 py-3"
               >
                 <div className="flex items-center gap-3">
                   <div
@@ -241,11 +241,11 @@ export default function Dashboard({ employees, logs, onCompose }: Props) {
 
       {/* ---- Upcoming birthdays ---- */}
       <div>
-        <h3 className="mb-3 text-base font-semibold text-gray-800">
+        <h3 className="mb-3 text-base font-semibold text-foreground">
           Upcoming Birthdays
         </h3>
         {upcoming.length === 0 ? (
-          <p className="text-sm text-gray-400">No upcoming birthdays</p>
+          <p className="text-sm text-muted-foreground">No upcoming birthdays</p>
         ) : (
           <div className="space-y-2">
             {upcoming.map((emp) => {
@@ -254,7 +254,7 @@ export default function Dashboard({ employees, logs, onCompose }: Props) {
               return (
                 <div
                   key={emp.id}
-                  className="flex items-center justify-between rounded-xl border border-gray-100 bg-white px-4 py-3 shadow-sm"
+                  className="flex items-center justify-between rounded-xl border bg-card px-4 py-3 shadow-sm"
                 >
                   <div className="flex items-center gap-3">
                     <div
@@ -264,8 +264,8 @@ export default function Dashboard({ employees, logs, onCompose }: Props) {
                       {initials(emp.name)}
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-800">{emp.name}</p>
-                      <p className="text-xs text-gray-400">{fmtBirthday(emp.birthday)}</p>
+                      <p className="text-sm font-medium text-foreground">{emp.name}</p>
+                      <p className="text-xs text-muted-foreground">{fmtBirthday(emp.birthday)}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
@@ -275,7 +275,7 @@ export default function Dashboard({ employees, logs, onCompose }: Props) {
                     >
                       {emp.department}
                     </span>
-                    <span className="text-xs font-medium text-gray-400">
+                    <span className="text-xs font-medium text-muted-foreground">
                       {days === 0 ? "Today" : `${days}d`}
                     </span>
                   </div>
@@ -287,14 +287,14 @@ export default function Dashboard({ employees, logs, onCompose }: Props) {
       </div>
 
       {/* ---- Recent emails accordion ---- */}
-      <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
+      <div className="rounded-xl border bg-card shadow-sm">
         <button
           onClick={() => setEmailsOpen((o) => !o)}
           className="flex w-full items-center justify-between px-5 py-4 text-left"
         >
-          <h3 className="text-base font-semibold text-gray-800">Recent Emails</h3>
+          <h3 className="text-base font-semibold text-foreground">Recent Emails</h3>
           <svg
-            className={`h-5 w-5 text-gray-400 transition-transform ${emailsOpen ? "rotate-180" : ""}`}
+            className={`h-5 w-5 text-muted-foreground transition-transform ${emailsOpen ? "rotate-180" : ""}`}
             fill="none"
             stroke="currentColor"
             strokeWidth={2}
@@ -310,15 +310,15 @@ export default function Dashboard({ employees, logs, onCompose }: Props) {
         >
           <div ref={contentRef} className="px-5 pb-4">
             {recentLogs.length === 0 ? (
-              <p className="text-sm text-gray-400">No emails sent yet</p>
+              <p className="text-sm text-muted-foreground">No emails sent yet</p>
             ) : emailsOpen ? (
               /* Expanded: grouped by month */
               Object.entries(grouped).map(([month, items]) => (
                 <div key={month} className="mb-4">
-                  <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-gray-400">
+                  <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     {month}
                   </p>
-                  <div className="divide-y divide-gray-50">
+                  <div className="divide-y divide-border">
                     {items.map((l) => (
                       <LogRow key={l.id} log={l} />
                     ))}
@@ -328,13 +328,13 @@ export default function Dashboard({ employees, logs, onCompose }: Props) {
             ) : (
               /* Collapsed: first few + fade */
               <div className="relative">
-                <div className="divide-y divide-gray-50">
+                <div className="divide-y divide-border">
                   {collapsedLogs.map((l) => (
                     <LogRow key={l.id} log={l} />
                   ))}
                 </div>
                 {recentLogs.length > COLLAPSED_MAX && (
-                  <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white to-transparent" />
+                  <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-card to-transparent" />
                 )}
               </div>
             )}

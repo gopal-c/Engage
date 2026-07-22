@@ -260,7 +260,7 @@ export default function ComposeTab({
         </div>
       )}
       {status === "scheduled" && (
-        <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-700">
+        <div className="rounded-lg border border-primary/20 bg-accent p-4 text-sm text-primary">
           Email scheduled successfully!
         </div>
       )}
@@ -271,14 +271,14 @@ export default function ComposeTab({
       )}
 
       {/* Employee dropdown */}
-      <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
-        <label className="block text-sm font-medium text-gray-700 mb-1.5">
+      <div className="rounded-xl border bg-card p-5 shadow-sm">
+        <label className="block text-sm font-medium text-foreground mb-1.5">
           Select Employee
         </label>
         <select
           value={selectedId}
           onChange={(e) => handleSelectEmployee(e.target.value)}
-          className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm focus:border-[#2D1B69] focus:ring-1 focus:ring-[#2D1B69] outline-none transition"
+          className="w-full rounded-lg border bg-secondary px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-ring outline-none transition"
         >
           <option value="">Choose an employee...</option>
           {employees.map((emp) => (
@@ -289,14 +289,14 @@ export default function ComposeTab({
         </select>
 
         {selected && (
-          <div className="mt-3 rounded-lg bg-gray-50 border border-gray-100 p-3">
-            <p className="text-sm font-medium text-gray-700">{selected.name}</p>
-            <p className="text-xs text-gray-400">
+          <div className="mt-3 rounded-lg bg-secondary border p-3">
+            <p className="text-sm font-medium text-foreground">{selected.name}</p>
+            <p className="text-xs text-muted-foreground">
               {selected.email} &middot; {selected.department} &middot;{" "}
               {selected.birthday}
             </p>
             {selected.notes && (
-              <p className="text-xs text-gray-400 mt-1">Notes: {selected.notes}</p>
+              <p className="text-xs text-muted-foreground mt-1">Notes: {selected.notes}</p>
             )}
           </div>
         )}
@@ -312,7 +312,7 @@ export default function ComposeTab({
           </button>
         )}
         {generating && (
-          <div className="mt-3 flex items-center gap-2 text-sm text-gray-500">
+          <div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
             <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
@@ -324,10 +324,10 @@ export default function ComposeTab({
 
       {/* Message editor */}
       {message && selected && (
-        <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm space-y-4">
+        <div className="rounded-xl border bg-card p-5 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-gray-700">Message</h3>
-            <div className="flex items-center gap-2 text-xs text-gray-400">
+            <h3 className="text-sm font-semibold text-foreground">Message</h3>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <span
                 className="rounded-full px-2 py-0.5"
                 style={{ backgroundColor: "#EEEDFE", color: "#2D1B69" }}
@@ -346,20 +346,20 @@ export default function ComposeTab({
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             rows={4}
-            className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm leading-relaxed focus:border-[#2D1B69] focus:ring-1 focus:ring-[#2D1B69] outline-none transition resize-y"
+            className="w-full rounded-lg border bg-secondary px-3 py-2.5 text-sm leading-relaxed focus:border-primary focus:ring-1 focus:ring-ring outline-none transition resize-y"
           />
 
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => handleGenerate()}
               disabled={generating}
-              className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 transition disabled:opacity-40"
+              className="rounded-lg border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-secondary transition disabled:opacity-40"
             >
               Regenerate
             </button>
             <button
               onClick={() => selected && refreshPreview(selected, message, mood, fuel)}
-              className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 transition"
+              className="rounded-lg border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-secondary transition"
             >
               Refresh Preview
             </button>
@@ -369,25 +369,25 @@ export default function ComposeTab({
 
       {/* Email preview */}
       {previewHtml && selected && (
-        <div className="rounded-xl border border-gray-100 bg-white shadow-sm overflow-hidden">
-          <div className="flex items-center justify-between border-b border-gray-100 px-5 py-3">
-            <h3 className="text-sm font-semibold text-gray-700">Email Preview</h3>
+        <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+          <div className="flex items-center justify-between border-b px-5 py-3">
+            <h3 className="text-sm font-semibold text-foreground">Email Preview</h3>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setShowSource((v) => !v)}
-                className="rounded border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-500 hover:bg-gray-50 transition"
+                className="rounded border px-2.5 py-1 text-xs font-medium text-muted-foreground hover:bg-secondary transition"
               >
                 {showSource ? "Visual" : "Source"}
               </button>
               <button
                 onClick={copyHtml}
-                className="rounded border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-500 hover:bg-gray-50 transition"
+                className="rounded border px-2.5 py-1 text-xs font-medium text-muted-foreground hover:bg-secondary transition"
               >
                 Copy HTML
               </button>
               <button
                 onClick={openGmailDraft}
-                className="rounded border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-500 hover:bg-gray-50 transition"
+                className="rounded border px-2.5 py-1 text-xs font-medium text-muted-foreground hover:bg-secondary transition"
               >
                 Open Gmail Draft
               </button>
@@ -395,7 +395,7 @@ export default function ComposeTab({
           </div>
 
           {showSource ? (
-            <pre className="max-h-96 overflow-auto bg-gray-50 p-4 text-xs text-gray-600 font-mono whitespace-pre-wrap">
+            <pre className="max-h-96 overflow-auto bg-secondary p-4 text-xs text-muted-foreground font-mono whitespace-pre-wrap">
               {previewHtml}
             </pre>
           ) : (

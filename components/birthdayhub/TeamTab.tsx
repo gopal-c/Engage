@@ -163,7 +163,7 @@ export default function TeamTab({
             placeholder="Full Name"
             value={f.name}
             onChange={(e) => setF({ ...f, name: e.target.value })}
-            className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-[#2D1B69] focus:ring-1 focus:ring-[#2D1B69] outline-none"
+            className="rounded-lg border bg-secondary px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-ring outline-none"
           />
           <input
             required
@@ -171,7 +171,7 @@ export default function TeamTab({
             placeholder="Email"
             value={f.email}
             onChange={(e) => setF({ ...f, email: e.target.value })}
-            className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-[#2D1B69] focus:ring-1 focus:ring-[#2D1B69] outline-none"
+            className="rounded-lg border bg-secondary px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-ring outline-none"
           />
           <div className="relative">
             <input
@@ -179,7 +179,7 @@ export default function TeamTab({
               list="dept-list"
               value={f.department}
               onChange={(e) => setF({ ...f, department: e.target.value })}
-              className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-[#2D1B69] focus:ring-1 focus:ring-[#2D1B69] outline-none"
+              className="w-full rounded-lg border bg-secondary px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-ring outline-none"
             />
             <datalist id="dept-list">
               {allDepts.map((d) => (
@@ -191,7 +191,7 @@ export default function TeamTab({
             <select
               value={f.birthMonth}
               onChange={(e) => setF({ ...f, birthMonth: e.target.value })}
-              className="flex-1 rounded-lg border border-gray-200 bg-gray-50 px-2 py-2 text-sm focus:border-[#2D1B69] focus:ring-1 focus:ring-[#2D1B69] outline-none"
+              className="flex-1 rounded-lg border bg-secondary px-2 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-ring outline-none"
             >
               {MONTHS.map((m, i) => (
                 <option key={m} value={String(i + 1).padStart(2, "0")}>
@@ -202,7 +202,7 @@ export default function TeamTab({
             <select
               value={f.birthDay}
               onChange={(e) => setF({ ...f, birthDay: e.target.value })}
-              className="w-20 rounded-lg border border-gray-200 bg-gray-50 px-2 py-2 text-sm focus:border-[#2D1B69] focus:ring-1 focus:ring-[#2D1B69] outline-none"
+              className="w-20 rounded-lg border bg-secondary px-2 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-ring outline-none"
             >
               {DAYS.map((d) => (
                 <option key={d} value={d}>
@@ -216,7 +216,7 @@ export default function TeamTab({
           placeholder="Notes (optional)"
           value={f.notes}
           onChange={(e) => setF({ ...f, notes: e.target.value })}
-          className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-[#2D1B69] focus:ring-1 focus:ring-[#2D1B69] outline-none"
+          className="w-full rounded-lg border bg-secondary px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-ring outline-none"
         />
       </>
     );
@@ -228,7 +228,7 @@ export default function TeamTab({
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
         <div className="relative flex-1 w-full">
           <svg
-            className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
+            className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
             fill="none"
             stroke="currentColor"
             strokeWidth={2}
@@ -241,13 +241,13 @@ export default function TeamTab({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by name, email, or department..."
-            className="w-full rounded-lg border border-gray-200 bg-gray-50 pl-9 pr-3 py-2.5 text-sm focus:border-[#2D1B69] focus:ring-1 focus:ring-[#2D1B69] outline-none transition"
+            className="w-full rounded-lg border bg-secondary pl-9 pr-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-ring outline-none transition"
           />
         </div>
         <div className="flex gap-2 shrink-0">
           <button
             onClick={onImport}
-            className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 transition"
+            className="rounded-lg border px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary transition"
           >
             Import CSV
           </button>
@@ -265,9 +265,9 @@ export default function TeamTab({
       {showAdd && (
         <form
           onSubmit={handleAdd}
-          className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm space-y-3"
+          className="rounded-xl border bg-card p-5 shadow-sm space-y-3"
         >
-          <h4 className="text-sm font-semibold text-gray-700">Add New Person</h4>
+          <h4 className="text-sm font-semibold text-foreground">Add New Person</h4>
           {renderFormFields(form, setForm)}
           <div className="flex gap-2 pt-1">
             <button
@@ -280,7 +280,7 @@ export default function TeamTab({
             <button
               type="button"
               onClick={() => { setShowAdd(false); setForm(emptyForm); }}
-              className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 transition"
+              className="rounded-lg border px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary transition"
             >
               Cancel
             </button>
@@ -290,8 +290,8 @@ export default function TeamTab({
 
       {/* Employee grid */}
       {filtered.length === 0 ? (
-        <div className="rounded-xl border border-gray-100 bg-white p-10 text-center shadow-sm">
-          <p className="text-sm text-gray-400">
+        <div className="rounded-xl border bg-card p-10 text-center shadow-sm">
+          <p className="text-sm text-muted-foreground">
             {employees.length === 0
               ? "No team members yet. Add your first person above."
               : "No results matching your search."}
@@ -308,10 +308,10 @@ export default function TeamTab({
                 <form
                   key={emp.id}
                   onSubmit={handleEdit}
-                  className="rounded-xl border-2 bg-white p-5 space-y-3 shadow-sm"
+                  className="rounded-xl border-2 bg-card p-5 space-y-3 shadow-sm"
                   style={{ borderColor: "#2D1B69" }}
                 >
-                  <h4 className="text-sm font-semibold text-gray-700">
+                  <h4 className="text-sm font-semibold text-foreground">
                     Edit {emp.name}
                   </h4>
                   {renderFormFields(editForm, setEditForm)}
@@ -326,7 +326,7 @@ export default function TeamTab({
                     <button
                       type="button"
                       onClick={() => { setEditingId(null); setEditForm(emptyForm); }}
-                      className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 transition"
+                      className="rounded-lg border px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary transition"
                     >
                       Cancel
                     </button>
@@ -338,7 +338,7 @@ export default function TeamTab({
             return (
               <div
                 key={emp.id}
-                className="flex items-center justify-between rounded-xl border border-gray-100 bg-white px-4 py-3 shadow-sm"
+                className="flex items-center justify-between rounded-xl border bg-card px-4 py-3 shadow-sm"
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <div
@@ -348,10 +348,10 @@ export default function TeamTab({
                     {initials(emp.name)}
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-gray-800 truncate">
+                    <p className="text-sm font-medium text-foreground truncate">
                       {emp.name}
                     </p>
-                    <p className="text-xs text-gray-400 truncate">{emp.email}</p>
+                    <p className="text-xs text-muted-foreground truncate">{emp.email}</p>
                   </div>
                 </div>
 
@@ -362,7 +362,7 @@ export default function TeamTab({
                   >
                     {emp.department}
                   </span>
-                  <span className="hidden md:inline-block text-xs text-gray-400">
+                  <span className="hidden md:inline-block text-xs text-muted-foreground">
                     {fmtBirthday(emp.birthday)}
                   </span>
                   <div className="flex gap-1">
@@ -375,7 +375,7 @@ export default function TeamTab({
                     </button>
                     <button
                       onClick={() => startEdit(emp)}
-                      className="rounded-lg border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-500 hover:bg-gray-50 transition"
+                      className="rounded-lg border px-2.5 py-1 text-xs font-medium text-muted-foreground hover:bg-secondary transition"
                     >
                       Edit
                     </button>
@@ -384,7 +384,7 @@ export default function TeamTab({
                       className={`rounded-lg border px-2.5 py-1 text-xs font-medium transition ${
                         confirmDeleteId === emp.id
                           ? "border-red-300 bg-red-50 text-red-600"
-                          : "border-gray-200 text-gray-500 hover:bg-gray-50"
+                          : "border text-muted-foreground hover:bg-secondary"
                       }`}
                     >
                       {confirmDeleteId === emp.id ? "Confirm?" : "Delete"}

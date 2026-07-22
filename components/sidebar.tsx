@@ -96,7 +96,7 @@ export function Sidebar({ role }: { role?: string }) {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden md:flex md:w-60 md:flex-col md:border-r md:bg-card">
+    <aside className="hidden md:flex md:w-60 md:flex-col md:border-r md:bg-sidebar">
       <div className="flex h-14 items-center border-b px-4">
         <Link href="/dashboard" className="text-lg font-bold">
           Engage

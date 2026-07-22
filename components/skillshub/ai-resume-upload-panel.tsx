@@ -69,7 +69,7 @@ export function AiResumeUploadPanel({ existingResume, onUpload, isLoading, isSuc
             <Sparkles size={16} className="text-violet-500" />
             <span>AI Resume Extraction</span>
           </div>
-          <span className="rounded-full bg-violet-100 px-2.5 py-0.5 text-[11px] font-medium text-violet-700 dark:bg-violet-900/40 dark:text-violet-300">
+          <span className="rounded-full bg-indigo-soft px-2.5 py-0.5 text-[11px] font-medium text-indigo-deep">
             Powered by Groq
           </span>
         </div>
@@ -114,8 +114,8 @@ export function AiResumeUploadPanel({ existingResume, onUpload, isLoading, isSuc
                   <label
                     className={`flex cursor-pointer flex-col items-center gap-2 rounded-lg border-2 border-dashed p-8 text-center transition-colors ${
                       dragging
-                        ? "border-violet-500 bg-violet-50 dark:bg-violet-900/20"
-                        : "border-muted-foreground/25 hover:border-violet-400"
+                        ? "border-indigo bg-indigo-soft"
+                        : "border-muted-foreground/25 hover:border-indigo"
                     }`}
                     onDragEnter={(e) => { e.preventDefault(); setDragging(true); }}
                     onDragOver={(e) => { e.preventDefault(); setDragging(true); }}

@@ -147,18 +147,18 @@ export default function BirthdayHubPage() {
             style={{ background: "#2D1B69" }}>
             <span className="text-white text-sm">&#x1f382;</span>
           </div>
-          <span className="font-semibold text-gray-900 dark:text-gray-100 text-lg">Birthday Hub</span>
+          <span className="font-semibold text-foreground text-lg">Birthday Hub</span>
         </div>
 
-        <nav className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-full p-1 overflow-x-auto">
+        <nav className="flex items-center gap-1 bg-secondary rounded-full p-1 overflow-x-auto">
           {tabs.map(({ key, label, icon }) => (
             <button
               key={key}
               onClick={() => { setTab(key); if (key !== "compose") setComposeTarget(null); }}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap ${
                 tab === key
-                  ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm"
-                  : "text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                  ? "bg-card text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               <span>{icon}</span>
@@ -178,7 +178,7 @@ export default function BirthdayHubPage() {
       {loading ? (
         <div className="flex items-center justify-center py-24 gap-3">
           <span className="text-2xl animate-spin">&#x1f382;</span>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Loading Birthday Hub...</p>
+          <p className="text-sm text-muted-foreground">Loading Birthday Hub...</p>
         </div>
       ) : (
         <>
@@ -232,7 +232,7 @@ export default function BirthdayHubPage() {
           {toasts.map((t) => (
             <div
               key={t.id}
-              className="bg-gray-900 text-white text-sm px-4 py-3 rounded-xl shadow-lg flex items-center gap-2.5"
+              className="bg-foreground text-white text-sm px-4 py-3 rounded-xl shadow-lg flex items-center gap-2.5"
             >
               {t.text}
             </div>
