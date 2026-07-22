@@ -34,8 +34,8 @@ export default async function AdminPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-2xl font-semibold">Admin Dashboard</h2>
-        <p className="mt-1 text-muted-foreground">
+        <h1 className="text-ink-800">Admin Dashboard</h1>
+        <p className="mt-1 text-ink-500">
           Manage users and portal settings
         </p>
       </div>
@@ -44,10 +44,10 @@ export default async function AdminPage() {
         {cards.map((card) => (
           <div
             key={card.label}
-            className="rounded-xl border bg-card p-6"
+            className="rounded-xl border border-ink-200/60 bg-ink-0/70 p-6 shadow-2 backdrop-blur-sm"
           >
-            <p className="text-sm text-muted-foreground">{card.label}</p>
-            <p className="mt-1 text-3xl font-bold">{card.value}</p>
+            <p className="eyebrow">{card.label}</p>
+            <p className="mt-1 text-3xl font-bold text-ink-800">{card.value}</p>
           </div>
         ))}
       </div>
@@ -55,7 +55,7 @@ export default async function AdminPage() {
       <div>
         <Link
           href="/admin/users"
-          className="inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+          className="inline-flex items-center rounded-xl bg-indigo-deep px-5 py-2.5 text-sm font-medium text-white shadow-2 transition-all hover:bg-indigo-press hover:shadow-3 hover:-translate-y-px"
         >
           Manage Users
         </Link>

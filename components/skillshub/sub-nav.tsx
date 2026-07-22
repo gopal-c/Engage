@@ -37,7 +37,7 @@ export function SkillsHubSubNav({
   const items = role === "hr" ? HR_NAV : employeeNav(approved ?? false);
 
   return (
-    <nav className="mb-6 flex items-center gap-1 border-b" aria-label="SkillsHub navigation">
+    <nav className="mb-6 flex items-center gap-1 border-b border-ink-200/60" aria-label="SkillsHub navigation">
       {items.map((item) => {
         const active = isActive(pathname, item.href);
 
@@ -61,13 +61,13 @@ export function SkillsHubSubNav({
             className={cn(
               "relative px-3 py-2 text-sm transition-colors",
               active
-                ? "font-medium text-foreground"
-                : "text-muted-foreground hover:text-foreground",
+                ? "font-medium text-ink-800"
+                : "text-ink-500 hover:text-ink-800",
             )}
           >
             {item.label}
             {active && (
-              <span className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full bg-primary" />
+              <span className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full bg-indigo-deep" />
             )}
           </Link>
         );

@@ -108,8 +108,8 @@ export default function AdminUsersPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-semibold">User Management</h2>
-        <p className="mt-1 text-muted-foreground">
+        <h1 className="text-ink-800">User Management</h1>
+        <p className="mt-1 text-ink-500">
           {users.length} registered {users.length === 1 ? "user" : "users"}
         </p>
       </div>
@@ -118,10 +118,10 @@ export default function AdminUsersPage() {
         <p className="text-sm text-teal-deep">{message}</p>
       )}
 
-      <div className="overflow-x-auto rounded-lg border">
+      <div className="overflow-x-auto rounded-xl border border-ink-200/60 bg-ink-0/70 shadow-2 backdrop-blur-sm">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b bg-muted/50">
+            <tr className="border-b border-ink-200/60 bg-ink-100/50">
               <th className="px-4 py-3 text-left font-medium">User</th>
               <th className="px-4 py-3 text-left font-medium">Email</th>
               <th className="px-4 py-3 text-left font-medium">Role</th>

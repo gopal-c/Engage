@@ -18,8 +18,8 @@ export default async function HomePage() {
   if (!profile) {
     return (
       <section className="mx-auto max-w-5xl px-6 py-10">
-        <h1 className="text-2xl font-bold">
-          Welcome, <span className="italic text-orange-500">{session.name}</span>
+        <h1>
+          Welcome, <span className="serif-italic text-coral-deep">{session.name}</span>
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Your journey with us — here&apos;s your story in milestones and moments.
@@ -43,8 +43,8 @@ export default async function HomePage() {
 
   return (
     <section className="mx-auto max-w-5xl px-6 py-10">
-      <h1 className="text-2xl font-bold">
-        Welcome, <span className="italic text-orange-500">{session.name}</span>
+      <h1>
+        Welcome, <span className="serif-italic text-coral-deep">{session.name}</span>
       </h1>
       <p className="mt-1 text-sm text-muted-foreground">
         Your journey with us — here&apos;s your story in milestones and moments.
@@ -138,7 +138,7 @@ export default async function HomePage() {
 
           {/* Stat cards */}
           <div className="mt-8 grid gap-4 sm:grid-cols-3">
-            <div className="flex items-start gap-3 rounded-xl border bg-card p-4 shadow-sm">
+            <div className="flex items-start gap-3 rounded-xl border border-ink-200/60 bg-ink-0/70 p-4 shadow-2 backdrop-blur-sm">
               <div className="flex size-10 items-center justify-center rounded-lg bg-teal-soft text-lg">
                 ⏱️
               </div>
@@ -155,7 +155,7 @@ export default async function HomePage() {
                 </p>
               </div>
             </div>
-            <div className="flex items-start gap-3 rounded-xl border bg-card p-4 shadow-sm">
+            <div className="flex items-start gap-3 rounded-xl border border-ink-200/60 bg-ink-0/70 p-4 shadow-2 backdrop-blur-sm">
               <div className="flex size-10 items-center justify-center rounded-lg bg-coral-soft text-lg">
                 ↗️
               </div>
@@ -166,7 +166,7 @@ export default async function HomePage() {
                 <p className="text-xs text-muted-foreground">Career progression milestones</p>
               </div>
             </div>
-            <div className="flex items-start gap-3 rounded-xl border bg-card p-4 shadow-sm">
+            <div className="flex items-start gap-3 rounded-xl border border-ink-200/60 bg-ink-0/70 p-4 shadow-2 backdrop-blur-sm">
               <div className="flex size-10 items-center justify-center rounded-lg bg-amber-soft text-lg">
                 🏅
               </div>
@@ -182,7 +182,7 @@ export default async function HomePage() {
           {/* Two-column timeline */}
           <div className="mt-10 grid gap-8 lg:grid-cols-2">
             <div>
-              <h2 className="mb-4 text-lg font-semibold">Your Journey</h2>
+              <h3 className="mb-4">Your Journey</h3>
               <TimelineColumn
                 items={home.leftColumn}
                 emptyText="Your journey starts here — milestones will appear as you grow with the team."
@@ -190,7 +190,7 @@ export default async function HomePage() {
               />
             </div>
             <div>
-              <h2 className="mb-4 text-lg font-semibold">Professional Growth</h2>
+              <h3 className="mb-4">Professional Growth</h3>
               <TimelineColumn
                 items={home.rightColumn}
                 emptyText={
@@ -207,13 +207,13 @@ export default async function HomePage() {
           <div className="mt-8 flex gap-3">
             <Link
               href="/apps/skillshub/me"
-              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+              className="rounded-xl bg-indigo-deep px-5 py-2.5 text-sm font-medium text-white shadow-2 transition-all hover:bg-indigo-press hover:shadow-3 hover:-translate-y-px"
             >
               View my profile
             </Link>
             <Link
               href="/apps/skillshub/upload"
-              className="rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent"
+              className="rounded-xl border border-ink-200 bg-ink-0 px-5 py-2.5 text-sm font-medium text-ink-700 shadow-1 transition-all hover:shadow-2 hover:-translate-y-px"
             >
               Update resume
             </Link>
@@ -264,7 +264,7 @@ function HomeCard({
   return (
     <Link
       href={href}
-      className="flex items-start gap-3 rounded-xl border bg-card p-4 shadow-sm transition-shadow hover:shadow-md"
+      className="flex items-start gap-3 rounded-xl border border-ink-200/60 bg-ink-0/70 p-4 shadow-2 backdrop-blur-sm transition-all hover:shadow-3 hover:-translate-y-0.5"
     >
       {body}
     </Link>

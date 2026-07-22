@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -77,6 +79,30 @@
     --r-lg: 14px;
     --r-xl: 22px;
     --r-pill: 999px;
+
+    /* ─────────── TYPOGRAPHY SCALE ─────────── */
+    --t-display-xl: 700 3.25rem/1.08 'Instrument Serif', serif;
+    --t-h1:         600 2rem/1.2 var(--font-geist-sans), system-ui, sans-serif;
+    --t-h2:         600 1.5rem/1.28 var(--font-geist-sans), system-ui, sans-serif;
+    --t-h3:         600 1.125rem/1.35 var(--font-geist-sans), system-ui, sans-serif;
+    --t-h4:         500 0.9375rem/1.4 var(--font-geist-sans), system-ui, sans-serif;
+    --t-body:       400 0.9375rem/1.65 var(--font-geist-sans), system-ui, sans-serif;
+    --t-body-s:     400 0.8125rem/1.55 var(--font-geist-sans), system-ui, sans-serif;
+    --t-mono:       500 0.8125rem/1.5 'Geist Mono', ui-monospace, monospace;
+    --t-mono-s:     400 0.6875rem/1.45 'Geist Mono', ui-monospace, monospace;
+
+    --tracking-tight:  -0.01em;
+    --tracking-normal:  0;
+    --tracking-wide:    0.04em;
+    --tracking-widest:  0.08em;
+
+    /* ─────────── PAGE BACKGROUND OVERLAY ─────────── */
+    --t-bg-base: var(--ink-50);
+    --t-bg-overlay:
+      radial-gradient(ellipse 80% 60% at 5% 15%, rgba(139, 123, 232, 0.06) 0%, transparent 70%),
+      radial-gradient(ellipse 60% 50% at 95% 10%, rgba(255, 154, 130, 0.05) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 40% at 50% 90%, rgba(124, 211, 197, 0.04) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 30% at 80% 70%, rgba(255, 203, 107, 0.04) 0%, transparent 55%);
 
     /* ─────────── shadcn / Tailwind semantic tokens (RGB triples) ─────────── */
     --background: 250 250 252;          /* ink-50 */
@@ -180,10 +206,16 @@
 
   body {
     color: var(--fg-1);
-    background: var(--bg-page);
+    background: var(--t-bg-overlay), var(--t-bg-base);
+    background-attachment: fixed;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
+
+  h1 { font: var(--t-h1); letter-spacing: var(--tracking-tight); color: var(--fg-1); }
+  h2 { font: var(--t-h2); letter-spacing: var(--tracking-tight); color: var(--fg-1); }
+  h3 { font: var(--t-h3); color: var(--fg-1); }
+  h4 { font: var(--t-h4); color: var(--fg-1); }
 }
 
 /* ─────────── SkillsHub ID-badge cards ─────────── */
@@ -298,4 +330,49 @@
 
 .animate-fade-in {
   animation: fade-in 0.3s ease-out;
+}
+
+/* ─────────── Component utility classes ─────────── */
+@layer components {
+  .display-xl {
+    font: var(--t-display-xl);
+    letter-spacing: var(--tracking-tight);
+    color: var(--fg-1);
+  }
+
+  .eyebrow {
+    font: var(--t-mono-s);
+    letter-spacing: var(--tracking-widest);
+    text-transform: uppercase;
+    color: var(--fg-2);
+  }
+
+  .eyebrow-indigo {
+    font: var(--t-mono-s);
+    letter-spacing: var(--tracking-widest);
+    text-transform: uppercase;
+    color: var(--brand-indigo-deep);
+  }
+
+  .eyebrow-coral {
+    font: var(--t-mono-s);
+    letter-spacing: var(--tracking-widest);
+    text-transform: uppercase;
+    color: var(--brand-coral-deep);
+  }
+
+  .serif-italic {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-weight: 400;
+  }
+
+  .glass-surface {
+    background: linear-gradient(135deg,
+      rgba(255, 255, 255, 0.72) 0%,
+      rgba(255, 255, 255, 0.48) 100%);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+  }
 }

@@ -97,10 +97,10 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-2xl font-semibold">
-          Welcome back, {session?.user?.name?.split(" ")[0]}!
-        </h2>
-        <p className="mt-1 text-muted-foreground">
+        <h1 className="text-ink-800">
+          Welcome back, <span className="serif-italic">{session?.user?.name?.split(" ")[0]}</span>
+        </h1>
+        <p className="mt-1 text-ink-500">
           Here&apos;s your engagement dashboard
         </p>
       </div>
@@ -113,7 +113,7 @@ export default async function DashboardPage() {
 
       <div>
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-semibold">Recent Activity</h3>
+          <h3 className="text-ink-800">Recent Activity</h3>
           <Link
             href="/activity"
             className="text-sm text-muted-foreground hover:text-foreground"

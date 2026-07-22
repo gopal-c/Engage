@@ -32,8 +32,8 @@ export default function ActivityPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-semibold">Activity Feed</h2>
-        <p className="mt-1 text-muted-foreground">
+        <h1 className="text-ink-800">Activity Feed</h1>
+        <p className="mt-1 text-ink-500">
           See what&apos;s happening across all apps
         </p>
       </div>

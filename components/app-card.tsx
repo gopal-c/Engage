@@ -52,7 +52,7 @@ export function AppCard({
   );
 
   const classes = cn(
-    "block rounded-xl border p-6 transition-shadow hover:shadow-md",
+    "block rounded-xl border p-6 shadow-2 transition-all hover:shadow-3 hover:-translate-y-0.5",
     colorClasses
   );
 

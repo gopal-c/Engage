@@ -68,13 +68,13 @@ export default function ProfilePage() {
   return (
     <div className="mx-auto max-w-2xl space-y-8">
       <div>
-        <h2 className="text-2xl font-semibold">Profile</h2>
-        <p className="mt-1 text-muted-foreground">
+        <h1 className="text-ink-800">Profile</h1>
+        <p className="mt-1 text-ink-500">
           Manage your account details
         </p>
       </div>
 
-      <div className="rounded-xl border bg-card p-6">
+      <div className="rounded-xl border border-ink-200/60 bg-ink-0/70 p-6 shadow-2 backdrop-blur-sm">
         <div className="flex items-center gap-4">
           <Avatar className="h-16 w-16">
             <AvatarImage src={user.avatar_url ?? undefined} alt={user.name} />

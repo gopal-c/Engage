@@ -9,11 +9,11 @@ export default async function LoginPage() {
   const devLoginEnabled = process.env.ENABLE_DEV_LOGIN === "true";
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="w-full max-w-sm space-y-6 rounded-xl bg-card p-8 shadow-2">
+    <div className="flex min-h-screen items-center justify-center">
+      <div className="glass-surface w-full max-w-sm space-y-6 rounded-2xl p-8 shadow-3">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-foreground">Engage</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <h1 className="display-xl text-ink-800">Engage</h1>
+          <p className="mt-2 text-sm text-ink-500">
             Sign in to your account
           </p>
         </div>
@@ -25,7 +25,7 @@ export default async function LoginPage() {
         >
           <button
             type="submit"
-            className="flex w-full items-center justify-center gap-3 rounded-lg border bg-card px-4 py-3 text-sm font-medium text-foreground shadow-1 transition-colors hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+            className="flex w-full items-center justify-center gap-3 rounded-xl border border-ink-200 bg-ink-0 px-4 py-3 text-sm font-medium text-ink-800 shadow-1 transition-all hover:shadow-2 hover:-translate-y-px focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
           >
             <svg className="h-5 w-5" viewBox="0 0 24 24">
               <path
@@ -48,7 +48,7 @@ export default async function LoginPage() {
             Sign in with Google
           </button>
         </form>
-        <p className="text-center text-xs text-muted-foreground">
+        <p className="text-center text-xs text-ink-400">
           Restricted to @valueaddsofttech.com accounts
         </p>
 

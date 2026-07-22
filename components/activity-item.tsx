@@ -37,7 +37,7 @@ export function ActivityItem({ item }: { item: ActivityItemData }) {
   return (
     <Link
       href={appLinks[item.source_app] ?? "/dashboard"}
-      className="flex items-start gap-3 rounded-lg border bg-card p-3 transition-colors hover:bg-accent/50"
+      className="flex items-start gap-3 rounded-xl border border-ink-200/60 bg-ink-0/70 p-3 shadow-1 backdrop-blur-sm transition-all hover:shadow-2 hover:bg-ink-0"
     >
       <span className="mt-0.5 text-lg">
         {appIcons[item.source_app] ?? "⚡"}
