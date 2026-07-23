@@ -2,9 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { Trash2, Loader2 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import type { Milestone, MilestoneCategory } from "@/lib/skillshub/types";
 
@@ -62,31 +60,30 @@ export function MilestonesPanel({ profileId, initialMilestones }: Props) {
   }
 
   return (
-    <Card>
-      <CardHeader><CardTitle>Milestones &amp; Achievements ({milestones.length})</CardTitle></CardHeader>
-      <CardContent className="space-y-3">
+    <section className="glass-surface rounded-2xl border border-white/70 p-6 shadow-2">
+      <h3 className="mb-5 text-ink-800">Milestones &amp; Achievements ({milestones.length})</h3>
+      <div className="space-y-2">
         {milestones.length === 0 && (
-          <p className="text-[13px] text-muted-foreground">No milestones yet. Add one below.</p>
+          <p className="mb-3 text-sm text-ink-400">No milestones yet. Add one below.</p>
         )}
         {milestones.map((m) => (
-          <div key={m.id} className="grid grid-cols-1 items-end gap-2 sm:grid-cols-[1fr_130px_140px_auto]">
+          <div key={m.id} className="grid grid-cols-1 items-center gap-2 sm:grid-cols-[1fr_130px_140px_auto]">
             <Input value={m.title} disabled />
             <Input value={m.category} disabled className="capitalize" />
             <Input type="date" value={m.milestoneDate} disabled />
-            <Button
+            <button
               type="button"
-              variant="ghost"
-              size="sm"
               onClick={() => handleDelete(m.id)}
               disabled={deletingId === m.id}
               aria-label={`Remove ${m.title}`}
+              className="flex size-8 items-center justify-center rounded-lg text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-700"
             >
-              {deletingId === m.id ? <Loader2 className="size-3.5 animate-spin" /> : <Trash2 className="size-3.5" />}
-            </Button>
+              {deletingId === m.id ? <Loader2 className="size-3.5 animate-spin" /> : "×"}
+            </button>
           </div>
         ))}
-        {/* Add row — same inline layout as existing items */}
-        <div className="grid grid-cols-1 items-end gap-2 sm:grid-cols-[1fr_130px_140px_auto]">
+        {/* Add row */}
+        <div className="grid grid-cols-1 items-center gap-2 sm:grid-cols-[1fr_130px_140px_auto]">
           <Input
             placeholder="Achievement or milestone title"
             value={newTitle}
@@ -109,16 +106,16 @@ export function MilestonesPanel({ profileId, initialMilestones }: Props) {
             onChange={(e) => setNewDate(e.target.value)}
             max={new Date().toISOString().slice(0, 10)}
           />
-          <Button
+          <button
             type="button"
-            size="sm"
             disabled={isAdding || !newTitle.trim() || !newDate}
             onClick={handleAdd}
+            className="flex size-8 items-center justify-center rounded-lg text-sm font-medium text-ink-600 transition-colors hover:bg-ink-100 hover:text-ink-800 disabled:opacity-50"
           >
             {isAdding ? "…" : "+"}
-          </Button>
+          </button>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   );
 }
