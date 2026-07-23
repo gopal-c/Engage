@@ -4,12 +4,12 @@ import type { Employee, SendLog, ScheduledSend, AppSettings } from "./types";
 // ── Row mappers ───────────────────────────────────────────────────────────────
 
 function rowToEmployee(row: Record<string, unknown>): Employee {
-  const dob = row.date_of_birth as string | null;
+  const raw = row.date_of_birth;
   let birthday = "";
-  if (dob) {
-    // dob is YYYY-MM-DD; extract MM-DD
-    const parts = dob.split("-");
-    birthday = `${parts[1]}-${parts[2]}`;
+  if (raw) {
+    const dob = raw instanceof Date ? raw.toISOString().slice(0, 10) : String(raw);
+    const m = dob.match(/(\d{4})-(\d{2})-(\d{2})/);
+    if (m) birthday = `${m[2]}-${m[3]}`;
   }
   return {
     id:        row.id as string,

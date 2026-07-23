@@ -19,12 +19,22 @@ export async function GET() {
   }
 
   const user = rows[0];
-  return NextResponse.json({
-    user: {
-      ...user,
-      date_of_birth: user.date_of_birth ? String(user.date_of_birth).slice(0, 10) : null,
-    },
-  });
+  return NextResponse.json({ user: serializeUser(user) });
+}
+
+function serializeUser(user: Record<string, unknown>) {
+  let dob: string | null = null;
+  if (user.date_of_birth) {
+    const d = user.date_of_birth;
+    if (d instanceof Date) {
+      dob = d.toISOString().slice(0, 10);
+    } else {
+      const s = String(d);
+      const m = s.match(/(\d{4}-\d{2}-\d{2})/);
+      dob = m ? m[1] : s.slice(0, 10);
+    }
+  }
+  return { ...user, date_of_birth: dob };
 }
 
 export async function PATCH(request: NextRequest) {
@@ -62,10 +72,5 @@ export async function PATCH(request: NextRequest) {
   `;
 
   const user = rows[0];
-  return NextResponse.json({
-    user: {
-      ...user,
-      date_of_birth: user.date_of_birth ? String(user.date_of_birth).slice(0, 10) : null,
-    },
-  });
+  return NextResponse.json({ user: serializeUser(user) });
 }

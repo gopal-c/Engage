@@ -66,6 +66,11 @@ export async function PATCH(request: NextRequest) {
   return NextResponse.json({ user: rows[0] });
 }
 
+const DEV_USERS: Record<string, string> = {
+  "hr@valueaddsofttech.com": "demo123",
+  "admin": "demo123",
+};
+
 export async function DELETE(request: NextRequest) {
   const session = await auth();
   if (!session?.user?.id || session.user.role !== "admin") {
@@ -73,14 +78,24 @@ export async function DELETE(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { userId } = body;
+  const { userId, password } = body;
 
   if (!userId) {
     return NextResponse.json({ error: "userId is required" }, { status: 400 });
   }
 
+  if (!password) {
+    return NextResponse.json({ error: "Password is required" }, { status: 400 });
+  }
+
   if (userId === session.user.id) {
     return NextResponse.json({ error: "Cannot delete your own account" }, { status: 400 });
+  }
+
+  const adminEmail = session.user.email ?? "";
+  const expectedPassword = DEV_USERS[adminEmail];
+  if (!expectedPassword || password !== expectedPassword) {
+    return NextResponse.json({ error: "Incorrect password" }, { status: 401 });
   }
 
   const existing = await sql`SELECT id FROM auth.users WHERE id = ${userId}`;

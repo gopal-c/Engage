@@ -13,6 +13,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Input } from "@/components/ui/input";
 import { Trash2 } from "lucide-react";
 
 interface User {
@@ -36,6 +37,7 @@ export default function AdminUsersPage() {
   const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<User | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
 
   useEffect(() => {
     fetch("/api/users")
@@ -79,26 +81,28 @@ export default function AdminUsersPage() {
   }
 
   async function confirmDelete() {
-    if (!deleteTarget) return;
+    if (!deleteTarget || !deletePassword) return;
     setDeleting(true);
     setMessage("");
 
     const res = await fetch("/api/users", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId: deleteTarget.id }),
+      body: JSON.stringify({ userId: deleteTarget.id, password: deletePassword }),
     });
 
     if (res.ok) {
       setUsers((prev) => prev.filter((u) => u.id !== deleteTarget.id));
       setMessage(`Deleted ${deleteTarget.name}`);
       setTimeout(() => setMessage(""), 3000);
+      setDeleteTarget(null);
+      setDeletePassword("");
     } else {
       const data = await res.json();
       setMessage(data.error || "Failed to delete user");
+      setDeleting(false);
     }
     setDeleting(false);
-    setDeleteTarget(null);
   }
 
   if (loading) {
@@ -203,7 +207,7 @@ export default function AdminUsersPage() {
         </table>
       </div>
 
-      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) { setDeleteTarget(null); setDeletePassword(""); } }}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete user</AlertDialogTitle>
@@ -213,11 +217,21 @@ export default function AdminUsersPage() {
               This will remove their account and clean up all related data. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
+          <div className="py-2">
+            <label className="mb-1.5 block text-sm font-medium">Enter your password to confirm</label>
+            <Input
+              type="password"
+              placeholder="Password"
+              value={deletePassword}
+              onChange={(e) => setDeletePassword(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter" && deletePassword) confirmDelete(); }}
+            />
+          </div>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelete}
-              disabled={deleting}
+              disabled={deleting || !deletePassword}
               className="bg-destructive text-white hover:bg-destructive/90"
             >
               {deleting ? "Deleting..." : "Delete"}
