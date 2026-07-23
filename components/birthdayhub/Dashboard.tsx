@@ -84,9 +84,10 @@ interface Props {
   employees: Employee[];
   logs: SendLog[];
   onCompose: (emp: Employee) => void;
+  isAdminOrHR?: boolean;
 }
 
-export default function Dashboard({ employees, logs, onCompose }: Props) {
+export default function Dashboard({ employees, logs, onCompose, isAdminOrHR = false }: Props) {
   const today = todayMMDD();
   const month = currentMonth();
 
@@ -150,27 +151,29 @@ export default function Dashboard({ employees, logs, onCompose }: Props) {
 
   return (
     <div className="space-y-6">
-      {/* ---- Stat cards ---- */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {[
-          { label: "Team Members", value: teamCount, icon: "👥" },
-          { label: "This Month", value: thisMonthCount, icon: "🎂" },
-          { label: "Sent This Year", value: sentThisYear, icon: "✉️" },
-        ].map((s) => (
-          <div
-            key={s.label}
-            className="rounded-xl border bg-card p-5 shadow-sm"
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-muted-foreground">{s.label}</span>
-              <span className="text-xl">{s.icon}</span>
+      {/* ---- Stat cards (admin/HR only) ---- */}
+      {isAdminOrHR && (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {[
+            { label: "Team Members", value: teamCount, icon: "👥" },
+            { label: "This Month", value: thisMonthCount, icon: "🎂" },
+            { label: "Sent This Year", value: sentThisYear, icon: "✉️" },
+          ].map((s) => (
+            <div
+              key={s.label}
+              className="rounded-xl border bg-card p-5 shadow-sm"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-muted-foreground">{s.label}</span>
+                <span className="text-xl">{s.icon}</span>
+              </div>
+              <p className="mt-2 text-3xl font-bold" style={{ color: "#2D1B69" }}>
+                {s.value}
+              </p>
             </div>
-            <p className="mt-2 text-3xl font-bold" style={{ color: "#2D1B69" }}>
-              {s.value}
-            </p>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* ---- Today's birthdays ---- */}
       {todayBirthdays.length > 0 && (
@@ -203,18 +206,20 @@ export default function Dashboard({ employees, logs, onCompose }: Props) {
                     )}
                   </div>
                 </div>
-                {sentToday.has(emp.id) ? (
-                  <span className="rounded-full bg-green-400/20 px-3 py-1 text-xs font-medium text-green-200">
-                    Sent
-                  </span>
-                ) : (
-                  <button
-                    onClick={() => onCompose(emp)}
-                    className="rounded-lg px-4 py-1.5 text-sm font-semibold transition"
-                    style={{ backgroundColor: "#EF9F27", color: "#2D1B69" }}
-                  >
-                    Send Wishes
-                  </button>
+                {isAdminOrHR && (
+                  sentToday.has(emp.id) ? (
+                    <span className="rounded-full bg-green-400/20 px-3 py-1 text-xs font-medium text-green-200">
+                      Sent
+                    </span>
+                  ) : (
+                    <button
+                      onClick={() => onCompose(emp)}
+                      className="rounded-lg px-4 py-1.5 text-sm font-semibold transition"
+                      style={{ backgroundColor: "#EF9F27", color: "#2D1B69" }}
+                    >
+                      Send Wishes
+                    </button>
+                  )
                 )}
               </div>
             ))}
@@ -270,59 +275,61 @@ export default function Dashboard({ employees, logs, onCompose }: Props) {
         )}
       </div>
 
-      {/* ---- Recent emails accordion ---- */}
-      <div className="rounded-xl border bg-card shadow-sm">
-        <button
-          onClick={() => setEmailsOpen((o) => !o)}
-          className="flex w-full items-center justify-between px-5 py-4 text-left"
-        >
-          <h3 className="text-base font-semibold text-foreground">Recent Emails</h3>
-          <svg
-            className={`h-5 w-5 text-muted-foreground transition-transform ${emailsOpen ? "rotate-180" : ""}`}
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            viewBox="0 0 24 24"
+      {/* ---- Recent emails accordion (admin/HR only) ---- */}
+      {isAdminOrHR && (
+        <div className="rounded-xl border bg-card shadow-sm">
+          <button
+            onClick={() => setEmailsOpen((o) => !o)}
+            className="flex w-full items-center justify-between px-5 py-4 text-left"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
+            <h3 className="text-base font-semibold text-foreground">Recent Emails</h3>
+            <svg
+              className={`h-5 w-5 text-muted-foreground transition-transform ${emailsOpen ? "rotate-180" : ""}`}
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
 
-        <div
-          className="overflow-hidden transition-[max-height] duration-300 ease-in-out"
-          style={{ maxHeight: emailsOpen ? contentHeight + 40 : 180 }}
-        >
-          <div ref={contentRef} className="px-5 pb-4">
-            {recentLogs.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No emails sent yet</p>
-            ) : emailsOpen ? (
-              Object.entries(grouped).map(([month, items]) => (
-                <div key={month} className="mb-4">
-                  <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    {month}
-                  </p>
+          <div
+            className="overflow-hidden transition-[max-height] duration-300 ease-in-out"
+            style={{ maxHeight: emailsOpen ? contentHeight + 40 : 180 }}
+          >
+            <div ref={contentRef} className="px-5 pb-4">
+              {recentLogs.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No emails sent yet</p>
+              ) : emailsOpen ? (
+                Object.entries(grouped).map(([month, items]) => (
+                  <div key={month} className="mb-4">
+                    <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      {month}
+                    </p>
+                    <div className="divide-y divide-border">
+                      {items.map((l) => (
+                        <LogRow key={l.id} log={l} />
+                      ))}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="relative">
                   <div className="divide-y divide-border">
-                    {items.map((l) => (
+                    {collapsedLogs.map((l) => (
                       <LogRow key={l.id} log={l} />
                     ))}
                   </div>
+                  {recentLogs.length > COLLAPSED_MAX && (
+                    <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-card to-transparent" />
+                  )}
                 </div>
-              ))
-            ) : (
-              <div className="relative">
-                <div className="divide-y divide-border">
-                  {collapsedLogs.map((l) => (
-                    <LogRow key={l.id} log={l} />
-                  ))}
-                </div>
-                {recentLogs.length > COLLAPSED_MAX && (
-                  <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-card to-transparent" />
-                )}
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

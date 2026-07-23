@@ -14,10 +14,12 @@ export default function BirthdayHubPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [logs, setLogs] = useState<SendLog[]>([]);
   const [loading, setLoading] = useState(true);
+  const [userRole, setUserRole] = useState<string>("employee");
   const [composeTarget, setComposeTarget] = useState<Employee | null>(null);
   const [scheduledRefreshKey, setScheduledRefreshKey] = useState(0);
   const [toasts, setToasts] = useState<{ id: string; text: string }[]>([]);
   const checkingRef = useRef(false);
+  const isAdminOrHR = userRole === "admin" || userRole === "hr";
 
   function addToast(text: string) {
     const id = Math.random().toString(36).slice(2);
@@ -72,12 +74,15 @@ export default function BirthdayHubPage() {
   }, []);
 
   const fetchData = useCallback(async () => {
-    const [empRes, logRes] = await Promise.all([
+    const [empRes, logRes, profileRes] = await Promise.all([
       fetch("/api/birthdayhub/employees"),
       fetch("/api/birthdayhub/logs"),
+      fetch("/api/profile"),
     ]);
     setEmployees(await empRes.json());
     setLogs(await logRes.json());
+    const profileData = await profileRes.json();
+    if (profileData.user?.role) setUserRole(profileData.user.role);
     setLoading(false);
   }, []);
 
@@ -94,13 +99,14 @@ export default function BirthdayHubPage() {
     setTab("compose");
   }
 
-  const tabs: { key: Tab; label: string; icon: string }[] = [
+  const allTabs: { key: Tab; label: string; icon: string; adminOnly?: boolean }[] = [
     { key: "dashboard", label: "Dashboard", icon: "🏠" },
-    { key: "team",      label: "Team",      icon: "👥" },
-    { key: "compose",   label: "Compose",   icon: "✉️" },
-    { key: "scheduled", label: "Scheduled", icon: "⏰" },
-    { key: "settings",  label: "Settings",  icon: "⚙️" },
+    { key: "team",      label: "Team",      icon: "👥", adminOnly: true },
+    { key: "compose",   label: "Compose",   icon: "✉️", adminOnly: true },
+    { key: "scheduled", label: "Scheduled", icon: "⏰", adminOnly: true },
+    { key: "settings",  label: "Settings",  icon: "⚙️", adminOnly: true },
   ];
+  const tabs = allTabs.filter((t) => !t.adminOnly || isAdminOrHR);
 
   const todayCount = employees.filter((e) => {
     const n = new Date();
@@ -143,7 +149,7 @@ export default function BirthdayHubPage() {
       ) : (
         <>
           {tab === "dashboard" && (
-            <Dashboard employees={employees} logs={logs} onCompose={handleCompose} />
+            <Dashboard employees={employees} logs={logs} onCompose={handleCompose} isAdminOrHR={isAdminOrHR} />
           )}
           {tab === "team" && (
             <TeamTab
