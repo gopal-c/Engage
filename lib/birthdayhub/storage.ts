@@ -62,25 +62,40 @@ function rowToScheduledSend(row: Record<string, unknown>): ScheduledSend {
   };
 }
 
-// ── Employees (read-only, from skillshub.profiles) ──────────────────────────
+// ── Employees (read-only, merged from skillshub.profiles + auth.users) ──────
 
 export async function getEmployees(): Promise<Employee[]> {
   const rows = await sql`
-    SELECT id, name, email, city, seniority, date_of_birth
-    FROM skillshub.profiles
-    WHERE date_of_birth IS NOT NULL
-    ORDER BY name ASC
+    SELECT DISTINCT ON (lower(email)) id, name, email, city, seniority, date_of_birth
+    FROM (
+      SELECT id, name, email, city, seniority, date_of_birth
+      FROM skillshub.profiles
+      WHERE date_of_birth IS NOT NULL
+      UNION ALL
+      SELECT id, name, email, '' AS city, '' AS seniority, date_of_birth
+      FROM auth.users
+      WHERE date_of_birth IS NOT NULL
+    ) combined
+    ORDER BY lower(email), city DESC
   `;
   return rows.map(rowToEmployee);
 }
 
 export async function getEmployee(id: string): Promise<Employee | null> {
-  const rows = await sql`
+  // Check skillshub.profiles first, then auth.users
+  const profileRows = await sql`
     SELECT id, name, email, city, seniority, date_of_birth
     FROM skillshub.profiles
     WHERE id = ${id} AND date_of_birth IS NOT NULL
   `;
-  return rows.length ? rowToEmployee(rows[0]) : null;
+  if (profileRows.length) return rowToEmployee(profileRows[0]);
+
+  const userRows = await sql`
+    SELECT id, name, email, '' AS city, '' AS seniority, date_of_birth
+    FROM auth.users
+    WHERE id = ${id} AND date_of_birth IS NOT NULL
+  `;
+  return userRows.length ? rowToEmployee(userRows[0]) : null;
 }
 
 // ── Send Logs ────────────────────────────────────────────────────────────────

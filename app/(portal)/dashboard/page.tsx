@@ -11,16 +11,22 @@ async function getBirthdayStats() {
     const todayMMDD = `${currentMonth}-${String(now.getDate()).padStart(2, "0")}`;
 
     const monthCount = await sql`
-      SELECT COUNT(*)::int AS count FROM skillshub.profiles
-      WHERE date_of_birth IS NOT NULL
-        AND to_char(date_of_birth, 'MM') = ${currentMonth}
+      SELECT COUNT(*)::int AS count FROM (
+        SELECT email, date_of_birth FROM skillshub.profiles WHERE date_of_birth IS NOT NULL
+        UNION
+        SELECT email, date_of_birth FROM auth.users WHERE date_of_birth IS NOT NULL
+      ) combined
+      WHERE to_char(date_of_birth, 'MM') = ${currentMonth}
     `;
 
     const upcoming = await sql`
-      SELECT name, to_char(date_of_birth, 'MM-DD') AS birthday
-      FROM skillshub.profiles
-      WHERE date_of_birth IS NOT NULL
-      ORDER BY
+      SELECT DISTINCT ON (lower(email)) name, to_char(date_of_birth, 'MM-DD') AS birthday
+      FROM (
+        SELECT name, email, date_of_birth FROM skillshub.profiles WHERE date_of_birth IS NOT NULL
+        UNION ALL
+        SELECT name, email, date_of_birth FROM auth.users WHERE date_of_birth IS NOT NULL
+      ) combined
+      ORDER BY lower(email),
         CASE WHEN to_char(date_of_birth, 'MM-DD') >= ${todayMMDD} THEN 0 ELSE 1 END,
         to_char(date_of_birth, 'MM-DD') ASC
       LIMIT 1

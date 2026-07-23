@@ -1,7 +1,9 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { sql } from "@/lib/db";
 import { Sidebar } from "@/components/sidebar";
 import { Header } from "@/components/header";
+import { OnboardingModal } from "@/components/onboarding-modal";
 
 export default async function PortalLayout({
   children,
@@ -10,6 +12,11 @@ export default async function PortalLayout({
 }) {
   const session = await auth();
   if (!session?.user) redirect("/login");
+
+  const rows = await sql`
+    SELECT profile_completed FROM auth.users WHERE id = ${session.user.id}
+  `;
+  const profileCompleted = rows.length > 0 && (rows[0].profile_completed as boolean);
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -27,6 +34,7 @@ export default async function PortalLayout({
           {children}
         </main>
       </div>
+      {!profileCompleted && <OnboardingModal />}
     </div>
   );
 }
