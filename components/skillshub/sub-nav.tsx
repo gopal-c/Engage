@@ -4,20 +4,20 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
-type NavItem = { href: string; label: string; disabled?: boolean };
+type NavItem = { href: string; label: string; icon: string; disabled?: boolean };
 
 const HR_NAV: NavItem[] = [
-  { href: "/apps/skillshub/search", label: "AI Search" },
-  { href: "/apps/skillshub/employees", label: "Directory" },
-  { href: "/apps/skillshub/review", label: "Review Queue" },
-  { href: "/apps/skillshub/onboard", label: "Onboard" },
+  { href: "/apps/skillshub/search", label: "AI Search", icon: "🔍" },
+  { href: "/apps/skillshub/employees", label: "Directory", icon: "👥" },
+  { href: "/apps/skillshub/review", label: "Review", icon: "📋" },
+  { href: "/apps/skillshub/onboard", label: "Onboard", icon: "📄" },
 ];
 
 function employeeNav(approved: boolean): NavItem[] {
   return [
-    { href: "/apps/skillshub/home", label: "Home" },
-    { href: "/apps/skillshub/me", label: "My Profile", disabled: !approved },
-    { href: "/apps/skillshub/upload", label: "Update Profile", disabled: !approved },
+    { href: "/apps/skillshub/home", label: "Home", icon: "🏠" },
+    { href: "/apps/skillshub/me", label: "My Profile", icon: "👤", disabled: !approved },
+    { href: "/apps/skillshub/upload", label: "Update Profile", icon: "📤", disabled: !approved },
   ];
 }
 
@@ -37,7 +37,7 @@ export function SkillsHubSubNav({
   const items = role === "hr" ? HR_NAV : employeeNav(approved ?? false);
 
   return (
-    <nav className="mb-6 flex items-center gap-1 border-b border-ink-200/60" aria-label="SkillsHub navigation">
+    <nav className="mb-6 flex items-center gap-1 self-start overflow-x-auto rounded-full bg-secondary p-1" aria-label="SkillsHub navigation">
       {items.map((item) => {
         const active = isActive(pathname, item.href);
 
@@ -46,8 +46,9 @@ export function SkillsHubSubNav({
             <span
               key={item.href}
               title="Available once your account is approved"
-              className="cursor-not-allowed px-3 py-2 text-sm text-muted-foreground opacity-50"
+              className="flex cursor-not-allowed items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium text-muted-foreground opacity-50"
             >
+              <span>{item.icon}</span>
               {item.label}
             </span>
           );
@@ -59,16 +60,14 @@ export function SkillsHubSubNav({
             href={item.href}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "relative px-3 py-2 text-sm transition-colors",
+              "flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium transition-all",
               active
-                ? "font-medium text-ink-800"
-                : "text-ink-500 hover:text-ink-800",
+                ? "bg-card text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground",
             )}
           >
+            <span>{item.icon}</span>
             {item.label}
-            {active && (
-              <span className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full bg-indigo-deep" />
-            )}
           </Link>
         );
       })}

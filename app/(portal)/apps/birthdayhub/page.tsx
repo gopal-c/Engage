@@ -140,39 +140,29 @@ export default function BirthdayHubPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header with tabs */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center text-base"
-            style={{ background: "#2D1B69" }}>
-            <span className="text-white text-sm">&#x1f382;</span>
-          </div>
-          <span className="font-semibold text-foreground text-lg">Birthday Hub</span>
-        </div>
-
-        <nav className="flex items-center gap-1 bg-secondary rounded-full p-1 overflow-x-auto">
-          {tabs.map(({ key, label, icon }) => (
-            <button
-              key={key}
-              onClick={() => { setTab(key); if (key !== "compose") setComposeTarget(null); }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap ${
-                tab === key
-                  ? "bg-card text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <span>{icon}</span>
-              {label}
-              {key === "dashboard" && todayCount > 0 && (
-                <span className="w-4 h-4 rounded-full text-white text-[10px] flex items-center justify-center font-semibold"
-                  style={{ background: "#EF9F27" }}>
-                  {todayCount}
-                </span>
-              )}
-            </button>
-          ))}
-        </nav>
-      </div>
+      {/* Tabs */}
+      <nav className="flex items-center gap-1 rounded-full bg-secondary p-1 overflow-x-auto self-start">
+        {tabs.map(({ key, label, icon }) => (
+          <button
+            key={key}
+            onClick={() => { setTab(key); if (key !== "compose") setComposeTarget(null); }}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap ${
+              tab === key
+                ? "bg-card text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <span>{icon}</span>
+            {label}
+            {key === "dashboard" && todayCount > 0 && (
+              <span className="w-4 h-4 rounded-full text-white text-[10px] flex items-center justify-center font-semibold"
+                style={{ background: "#EF9F27" }}>
+                {todayCount}
+              </span>
+            )}
+          </button>
+        ))}
+      </nav>
 
       {/* Tab content */}
       {loading ? (
