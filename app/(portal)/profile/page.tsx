@@ -187,7 +187,7 @@ export default function ProfilePage() {
               <label className="text-sm font-medium">Date of Birth</label>
               <p className="mt-1.5 text-sm text-muted-foreground">
                 {user.date_of_birth
-                  ? new Date(user.date_of_birth + "T00:00:00").toLocaleDateString("en-US", {
+                  ? new Date(user.date_of_birth.slice(0, 10) + "T00:00:00").toLocaleDateString("en-US", {
                       year: "numeric",
                       month: "long",
                       day: "numeric",

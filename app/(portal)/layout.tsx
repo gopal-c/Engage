@@ -13,10 +13,14 @@ export default async function PortalLayout({
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  const rows = await sql`
-    SELECT profile_completed FROM auth.users WHERE id = ${session.user.id}
-  `;
-  const profileCompleted = rows.length > 0 && (rows[0].profile_completed as boolean);
+  const isAdmin = session.user.role === "admin";
+  let profileCompleted = true;
+  if (!isAdmin) {
+    const rows = await sql`
+      SELECT profile_completed FROM auth.users WHERE id = ${session.user.id}
+    `;
+    profileCompleted = rows.length > 0 && (rows[0].profile_completed as boolean);
+  }
 
   return (
     <div className="flex h-screen overflow-hidden">
