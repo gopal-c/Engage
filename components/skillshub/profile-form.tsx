@@ -3,9 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -14,7 +12,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { HrResumeSection } from "@/components/skillshub/hr-resume-section";
 import { MilestonesPanel } from "@/components/skillshub/milestones-panel";
 import { maxDateOfBirth } from "@/lib/skillshub/domain";
@@ -22,8 +19,6 @@ import type { Profile, Seniority, Proficiency, Status, Skill, Project, Education
 
 type Props = {
   profile: Profile;
-  /** "review" = HR reviewing a pending profile. "edit" = unused legacy HR edit.
-   *  "self" = employee editing their own profile from /me. */
   mode: "review" | "edit" | "self";
   onSaved?: () => void;
   initialMilestones?: Milestone[];
@@ -31,6 +26,23 @@ type Props = {
 
 const SENIORITIES: Seniority[]   = ["junior", "mid", "senior", "lead"];
 const PROFICIENCIES: Proficiency[] = ["beginner", "intermediate", "advanced", "expert"];
+
+function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section className="glass-surface rounded-2xl border border-white/70 p-6 shadow-2">
+      <h3 className="mb-5 text-ink-800">{title}</h3>
+      {children}
+    </section>
+  );
+}
+
+function FieldLabel({ htmlFor, children }: { htmlFor?: string; children: React.ReactNode }) {
+  return (
+    <label htmlFor={htmlFor} className="mb-1.5 block text-xs font-medium text-ink-500">
+      {children}
+    </label>
+  );
+}
 
 export function ProfileForm({ profile, mode, onSaved, initialMilestones = [] }: Props) {
   const router = useRouter();
@@ -93,23 +105,35 @@ export function ProfileForm({ profile, mode, onSaved, initialMilestones = [] }: 
 
   return (
     <div className="space-y-6">
+      {/* Hero header */}
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="display-xl">{profile.name}</h1>
+          <p className="mt-1 text-sm text-ink-500">{profile.email}</p>
+        </div>
+        <span className={`eyebrow text-xs ${
+          profile.status === "pending" ? "text-coral-deep" : "text-teal-deep"
+        }`}>
+          {profile.status}
+        </span>
+      </div>
+
       {/* Basics */}
-      <Card>
-        <CardHeader><CardTitle>Basics</CardTitle></CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
+      <SectionCard title="Basics">
+        <div className="grid gap-4 md:grid-cols-2">
+          <div>
+            <FieldLabel htmlFor="name">Name</FieldLabel>
             <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
           </div>
           {mode !== "self" && (
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+            <div>
+              <FieldLabel htmlFor="email">Email</FieldLabel>
               <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
             </div>
           )}
           {(mode === "review" || mode === "self") && (
-            <div className="space-y-2">
-              <Label htmlFor="work-email">Work email</Label>
+            <div>
+              <FieldLabel htmlFor="work-email">Work email</FieldLabel>
               <Input
                 id="work-email"
                 type="email"
@@ -119,19 +143,19 @@ export function ProfileForm({ profile, mode, onSaved, initialMilestones = [] }: 
                 placeholder="name@valueaddsofttech.com"
               />
               {workEmailLocked && (
-                <p className="text-[12px] text-muted-foreground">Verified — contact HR to change this email.</p>
+                <p className="mt-1 text-[11px] text-ink-400">Verified — contact HR to change this email.</p>
               )}
               {mode === "self" && !workEmailLocked && workEmail && (
-                <p className="text-[12px] text-muted-foreground">Changing this re-sends a verification email.</p>
+                <p className="mt-1 text-[11px] text-ink-400">Changing this re-sends a verification email.</p>
               )}
             </div>
           )}
-          <div className="space-y-2">
-            <Label htmlFor="city">City</Label>
+          <div>
+            <FieldLabel htmlFor="city">City</FieldLabel>
             <Input id="city" value={city} onChange={(e) => setCity(e.target.value)} />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="yrs">Years of experience</Label>
+          <div>
+            <FieldLabel htmlFor="yrs">Years of experience</FieldLabel>
             <Input
               id="yrs"
               type="number"
@@ -140,8 +164,8 @@ export function ProfileForm({ profile, mode, onSaved, initialMilestones = [] }: 
               onChange={(e) => setYearsExperience(Number(e.target.value) || 0)}
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="seniority">Seniority</Label>
+          <div>
+            <FieldLabel htmlFor="seniority">Seniority</FieldLabel>
             <Select value={seniority} onValueChange={(v) => setSeniority(v as Seniority)}>
               <SelectTrigger id="seniority"><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -151,15 +175,14 @@ export function ProfileForm({ profile, mode, onSaved, initialMilestones = [] }: 
               </SelectContent>
             </Select>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </SectionCard>
 
       {/* Employment Details */}
-      <Card>
-        <CardHeader><CardTitle>Employment Details</CardTitle></CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="joining-date">Joining Date</Label>
+      <SectionCard title="Employment Details">
+        <div className="grid gap-4 md:grid-cols-2">
+          <div>
+            <FieldLabel htmlFor="joining-date">Joining Date</FieldLabel>
             <Input
               id="joining-date"
               type="date"
@@ -167,8 +190,8 @@ export function ProfileForm({ profile, mode, onSaved, initialMilestones = [] }: 
               onChange={(e) => setJoiningDate(e.target.value)}
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="dob">Date of Birth</Label>
+          <div>
+            <FieldLabel htmlFor="dob">Date of Birth</FieldLabel>
             <Input
               id="dob"
               type="date"
@@ -176,12 +199,12 @@ export function ProfileForm({ profile, mode, onSaved, initialMilestones = [] }: 
               max={maxDateOfBirth()}
               onChange={(e) => setDateOfBirth(e.target.value)}
             />
-            <p className="text-[12px] text-muted-foreground">Must be at least 16 years ago.</p>
+            <p className="mt-1 text-[11px] text-ink-400">Must be at least 16 years ago.</p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </SectionCard>
 
-      {/* Resume — HR only; employees use /upload for their own re-uploads */}
+      {/* Resume — HR only */}
       {mode !== "self" && <HrResumeSection profile={profile} />}
 
       {/* Milestones & Achievements */}
@@ -191,14 +214,13 @@ export function ProfileForm({ profile, mode, onSaved, initialMilestones = [] }: 
       />
 
       {/* Skills */}
-      <Card>
-        <CardHeader><CardTitle>Skills ({skills.length})</CardTitle></CardHeader>
-        <CardContent className="space-y-3">
-          {skills.length === 0 && (
-            <p className="text-[13px] text-muted-foreground">No skills yet. Add one below.</p>
-          )}
+      <SectionCard title={`Skills (${skills.length})`}>
+        {skills.length === 0 && (
+          <p className="mb-3 text-sm text-ink-400">No skills yet. Add one below.</p>
+        )}
+        <div className="space-y-2">
           {skills.map((s, i) => (
-            <div key={i} className="grid grid-cols-1 items-end gap-2 sm:grid-cols-[1fr_120px_140px_90px_auto]">
+            <div key={i} className="grid grid-cols-1 items-center gap-2 sm:grid-cols-[1fr_120px_140px_80px_auto]">
               <Input
                 placeholder="Skill name"
                 value={s.name}
@@ -233,38 +255,35 @@ export function ProfileForm({ profile, mode, onSaved, initialMilestones = [] }: 
                   const next = [...skills]; next[i] = { ...next[i], yearsExperience: Number(e.target.value) || 0 }; setSkills(next);
                 }}
               />
-              <Button
+              <button
                 type="button"
-                variant="ghost"
-                size="sm"
                 onClick={() => setSkills(skills.filter((_, j) => j !== i))}
                 aria-label="Remove skill"
+                className="flex size-8 items-center justify-center rounded-lg text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-700"
               >
                 ×
-              </Button>
+              </button>
             </div>
           ))}
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setSkills([...skills, { name: "", category: "other", proficiency: "intermediate", yearsExperience: 0 }])}
-          >
-            + Add skill
-          </Button>
-        </CardContent>
-      </Card>
+        </div>
+        <button
+          type="button"
+          onClick={() => setSkills([...skills, { name: "", category: "other", proficiency: "intermediate", yearsExperience: 0 }])}
+          className="mt-3 text-sm font-medium text-ink-600 hover:text-ink-800"
+        >
+          + Add skill
+        </button>
+      </SectionCard>
 
       {/* Projects */}
-      <Card>
-        <CardHeader><CardTitle>Projects ({projects.length})</CardTitle></CardHeader>
-        <CardContent className="space-y-4">
-          {projects.length === 0 && (
-            <p className="text-[13px] text-muted-foreground">No projects yet. Add one below.</p>
-          )}
+      <SectionCard title={`Projects (${projects.length})`}>
+        {projects.length === 0 && (
+          <p className="mb-3 text-sm text-ink-400">No projects yet. Add one below.</p>
+        )}
+        <div className="space-y-4">
           {projects.map((p, i) => (
-            <div key={i} className="space-y-2 rounded-md border border p-3">
-              <div className="grid gap-2 sm:grid-cols-[1fr_150px_auto]">
+            <div key={i} className="space-y-2 rounded-xl border border-ink-200/60 p-4">
+              <div className="grid gap-2 sm:grid-cols-[1fr_140px_auto]">
                 <Input
                   placeholder="Project name"
                   value={p.name}
@@ -279,15 +298,14 @@ export function ProfileForm({ profile, mode, onSaved, initialMilestones = [] }: 
                     const next = [...projects]; next[i] = { ...next[i], duration: e.target.value }; setProjects(next);
                   }}
                 />
-                <Button
+                <button
                   type="button"
-                  variant="ghost"
-                  size="sm"
                   onClick={() => setProjects(projects.filter((_, j) => j !== i))}
                   aria-label="Remove project"
+                  className="flex size-8 items-center justify-center rounded-lg text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-700"
                 >
                   ×
-                </Button>
+                </button>
               </div>
               <Textarea
                 placeholder="Description"
@@ -308,26 +326,24 @@ export function ProfileForm({ profile, mode, onSaved, initialMilestones = [] }: 
               />
             </div>
           ))}
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setProjects([...projects, { name: "", description: "", skillsUsed: [], duration: "" }])}
-          >
-            + Add project
-          </Button>
-        </CardContent>
-      </Card>
+        </div>
+        <button
+          type="button"
+          onClick={() => setProjects([...projects, { name: "", description: "", skillsUsed: [], duration: "" }])}
+          className="mt-3 text-sm font-medium text-ink-600 hover:text-ink-800"
+        >
+          + Add project
+        </button>
+      </SectionCard>
 
       {/* Education */}
-      <Card>
-        <CardHeader><CardTitle>Education ({education.length})</CardTitle></CardHeader>
-        <CardContent className="space-y-3">
-          {education.length === 0 && (
-            <p className="text-[13px] text-muted-foreground">No education entries yet.</p>
-          )}
+      <SectionCard title={`Education (${education.length})`}>
+        {education.length === 0 && (
+          <p className="mb-3 text-sm text-ink-400">No education entries yet.</p>
+        )}
+        <div className="space-y-2">
           {education.map((e, i) => (
-            <div key={i} className="grid items-end gap-2 sm:grid-cols-[1fr_1fr_110px_100px_auto]">
+            <div key={i} className="grid items-center gap-2 sm:grid-cols-[1fr_1fr_100px_90px_auto]">
               <Input
                 placeholder="Degree"
                 value={e.degree}
@@ -368,93 +384,98 @@ export function ProfileForm({ profile, mode, onSaved, initialMilestones = [] }: 
                   const next = [...education]; next[i] = { ...next[i], year: Number(ev.target.value) || 0 }; setEducation(next);
                 }}
               />
-              <Button
+              <button
                 type="button"
-                variant="ghost"
-                size="sm"
                 onClick={() => setEducation(education.filter((_, j) => j !== i))}
                 aria-label="Remove education"
+                className="flex size-8 items-center justify-center rounded-lg text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-700"
               >
                 ×
-              </Button>
+              </button>
             </div>
           ))}
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setEducation([...education, { degree: "", institution: "", year: new Date().getFullYear() }])}
-          >
-            + Add education
-          </Button>
-        </CardContent>
-      </Card>
+        </div>
+        <button
+          type="button"
+          onClick={() => setEducation([...education, { degree: "", institution: "", year: new Date().getFullYear() }])}
+          className="mt-3 text-sm font-medium text-ink-600 hover:text-ink-800"
+        >
+          + Add education
+        </button>
+      </SectionCard>
 
       {/* Actions */}
-      <div className="flex flex-wrap items-center justify-end gap-3 border-t border pt-5">
+      <div className="flex flex-wrap items-center justify-end gap-3 border-t pt-5" style={{ borderTop: "var(--t-bar-border)" }}>
         {mode === "review" ? (
           <>
-            <Button
+            <button
               type="button"
-              variant="ghost"
               disabled={isPending}
               onClick={() => submit({ status: "rejected" }, "Profile rejected.", "/apps/skillshub/review")}
+              className="px-4 py-2 text-sm font-medium text-ink-500 transition-colors hover:text-ink-800 disabled:opacity-50"
             >
               Reject
-            </Button>
-            <Button
+            </button>
+            <button
               type="button"
-              variant="outline"
               disabled={isPending}
               onClick={() => submit(buildPatch(), "Changes saved.")}
+              className="rounded-xl border border-ink-200 bg-ink-0 px-4 py-2 text-sm font-medium text-ink-700 shadow-1 transition-all hover:shadow-2 disabled:opacity-50"
             >
               {isPending ? "Saving..." : "Save changes"}
-            </Button>
-            <Button
+            </button>
+            <button
               type="button"
-              variant="secondary"
               disabled={isPending}
               onClick={() => submit({ status: "approved" }, "Profile approved.", "/apps/skillshub/review")}
+              className="px-4 py-2 text-sm font-medium text-ink-600 transition-colors hover:text-ink-800 disabled:opacity-50"
             >
               Approve
-            </Button>
-            <Button
+            </button>
+            <button
               type="button"
               disabled={isPending}
               onClick={() => submit(buildPatch({ status: "approved" }), "Saved & approved.", "/apps/skillshub/review")}
+              className="rounded-xl bg-indigo-deep px-5 py-2 text-sm font-medium text-white shadow-2 transition-all hover:bg-indigo-press hover:shadow-3 disabled:opacity-50"
             >
               Save &amp; approve
-            </Button>
+            </button>
           </>
         ) : mode === "self" ? (
           <>
-            <Button type="button" variant="ghost" onClick={() => onSaved?.()}>
+            <button
+              type="button"
+              onClick={() => onSaved?.()}
+              className="px-4 py-2 text-sm font-medium text-ink-500 transition-colors hover:text-ink-800"
+            >
               Cancel
-            </Button>
-            <Button
+            </button>
+            <button
               type="button"
               disabled={isPending}
               onClick={() => submit(buildPatch(), "Changes saved.")}
+              className="rounded-xl bg-indigo-deep px-5 py-2 text-sm font-medium text-white shadow-2 transition-all hover:bg-indigo-press hover:shadow-3 disabled:opacity-50"
             >
               {isPending ? "Saving..." : "Save changes"}
-            </Button>
+            </button>
           </>
         ) : (
           <>
-            <Button
+            <button
               type="button"
-              variant="ghost"
               onClick={() => router.push(`/apps/skillshub/employees/${profile.id}`)}
+              className="px-4 py-2 text-sm font-medium text-ink-500 transition-colors hover:text-ink-800"
             >
               Cancel
-            </Button>
-            <Button
+            </button>
+            <button
               type="button"
               disabled={isPending}
               onClick={() => submit(buildPatch(), "Changes saved.", `/apps/skillshub/employees/${profile.id}`)}
+              className="rounded-xl bg-indigo-deep px-5 py-2 text-sm font-medium text-white shadow-2 transition-all hover:bg-indigo-press hover:shadow-3 disabled:opacity-50"
             >
               {isPending ? "Saving..." : "Save changes"}
-            </Button>
+            </button>
           </>
         )}
       </div>

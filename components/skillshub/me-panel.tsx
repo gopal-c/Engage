@@ -27,11 +27,11 @@ export function MePanel({
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">My Profile</h1>
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="display-xl">My Profile</h1>
         <button
           onClick={() => setEditing(true)}
-          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+          className="rounded-xl bg-indigo-deep px-5 py-2 text-sm font-medium text-white shadow-2 transition-all hover:bg-indigo-press hover:shadow-3"
         >
           Edit profile
         </button>
