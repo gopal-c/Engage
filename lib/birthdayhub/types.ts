@@ -2,10 +2,9 @@ export interface Employee {
   id: string;
   name: string;
   email: string;
-  department: string;
-  birthday: string; // MM-DD
-  notes?: string;
-  createdAt: string;
+  birthday: string; // MM-DD, extracted from skillshub.profiles.date_of_birth
+  city: string;
+  seniority: string;
 }
 
 export interface SendLog {
@@ -20,7 +19,6 @@ export interface SendLog {
 
 export interface GenerateRequest {
   name: string;
-  department: string;
   notes?: string;
 }
 

@@ -6,7 +6,6 @@ import TeamTab from "@/components/birthdayhub/TeamTab";
 import ComposeTab from "@/components/birthdayhub/ComposeTab";
 import ScheduledTab from "@/components/birthdayhub/ScheduledTab";
 import SettingsTab from "@/components/birthdayhub/SettingsTab";
-import ImportModal from "@/components/birthdayhub/ImportModal";
 
 type Tab = "dashboard" | "team" | "compose" | "scheduled" | "settings";
 
@@ -16,7 +15,6 @@ export default function BirthdayHubPage() {
   const [logs, setLogs] = useState<SendLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [composeTarget, setComposeTarget] = useState<Employee | null>(null);
-  const [showImport, setShowImport] = useState(false);
   const [scheduledRefreshKey, setScheduledRefreshKey] = useState(0);
   const [toasts, setToasts] = useState<{ id: string; text: string }[]>([]);
   const checkingRef = useRef(false);
@@ -91,34 +89,6 @@ export default function BirthdayHubPage() {
     return () => window.removeEventListener("focus", checkScheduled);
   }, [checkScheduled]);
 
-  async function handleAdd(data: Omit<Employee, "id" | "createdAt">) {
-    const res = await fetch("/api/birthdayhub/employees", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    if (!res.ok) { alert(`Failed to add employee: ${res.status} ${await res.text()}`); return; }
-    const created: Employee = await res.json();
-    setEmployees((prev) => [...prev, created]);
-  }
-
-  async function handleEdit(id: string, data: Omit<Employee, "id" | "createdAt">) {
-    const res = await fetch(`/api/birthdayhub/employees/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    if (!res.ok) { alert(`Failed to update employee: ${res.status} ${await res.text()}`); return; }
-    const updated: Employee = await res.json();
-    setEmployees((prev) => prev.map((e) => e.id === id ? updated : e));
-  }
-
-  async function handleDelete(id: string) {
-    const res = await fetch(`/api/birthdayhub/employees/${id}`, { method: "DELETE" });
-    if (!res.ok) { alert(`Failed to delete employee: ${res.status} ${await res.text()}`); return; }
-    setEmployees((prev) => prev.filter((e) => e.id !== id));
-  }
-
   function handleCompose(emp: Employee) {
     setComposeTarget(emp);
     setTab("compose");
@@ -178,10 +148,6 @@ export default function BirthdayHubPage() {
           {tab === "team" && (
             <TeamTab
               employees={employees}
-              onAdd={handleAdd}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onImport={() => setShowImport(true)}
               onCompose={handleCompose}
             />
           )}
@@ -203,17 +169,6 @@ export default function BirthdayHubPage() {
             <SettingsTab />
           )}
         </>
-      )}
-
-      {/* Import modal */}
-      {showImport && (
-        <ImportModal
-          onClose={() => setShowImport(false)}
-          onImported={async () => {
-            await fetchData();
-            setShowImport(false);
-          }}
-        />
       )}
 
       {/* Toast notifications */}

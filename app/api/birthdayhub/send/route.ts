@@ -45,7 +45,7 @@ export async function POST(req: Request) {
   const resolvedHeroImageUrl = heroImageUrl || generateIllustrationUrl();
 
   const html = buildEmailHTML(
-    employee.name, employee.department, message, fromName,
+    employee.name, "", message, fromName,
     undefined, mood, fuel, logoUrl, resolvedHeroImageUrl, paletteId
   );
 

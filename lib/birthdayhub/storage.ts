@@ -2,15 +2,22 @@ import { sql } from "@/lib/db";
 import type { Employee, SendLog, ScheduledSend, AppSettings } from "./types";
 
 // ── Row mappers ───────────────────────────────────────────────────────────────
+
 function rowToEmployee(row: Record<string, unknown>): Employee {
+  const dob = row.date_of_birth as string | null;
+  let birthday = "";
+  if (dob) {
+    // dob is YYYY-MM-DD; extract MM-DD
+    const parts = dob.split("-");
+    birthday = `${parts[1]}-${parts[2]}`;
+  }
   return {
-    id:         row.id as string,
-    name:       row.name as string,
-    email:      row.email as string,
-    department: (row.department as string) || "",
-    birthday:   row.birthday as string,
-    notes:      (row.notes as string) || undefined,
-    createdAt:  (row.created_at as string) || new Date().toISOString(),
+    id:        row.id as string,
+    name:      row.name as string,
+    email:     row.email as string,
+    birthday,
+    city:      (row.city as string) || "",
+    seniority: (row.seniority as string) || "",
   };
 }
 
@@ -55,44 +62,25 @@ function rowToScheduledSend(row: Record<string, unknown>): ScheduledSend {
   };
 }
 
-// ── Employees ────────────────────────────────────────────────────────────────
+// ── Employees (read-only, from skillshub.profiles) ──────────────────────────
 
 export async function getEmployees(): Promise<Employee[]> {
-  const rows = await sql`SELECT * FROM birthdayhub.employees ORDER BY created_at ASC`;
+  const rows = await sql`
+    SELECT id, name, email, city, seniority, date_of_birth
+    FROM skillshub.profiles
+    WHERE date_of_birth IS NOT NULL
+    ORDER BY name ASC
+  `;
   return rows.map(rowToEmployee);
 }
 
-export async function saveEmployees(employees: Employee[]): Promise<void> {
-  await sql`DELETE FROM birthdayhub.employees`;
-  for (const e of employees) {
-    await sql`
-      INSERT INTO birthdayhub.employees (id, name, email, department, birthday, notes, created_at)
-      VALUES (${e.id}, ${e.name}, ${e.email}, ${e.department || null}, ${e.birthday}, ${e.notes || null}, ${e.createdAt || null})
-    `;
-  }
-}
-
 export async function getEmployee(id: string): Promise<Employee | null> {
-  const rows = await sql`SELECT * FROM birthdayhub.employees WHERE id = ${id}`;
-  return rows.length ? rowToEmployee(rows[0]) : null;
-}
-
-export async function upsertEmployee(employee: Employee): Promise<void> {
-  await sql`
-    INSERT INTO birthdayhub.employees (id, name, email, department, birthday, notes, created_at)
-    VALUES (${employee.id}, ${employee.name}, ${employee.email}, ${employee.department || null}, ${employee.birthday}, ${employee.notes || null}, ${employee.createdAt || null})
-    ON CONFLICT (id) DO UPDATE SET
-      name       = EXCLUDED.name,
-      email      = EXCLUDED.email,
-      department = EXCLUDED.department,
-      birthday   = EXCLUDED.birthday,
-      notes      = EXCLUDED.notes,
-      created_at = EXCLUDED.created_at
+  const rows = await sql`
+    SELECT id, name, email, city, seniority, date_of_birth
+    FROM skillshub.profiles
+    WHERE id = ${id} AND date_of_birth IS NOT NULL
   `;
-}
-
-export async function deleteEmployee(id: string): Promise<void> {
-  await sql`DELETE FROM birthdayhub.employees WHERE id = ${id}`;
+  return rows.length ? rowToEmployee(rows[0]) : null;
 }
 
 // ── Send Logs ────────────────────────────────────────────────────────────────

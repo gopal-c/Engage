@@ -74,11 +74,7 @@ export default function ComposeTab({
       const genRes = await fetch("/api/birthdayhub/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: target.name,
-          department: target.department,
-          notes: target.notes,
-        }),
+        body: JSON.stringify({ name: target.name }),
       });
       const genData = await genRes.json();
       if (!genRes.ok) throw new Error(genData.error ?? "Generation failed");
@@ -123,7 +119,6 @@ export default function ComposeTab({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: emp.name,
-          department: emp.department,
           message: msg,
           fromName,
           mood: m,
@@ -292,12 +287,10 @@ export default function ComposeTab({
           <div className="mt-3 rounded-lg bg-secondary border p-3">
             <p className="text-sm font-medium text-foreground">{selected.name}</p>
             <p className="text-xs text-muted-foreground">
-              {selected.email} &middot; {selected.department} &middot;{" "}
-              {selected.birthday}
+              {selected.email}
+              {selected.city && <> &middot; {selected.city}</>}
+              {" "}&middot; {selected.birthday}
             </p>
-            {selected.notes && (
-              <p className="text-xs text-muted-foreground mt-1">Notes: {selected.notes}</p>
-            )}
           </div>
         )}
 

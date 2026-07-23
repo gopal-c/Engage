@@ -92,7 +92,6 @@ export async function DELETE(request: NextRequest) {
   await sql`DELETE FROM engage.notifications WHERE user_id = ${userId}`;
   await sql`DELETE FROM engage.app_settings WHERE user_id = ${userId}`;
   await sql`UPDATE skillshub.profiles SET user_id = NULL WHERE user_id = ${userId}`;
-  await sql`UPDATE birthdayhub.employees SET user_id = NULL WHERE user_id = ${userId}`;
   await sql`DELETE FROM auth.users WHERE id = ${userId}`;
 
   return NextResponse.json({ ok: true });

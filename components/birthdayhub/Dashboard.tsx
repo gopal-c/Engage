@@ -4,22 +4,8 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import type { Employee, SendLog } from "@/lib/birthdayhub/types";
 
 /* ------------------------------------------------------------------ */
-/*  Constants & helpers                                                */
+/*  Helpers                                                            */
 /* ------------------------------------------------------------------ */
-
-const DEPT_COLORS: Record<string, { bg: string; text: string }> = {
-  Engineering: { bg: "#EEEDFE", text: "#2D1B69" },
-  Marketing:   { bg: "#FAECE7", text: "#993C1D" },
-  Design:      { bg: "#E1F5EE", text: "#0F6E56" },
-  Sales:       { bg: "#FAEEDA", text: "#854F0B" },
-  HR:          { bg: "#FBEAF0", text: "#993556" },
-  Finance:     { bg: "#E6F1FB", text: "#185FA5" },
-  Product:     { bg: "#EAF3DE", text: "#3B6D11" },
-};
-
-function deptColor(dept: string) {
-  return DEPT_COLORS[dept] ?? { bg: "#F3F4F6", text: "#374151" };
-}
 
 function initials(name: string) {
   return name
@@ -104,7 +90,6 @@ export default function Dashboard({ employees, logs, onCompose }: Props) {
   const today = todayMMDD();
   const month = currentMonth();
 
-  /* Stat calculations */
   const teamCount = employees.length;
   const thisMonthCount = employees.filter((e) => e.birthday.startsWith(month)).length;
   const year = new Date().getFullYear();
@@ -112,16 +97,13 @@ export default function Dashboard({ employees, logs, onCompose }: Props) {
     (l) => l.status === "sent" && l.year === year
   ).length;
 
-  /* Today's birthdays */
   const todayBirthdays = employees.filter((e) => e.birthday === today);
 
-  /* Upcoming (next 6, excluding today) */
   const upcoming = [...employees]
     .filter((e) => e.birthday !== today)
     .sort((a, b) => daysUntil(a.birthday) - daysUntil(b.birthday))
     .slice(0, 6);
 
-  /* Already-sent set for today */
   const sentToday = new Set(
     logs
       .filter((l) => {
@@ -157,7 +139,6 @@ export default function Dashboard({ employees, logs, onCompose }: Props) {
     (a, b) => new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime()
   );
 
-  /* Group by month for expanded view */
   const grouped = recentLogs.reduce<Record<string, SendLog[]>>((acc, l) => {
     const key = monthLabel(l.sentAt);
     (acc[key] ??= []).push(l);
@@ -217,7 +198,9 @@ export default function Dashboard({ employees, logs, onCompose }: Props) {
                   </div>
                   <div>
                     <p className="font-semibold">{emp.name}</p>
-                    <p className="text-xs text-white/70">{emp.department}</p>
+                    {emp.city && (
+                      <p className="text-xs text-white/70">{emp.city}</p>
+                    )}
                   </div>
                 </div>
                 {sentToday.has(emp.id) ? (
@@ -250,7 +233,6 @@ export default function Dashboard({ employees, logs, onCompose }: Props) {
           <div className="space-y-2">
             {upcoming.map((emp) => {
               const days = daysUntil(emp.birthday);
-              const dc = deptColor(emp.department);
               return (
                 <div
                   key={emp.id}
@@ -259,7 +241,7 @@ export default function Dashboard({ employees, logs, onCompose }: Props) {
                   <div className="flex items-center gap-3">
                     <div
                       className="flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold"
-                      style={{ backgroundColor: dc.bg, color: dc.text }}
+                      style={{ backgroundColor: "#EEEDFE", color: "#2D1B69" }}
                     >
                       {initials(emp.name)}
                     </div>
@@ -269,12 +251,14 @@ export default function Dashboard({ employees, logs, onCompose }: Props) {
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span
-                      className="rounded-full px-2.5 py-0.5 text-xs font-medium"
-                      style={{ backgroundColor: dc.bg, color: dc.text }}
-                    >
-                      {emp.department}
-                    </span>
+                    {emp.city && (
+                      <span
+                        className="hidden sm:inline-block rounded-full px-2.5 py-0.5 text-xs font-medium"
+                        style={{ backgroundColor: "#EEEDFE", color: "#2D1B69" }}
+                      >
+                        {emp.city}
+                      </span>
+                    )}
                     <span className="text-xs font-medium text-muted-foreground">
                       {days === 0 ? "Today" : `${days}d`}
                     </span>
@@ -312,7 +296,6 @@ export default function Dashboard({ employees, logs, onCompose }: Props) {
             {recentLogs.length === 0 ? (
               <p className="text-sm text-muted-foreground">No emails sent yet</p>
             ) : emailsOpen ? (
-              /* Expanded: grouped by month */
               Object.entries(grouped).map(([month, items]) => (
                 <div key={month} className="mb-4">
                   <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -326,7 +309,6 @@ export default function Dashboard({ employees, logs, onCompose }: Props) {
                 </div>
               ))
             ) : (
-              /* Collapsed: first few + fade */
               <div className="relative">
                 <div className="divide-y divide-border">
                   {collapsedLogs.map((l) => (

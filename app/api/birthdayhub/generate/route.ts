@@ -8,7 +8,7 @@ function getGroq() {
 }
 
 export async function POST(req: Request) {
-  const { name, department, notes } = await req.json();
+  const { name, notes } = await req.json();
 
   if (!name) {
     return NextResponse.json({ error: "name is required" }, { status: 400 });
@@ -23,20 +23,20 @@ export async function POST(req: Request) {
       messages: [
         {
           role: "user",
-          content: `Write a birthday message for ${name}${department ? `, who works in ${department}` : ""}.${extraContext}
+          content: `Write a birthday message for ${name}.${extraContext}
 
 Return ONLY a valid JSON object with no extra text or markdown, exactly like this:
 {
   "message": "Dear ${name}, [exactly 1 warm, personal, heartfelt birthday sentence — not generic]",
-  "mood": "[one upbeat word that fits ${name}'s vibe or role today, e.g. Radiant, Creative, Stellar, Focused, Bright]",
+  "mood": "[one upbeat word that fits ${name}'s vibe today, e.g. Radiant, Creative, Stellar, Focused, Bright]",
   "fuel": "[what ${name} probably runs on — a drink or snack, 1-2 words, e.g. Espresso, Cold Brew, Matcha, Green Tea, Pizza]"
 }
 
 Rules:
 - message: exactly 1 sentence starting with "Dear ${name},"
 - message: use "we" / "our" throughout — this is a company-wide message, never "I" or "my"
-- mood: single capitalised word, energetic and positive, ideally hinting at their role or personality
-- fuel: 1-2 words max, fun and specific, ideally tied to their department or personality
+- mood: single capitalised word, energetic and positive
+- fuel: 1-2 words max, fun and specific
 - Do NOT use hollow phrases like "on this special day"
 - Sound warm and genuine, from the whole team`,
         },

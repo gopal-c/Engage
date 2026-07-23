@@ -61,7 +61,7 @@ export async function GET(req: NextRequest) {
             max_tokens: 300,
             messages: [{
               role: "user",
-              content: `Write a birthday message for ${employee.name}${employee.department ? `, who works in ${employee.department}` : ""}${employee.notes ? `. Context: ${employee.notes}` : ""}.
+              content: `Write a birthday message for ${employee.name}.
 
 Return ONLY a valid JSON object:
 {
@@ -87,7 +87,7 @@ Return ONLY a valid JSON object:
           const palette = resolvePalette();
           const heroImageUrl = generateIllustrationUrl();
           const html = buildEmailHTML(
-            employee.name, employee.department, message, fromName,
+            employee.name, "", message, fromName,
             undefined, mood, fuel, logoUrl, heroImageUrl, palette.id
           );
 
