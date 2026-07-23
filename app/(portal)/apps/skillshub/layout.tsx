@@ -12,8 +12,9 @@ export default async function SkillsHubLayout({
 
   let approved = false;
   if (session.role === "employee") {
+    const isOrgUser = session.email.endsWith("@valueaddsofttech.com");
     const profile = await getProfileByEmail(session.email);
-    approved = profile?.status === "approved";
+    approved = isOrgUser || profile?.status === "approved";
   }
 
   return (
