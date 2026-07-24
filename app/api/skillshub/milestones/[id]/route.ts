@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireSkillsHubRole } from "@/lib/skillshub/session";
+import { requireApiRole } from "@/lib/skillshub/session";
 import { getMilestoneById, getProfileByEmail, deleteMilestone } from "@/lib/skillshub/storage";
 
 export const runtime = "nodejs";
@@ -8,7 +8,8 @@ export const dynamic = "force-dynamic";
 type Params = { params: Promise<{ id: string }> };
 
 export async function DELETE(_req: Request, { params }: Params) {
-  const session = await requireSkillsHubRole("any");
+  const session = await requireApiRole("any");
+  if (!session) return NextResponse.json({ ok: false, error: "Unauthorized." }, { status: 403 });
   const { id } = await params;
 
   const milestone = await getMilestoneById(id);

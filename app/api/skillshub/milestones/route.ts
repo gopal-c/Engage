@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireSkillsHubRole } from "@/lib/skillshub/session";
+import { requireApiRole } from "@/lib/skillshub/session";
 import { getProfile, getProfileByEmail, getMilestonesByProfileId, addMilestone } from "@/lib/skillshub/storage";
 import type { MilestoneCategory } from "@/lib/skillshub/types";
 
@@ -14,7 +14,8 @@ export async function GET(req: Request) {
     return NextResponse.json({ ok: false, error: "profileId is required." }, { status: 400 });
   }
 
-  const session = await requireSkillsHubRole("any");
+  const session = await requireApiRole("any");
+  if (!session) return NextResponse.json({ ok: false, error: "Unauthorized." }, { status: 403 });
   if (session.role !== "hr") {
     const own = await getProfileByEmail(session.email);
     if (!own || own.id !== profileId) {
@@ -27,7 +28,8 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  const session = await requireSkillsHubRole("any");
+  const session = await requireApiRole("any");
+  if (!session) return NextResponse.json({ ok: false, error: "Unauthorized." }, { status: 403 });
 
   const body = (await req.json()) as Record<string, unknown>;
   const profileId = typeof body.profileId === "string" ? body.profileId : "";

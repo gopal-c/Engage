@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireSkillsHubRole } from "@/lib/skillshub/session";
+import { requireApiRole } from "@/lib/skillshub/session";
 import { getProfile, updateProfile } from "@/lib/skillshub/storage";
 import { extractProfileFromPdf, ExtractError } from "@/lib/skillshub/extract";
 
@@ -10,7 +10,8 @@ export const dynamic = "force-dynamic";
 type Params = { params: Promise<{ id: string }> };
 
 export async function POST(req: Request, { params }: Params) {
-  await requireSkillsHubRole("hr");
+  const session = await requireApiRole("hr");
+  if (!session) return NextResponse.json({ ok: false, error: "Unauthorized." }, { status: 403 });
   const { id } = await params;
 
   const profile = await getProfile(id);

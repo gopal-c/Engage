@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireSkillsHubRole } from "@/lib/skillshub/session";
+import { requireApiRole } from "@/lib/skillshub/session";
 import { getProfile, getProfileByWorkEmail, updateProfile, deleteProfile } from "@/lib/skillshub/storage";
 import { isAllowedWorkEmail, WORK_EMAIL_DOMAIN, isValidDateOfBirth } from "@/lib/skillshub/domain";
 import type { Status } from "@/lib/skillshub/types";
@@ -17,7 +17,8 @@ export async function GET(_req: Request, { params }: Params) {
 }
 
 export async function PATCH(req: Request, { params }: Params) {
-  await requireSkillsHubRole("hr");
+  const session = await requireApiRole("hr");
+  if (!session) return NextResponse.json({ ok: false, error: "Unauthorized." }, { status: 403 });
   const { id } = await params;
   const body = (await req.json()) as Record<string, unknown>;
 
@@ -72,7 +73,8 @@ function isUniqueViolation(err: unknown): boolean {
 }
 
 export async function DELETE(_req: Request, { params }: Params) {
-  await requireSkillsHubRole("hr");
+  const delSession = await requireApiRole("hr");
+  if (!delSession) return NextResponse.json({ ok: false, error: "Unauthorized." }, { status: 403 });
   const { id } = await params;
   const ok = await deleteProfile(id);
   if (!ok) return NextResponse.json({ ok: false, error: "Not found." }, { status: 404 });

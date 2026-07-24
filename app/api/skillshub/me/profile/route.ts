@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { randomBytes } from "node:crypto";
-import { requireSkillsHubRole } from "@/lib/skillshub/session";
+import { requireApiRole } from "@/lib/skillshub/session";
 import { getProfileByEmail, getProfileByWorkEmail, updateProfile } from "@/lib/skillshub/storage";
 import { isAllowedWorkEmail, WORK_EMAIL_DOMAIN, isValidDateOfBirth } from "@/lib/skillshub/domain";
 import { sendVerificationEmail } from "@/lib/skillshub/email";
@@ -11,7 +11,8 @@ export const dynamic = "force-dynamic";
 const VERIFICATION_TTL_MS = 24 * 60 * 60 * 1000;
 
 export async function PATCH(req: Request) {
-  const session = await requireSkillsHubRole("employee");
+  const session = await requireApiRole("any");
+  if (!session) return NextResponse.json({ ok: false, error: "Unauthorized." }, { status: 403 });
 
   const existing = await getProfileByEmail(session.email);
   if (!existing) {

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getProfileByEmail, updateProfile, addProfile } from "@/lib/skillshub/storage";
-import { requireSkillsHubRole } from "@/lib/skillshub/session";
+import { requireApiRole } from "@/lib/skillshub/session";
 import { extractProfileFromPdf, ExtractError } from "@/lib/skillshub/extract";
 
 export const runtime = "nodejs";
@@ -8,7 +8,8 @@ export const maxDuration = 60;
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
-  const session = await requireSkillsHubRole("employee");
+  const session = await requireApiRole("any");
+  if (!session) return NextResponse.json({ ok: false, error: "Unauthorized." }, { status: 403 });
 
   let pdfBytes: Uint8Array;
   try {

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
-import { requireSkillsHubRole } from "@/lib/skillshub/session";
+import { requireApiRole } from "@/lib/skillshub/session";
 import { getApprovedProfiles } from "@/lib/skillshub/storage";
 import type { Profile } from "@/lib/skillshub/types";
 
@@ -45,7 +45,8 @@ function compactProfile(p: Profile, idx: number) {
 }
 
 export async function POST(req: Request) {
-  await requireSkillsHubRole("hr");
+  const session = await requireApiRole("hr");
+  if (!session) return NextResponse.json({ ok: false, error: "Unauthorized." }, { status: 403 });
 
   if (!process.env.GROQ_API_KEY) {
     return NextResponse.json({ ok: false, error: "GROQ_API_KEY not configured." }, { status: 503 });

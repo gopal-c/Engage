@@ -47,3 +47,10 @@ export async function requireSkillsHubRole(role: SkillsHubRole | "any"): Promise
 
   return session;
 }
+
+export async function requireApiRole(role: SkillsHubRole | "any"): Promise<SkillsHubSession | null> {
+  const session = await getSkillsHubSession();
+  if (!session) return null;
+  if (role !== "any" && session.role !== role) return null;
+  return session;
+}
