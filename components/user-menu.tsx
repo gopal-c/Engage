@@ -8,17 +8,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, User } from "lucide-react";
+import { LogOut, Shield } from "lucide-react";
 import Link from "next/link";
 
 interface UserMenuProps {
   name: string;
   email: string;
   image?: string | null;
+  role?: string;
   signOutAction: () => Promise<void>;
 }
 
-export function UserMenu({ name, email, image, signOutAction }: UserMenuProps) {
+export function UserMenu({ name, email, image, role, signOutAction }: UserMenuProps) {
   const initials = name
     .split(" ")
     .map((n) => n[0])
@@ -33,20 +34,29 @@ export function UserMenu({ name, email, image, signOutAction }: UserMenuProps) {
           <AvatarImage src={image ?? undefined} alt={name} />
           <AvatarFallback className="text-xs">{initials}</AvatarFallback>
         </Avatar>
-        <span className="hidden text-sm font-medium sm:inline-block">{name}</span>
+        <div className="hidden sm:block text-left">
+          <span className="block text-sm font-medium leading-tight">{name}</span>
+          {role && (
+            <span className="block text-[10px] capitalize leading-tight text-muted-foreground">{role}</span>
+          )}
+        </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <div className="px-3 py-2">
           <p className="text-sm font-medium">{name}</p>
           <p className="text-xs text-muted-foreground">{email}</p>
         </div>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link href="/profile" className="flex items-center gap-2">
-            <User className="h-4 w-4" />
-            Profile
-          </Link>
-        </DropdownMenuItem>
+        {role === "admin" && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link href="/admin" className="flex items-center gap-2">
+                <Shield className="h-4 w-4" />
+                Admin
+              </Link>
+            </DropdownMenuItem>
+          </>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <form action={signOutAction} className="w-full">

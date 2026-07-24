@@ -8,7 +8,6 @@ import {
   GraduationCap,
   Cake,
   Activity,
-  User,
   Shield,
   Menu,
 } from "lucide-react";
@@ -24,7 +23,6 @@ const navItems = [
   { href: "/apps/skillshub", label: "SkillsHub", icon: GraduationCap },
   { href: "/apps/birthdayhub", label: "BirthdayHub", icon: Cake },
   { href: "/activity", label: "Activity Feed", icon: Activity },
-  { href: "/profile", label: "Profile", icon: User },
 ];
 
 const adminItems = [

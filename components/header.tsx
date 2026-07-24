@@ -25,6 +25,7 @@ export function Header({ user }: HeaderProps) {
           name={user.name}
           email={user.email}
           image={user.image}
+          role={user.role}
           signOutAction={async () => {
             "use server";
             await signOut({ redirectTo: "/login" });
