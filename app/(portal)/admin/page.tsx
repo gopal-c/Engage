@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { sql } from "@/lib/db";
+import { UserManagement } from "@/components/user-management";
 
 interface Stats {
   total_users: number;
@@ -43,7 +43,7 @@ export default async function AdminPage() {
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {cards.map((card) => (
           <div
             key={card.label}
@@ -55,14 +55,7 @@ export default async function AdminPage() {
         ))}
       </div>
 
-      <div>
-        <Link
-          href="/admin/users"
-          className="inline-flex items-center rounded-xl bg-indigo-deep px-5 py-2.5 text-sm font-medium text-white shadow-2 transition-all hover:bg-indigo-press hover:shadow-3 hover:-translate-y-px"
-        >
-          Manage Users
-        </Link>
-      </div>
+      <UserManagement />
     </div>
   );
 }

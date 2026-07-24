@@ -1,18 +1,20 @@
-import Link from "next/link";
 import { sql } from "@/lib/db";
+import { UserManagement } from "@/components/user-management";
 
 interface Stats {
   total_users: number;
+  hr_count: number;
   manager_count: number;
   employee_count: number;
 }
 
 export default async function HRDashboardPage() {
-  let stats: Stats = { total_users: 0, manager_count: 0, employee_count: 0 };
+  let stats: Stats = { total_users: 0, hr_count: 0, manager_count: 0, employee_count: 0 };
   try {
     const rows = await sql`
       SELECT
         COUNT(*)::int AS total_users,
+        COUNT(*) FILTER (WHERE role = 'hr')::int AS hr_count,
         COUNT(*) FILTER (WHERE role = 'manager')::int AS manager_count,
         COUNT(*) FILTER (WHERE role = 'employee')::int AS employee_count
       FROM auth.users
@@ -24,6 +26,7 @@ export default async function HRDashboardPage() {
 
   const cards = [
     { label: "Total Users", value: stats.total_users },
+    { label: "HR", value: stats.hr_count },
     { label: "Managers", value: stats.manager_count },
     { label: "Employees", value: stats.employee_count },
   ];
@@ -37,7 +40,7 @@ export default async function HRDashboardPage() {
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {cards.map((card) => (
           <div
             key={card.label}
@@ -49,14 +52,7 @@ export default async function HRDashboardPage() {
         ))}
       </div>
 
-      <div>
-        <Link
-          href="/hr/users"
-          className="inline-flex items-center rounded-xl bg-indigo-deep px-5 py-2.5 text-sm font-medium text-white shadow-2 transition-all hover:bg-indigo-press hover:shadow-3 hover:-translate-y-px"
-        >
-          Manage Users
-        </Link>
-      </div>
+      <UserManagement />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,7 +14,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
-import { Trash2 } from "lucide-react";
+import { Trash2, Search } from "lucide-react";
 
 interface User {
   id: string;
@@ -29,7 +29,7 @@ interface User {
 const ROLES = ["employee", "manager", "hr", "admin"] as const;
 const ROLE_LEVEL: Record<string, number> = { admin: 40, hr: 30, manager: 20, employee: 10 };
 
-export default function HRUsersPage() {
+export function UserManagement() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
@@ -39,6 +39,7 @@ export default function HRUsersPage() {
   const [deleteTarget, setDeleteTarget] = useState<User | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [deletePassword, setDeletePassword] = useState("");
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     fetch("/api/users")
@@ -56,6 +57,18 @@ export default function HRUsersPage() {
   }, []);
 
   const myLevel = ROLE_LEVEL[currentUserRole ?? ""] ?? 0;
+  const canManage = myLevel >= ROLE_LEVEL.hr;
+
+  const filtered = useMemo(() => {
+    if (!search.trim()) return users;
+    const q = search.toLowerCase();
+    return users.filter(
+      (u) =>
+        u.name.toLowerCase().includes(q) ||
+        u.email.toLowerCase().includes(q) ||
+        u.role.toLowerCase().includes(q),
+    );
+  }, [users, search]);
 
   async function changeRole(userId: string, role: string) {
     setUpdating(userId);
@@ -106,16 +119,27 @@ export default function HRUsersPage() {
   }
 
   if (loading) {
-    return <p className="text-sm text-muted-foreground">Loading...</p>;
+    return <p className="text-sm text-muted-foreground">Loading users...</p>;
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-ink-800">User Management</h1>
-        <p className="mt-1 text-ink-500">
-          {users.length} registered {users.length === 1 ? "user" : "users"}
-        </p>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h2 className="text-lg font-semibold text-ink-800">Manage Users</h2>
+          <p className="text-sm text-ink-500">
+            {filtered.length} of {users.length} {users.length === 1 ? "user" : "users"}
+          </p>
+        </div>
+        <div className="relative w-64">
+          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-400" />
+          <Input
+            placeholder="Search name, email, or role..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9"
+          />
+        </div>
       </div>
 
       {message && (
@@ -134,7 +158,14 @@ export default function HRUsersPage() {
             </tr>
           </thead>
           <tbody>
-            {users.map((user) => {
+            {filtered.length === 0 && (
+              <tr>
+                <td colSpan={5} className="px-4 py-8 text-center text-ink-400">
+                  {search ? "No users match your search." : "No users found."}
+                </td>
+              </tr>
+            )}
+            {filtered.map((user) => {
               const initials = user.name
                 .split(" ")
                 .map((n) => n[0])
@@ -173,25 +204,26 @@ export default function HRUsersPage() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-1">
-                      {ROLES.map((role) => (
-                        <Button
-                          key={role}
-                          size="sm"
-                          variant={user.role === role ? "default" : "outline"}
-                          disabled={
-                            user.role === role ||
-                            updating === user.id ||
-                            isSelf ||
-                            targetLevel >= myLevel ||
-                            ROLE_LEVEL[role] > myLevel
-                          }
-                          onClick={() => changeRole(user.id, role)}
-                          className="capitalize"
-                        >
-                          {role}
-                        </Button>
-                      ))}
-                      {!isSelf && targetLevel < myLevel && (
+                      {canManage &&
+                        ROLES.map((role) => (
+                          <Button
+                            key={role}
+                            size="sm"
+                            variant={user.role === role ? "default" : "outline"}
+                            disabled={
+                              user.role === role ||
+                              updating === user.id ||
+                              isSelf ||
+                              targetLevel >= myLevel ||
+                              ROLE_LEVEL[role] > myLevel
+                            }
+                            onClick={() => changeRole(user.id, role)}
+                            className="capitalize"
+                          >
+                            {role}
+                          </Button>
+                        ))}
+                      {canManage && !isSelf && targetLevel < myLevel && (
                         <Button
                           size="sm"
                           variant="ghost"
