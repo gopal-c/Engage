@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { GeistSans } from "geist/font/sans";
 import "./globals.css";
 import { cn } from "@/lib/utils";
+import { Toaster } from "sonner";
 import { ServiceWorkerRegister } from "@/components/sw-register";
 import { InstallPrompt } from "@/components/install-prompt";
 
@@ -32,6 +33,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen bg-background antialiased">
         {children}
+        <Toaster richColors position="top-right" />
         <ServiceWorkerRegister />
         <InstallPrompt />
       </body>

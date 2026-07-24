@@ -4,7 +4,7 @@ import Credentials from "next-auth/providers/credentials";
 import { sql } from "./db";
 
 const DEV_USERS = [
-  { email: "hr@valueaddsofttech.com", password: "demo123", name: "HR Demo", role: "admin" },
+  { email: "hr@valueaddsofttech.com", password: "demo123", name: "HR Demo", role: "hr" },
   { email: "admin", password: "demo123", name: "Admin Demo", role: "admin" },
 ];
 
