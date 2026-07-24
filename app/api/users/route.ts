@@ -55,9 +55,9 @@ export async function PATCH(request: NextRequest) {
   }
 
   const myLevel = roleLevel(session.user.role);
-  if (roleLevel(role) >= myLevel) {
+  if (roleLevel(role) > myLevel) {
     return NextResponse.json(
-      { error: "Cannot assign a role equal to or above your own" },
+      { error: "Cannot assign a role above your own" },
       { status: 403 },
     );
   }

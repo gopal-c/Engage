@@ -173,7 +173,7 @@ export default function HRUsersPage() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-1">
-                      {ROLES.filter((r) => ROLE_LEVEL[r] < myLevel).map((role) => (
+                      {ROLES.map((role) => (
                         <Button
                           key={role}
                           size="sm"
@@ -182,7 +182,8 @@ export default function HRUsersPage() {
                             user.role === role ||
                             updating === user.id ||
                             isSelf ||
-                            targetLevel >= myLevel
+                            targetLevel >= myLevel ||
+                            ROLE_LEVEL[role] > myLevel
                           }
                           onClick={() => changeRole(user.id, role)}
                           className="capitalize"

@@ -175,7 +175,7 @@ export default function AdminUsersPage() {
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-1">
                       {canManage &&
-                        ROLES.filter((r) => ROLE_LEVEL[r] < myLevel).map((role) => (
+                        ROLES.map((role) => (
                           <Button
                             key={role}
                             size="sm"
@@ -184,7 +184,8 @@ export default function AdminUsersPage() {
                               user.role === role ||
                               updating === user.id ||
                               isSelf ||
-                              (ROLE_LEVEL[user.role] ?? 0) >= myLevel
+                              (ROLE_LEVEL[user.role] ?? 0) >= myLevel ||
+                              ROLE_LEVEL[role] > myLevel
                             }
                             onClick={() => changeRole(user.id, role)}
                             className="capitalize"
