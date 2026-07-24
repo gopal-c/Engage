@@ -10,17 +10,13 @@ export default async function MePage() {
   const hasData = profile ? hasResumeData(profile) : false;
   const milestones = profile ? await getMilestonesByProfileId(profile.id) : [];
 
-  const uploadEndpoint = hasData
-    ? "/api/skillshub/me/upload-resume"
-    : "/api/skillshub/verify-upload";
-
   return (
     <div className="mx-auto max-w-4xl">
       <MeProfilePage
         profile={profile ?? null}
         milestones={milestones}
         hasResumeData={hasData}
-        uploadEndpoint={uploadEndpoint}
+        uploadEndpoint="/api/skillshub/me/upload-resume"
       />
     </div>
   );
