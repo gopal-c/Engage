@@ -58,8 +58,9 @@ export function AiResumeUploadPanel({ existingResume, onUpload, isLoading, isSuc
   }
 
   return (
-    <div className="rounded-2xl p-[2px]" style={{ background: "linear-gradient(135deg, #5B3DAF 0%, #a78bfa 50%, #5B3DAF 100%)" }}>
-      <div className="rounded-[14px] bg-white p-6">
+    <div className="overflow-hidden rounded-2xl border border-ink-200/60 bg-white shadow-2">
+      <div className="h-1 w-full" style={{ background: "linear-gradient(90deg, #5B3DAF 0%, #a78bfa 50%, #5B3DAF 100%)" }} />
+      <div className="p-6">
         {/* Header */}
         <div className="flex items-start justify-between">
           <div>
