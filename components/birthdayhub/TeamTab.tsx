@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import type { Employee } from "@/lib/birthdayhub/types";
 
 function initials(name: string) {
@@ -61,12 +60,6 @@ export default function TeamTab({ employees, onCompose }: Props) {
             className="w-full rounded-lg border bg-secondary pl-9 pr-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-ring outline-none transition"
           />
         </div>
-        <Link
-          href="/apps/skillshub/employees"
-          className="shrink-0 rounded-lg border px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary transition"
-        >
-          Manage in SkillsHub
-        </Link>
       </div>
 
       {filtered.length === 0 ? (
@@ -100,15 +93,10 @@ export default function TeamTab({ employees, onCompose }: Props) {
               </div>
 
               <div className="flex items-center gap-3 shrink-0 ml-3">
-                {emp.city && (
-                  <span
-                    className="hidden sm:inline-block rounded-full px-2.5 py-0.5 text-xs font-medium"
-                    style={{ backgroundColor: "#EEEDFE", color: "#2D1B69" }}
-                  >
-                    {emp.city}
-                  </span>
-                )}
-                <span className="hidden md:inline-block text-xs text-muted-foreground">
+                <span
+                  className="hidden sm:inline-block rounded-full px-2.5 py-0.5 text-xs font-medium"
+                  style={{ backgroundColor: "#EEEDFE", color: "#2D1B69" }}
+                >
                   {fmtBirthday(emp.birthday)}
                 </span>
                 <button
