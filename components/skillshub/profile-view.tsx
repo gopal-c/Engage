@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { DeleteProfileButton } from "@/components/skillshub/delete-profile-button";
+import { ApproveRejectButtons } from "@/components/skillshub/profile-actions";
 import { EditableAvatar } from "@/components/skillshub/editable-avatar";
 import { avatarPalette, initials } from "@/lib/skillshub/avatar-gradient";
 import { formatDate } from "@/lib/skillshub/domain";
@@ -119,6 +120,9 @@ export function ProfileView({
 
         {canManage && (
           <div className="flex shrink-0 items-center gap-2">
+            {isPending && (
+              <ApproveRejectButtons profileId={profile.id} profileName={profile.name} />
+            )}
             <Link
               href={`/apps/skillshub/review/${profile.id}`}
               className={buttonVariants({ variant: "outline", size: "sm" })}
