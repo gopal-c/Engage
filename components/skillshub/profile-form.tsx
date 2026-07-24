@@ -410,6 +410,13 @@ export function ProfileForm({ profile, mode, onSaved, initialMilestones = [] }: 
           <>
             <button
               type="button"
+              onClick={() => router.push("/apps/skillshub/review")}
+              className="mr-auto px-4 py-2 text-sm font-medium text-ink-500 transition-colors hover:text-ink-800"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
               disabled={isPending}
               onClick={() => submit({ status: "rejected" }, "Profile rejected.", "/apps/skillshub/review")}
               className="px-4 py-2 text-sm font-medium text-ink-500 transition-colors hover:text-ink-800 disabled:opacity-50"
@@ -423,14 +430,6 @@ export function ProfileForm({ profile, mode, onSaved, initialMilestones = [] }: 
               className="rounded-xl border border-ink-200 bg-ink-0 px-4 py-2 text-sm font-medium text-ink-700 shadow-1 transition-all hover:shadow-2 disabled:opacity-50"
             >
               {isPending ? "Saving..." : "Save changes"}
-            </button>
-            <button
-              type="button"
-              disabled={isPending}
-              onClick={() => submit({ status: "approved" }, "Profile approved.", "/apps/skillshub/review")}
-              className="px-4 py-2 text-sm font-medium text-ink-600 transition-colors hover:text-ink-800 disabled:opacity-50"
-            >
-              Approve
             </button>
             <button
               type="button"
