@@ -217,12 +217,12 @@ export function ProfileView({
         ) : (
           <div className="space-y-4">
             {profile.education.map((e, i) => (
-              <article key={i} className="flex items-start justify-between rounded-2xl bg-indigo-soft/50 p-5">
+              <article key={i} className="glass-surface flex items-start justify-between rounded-2xl border border-white/70 p-5 shadow-2">
                 <div>
-                  <p className="font-semibold text-ink-800">{e.degree}</p>
-                  <p className="text-sm text-ink-500">{e.institution}</p>
+                  <h3 className="font-semibold text-ink-800">{e.degree}</h3>
+                  <p className="mt-1 text-sm text-ink-500">{e.institution}</p>
                 </div>
-                <span className="shrink-0 rounded-full bg-ink-0/70 px-2.5 py-0.5 text-xs font-medium text-ink-600">
+                <span className="shrink-0 rounded-full border border-ink-200/60 bg-ink-0/60 px-2.5 py-1 text-xs font-medium text-ink-600">
                   {e.month ? `${new Date(2000, e.month - 1).toLocaleString("en-US", { month: "short" })} ${e.year}` : e.year}
                 </span>
               </article>
