@@ -17,7 +17,6 @@ function employeeNav(approved: boolean): NavItem[] {
   return [
     { href: "/apps/skillshub/home", label: "Home", icon: "🏠" },
     { href: "/apps/skillshub/me", label: "My Profile", icon: "👤", disabled: !approved },
-    { href: "/apps/skillshub/upload", label: "Update Profile", icon: "📤", disabled: !approved },
   ];
 }
 

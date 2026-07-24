@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Hourglass, User, FileText, Lock } from "lucide-react";
+import { Hourglass, User, Lock } from "lucide-react";
 import { requireSkillsHubRole } from "@/lib/skillshub/session";
 import { getProfileByEmail, getMilestonesByProfileId } from "@/lib/skillshub/storage";
 import { buildHomeData } from "@/lib/skillshub/timeline";
@@ -35,7 +35,7 @@ export default async function HomePage() {
   }
 
   if (!hasData && approved) {
-    redirect("/apps/skillshub/upload");
+    redirect("/apps/skillshub/me");
   }
 
   const milestones = approved ? await getMilestonesByProfileId(profile.id) : [];
@@ -73,14 +73,7 @@ export default async function HomePage() {
               enabled={false}
               icon={<User className="size-5" />}
               title="My Profile"
-              description="View your skills, experience, and profile details."
-            />
-            <HomeCard
-              href="/apps/skillshub/upload"
-              enabled={false}
-              icon={<FileText className="size-5" />}
-              title="Update Profile"
-              description="Upload a new resume to refresh your profile."
+              description="View and edit your profile, or upload a resume."
             />
           </div>
         </>
@@ -97,14 +90,7 @@ export default async function HomePage() {
                 enabled
                 icon={<User className="size-5" />}
                 title="My Profile"
-                description="View your skills, experience, and profile details."
-              />
-              <HomeCard
-                href="/apps/skillshub/upload"
-                enabled
-                icon={<FileText className="size-5" />}
-                title="Update Profile"
-                description="Upload a new resume to refresh your profile."
+                description="View and edit your profile, or upload a resume."
               />
             </div>
           )}
@@ -203,19 +189,13 @@ export default async function HomePage() {
             </div>
           </div>
 
-          {/* Bottom nav links */}
-          <div className="mt-8 flex gap-3">
+          {/* Bottom nav link */}
+          <div className="mt-8">
             <Link
               href="/apps/skillshub/me"
               className="rounded-xl bg-indigo-deep px-5 py-2.5 text-sm font-medium text-white shadow-2 transition-all hover:bg-indigo-press hover:shadow-3 hover:-translate-y-px"
             >
               View my profile
-            </Link>
-            <Link
-              href="/apps/skillshub/upload"
-              className="rounded-xl border border-ink-200 bg-ink-0 px-5 py-2.5 text-sm font-medium text-ink-700 shadow-1 transition-all hover:shadow-2 hover:-translate-y-px"
-            >
-              Update resume
             </Link>
           </div>
         </>
