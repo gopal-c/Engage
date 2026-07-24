@@ -1,10 +1,10 @@
 import { requireSkillsHubRole } from "@/lib/skillshub/session";
-import { getApprovedProfiles } from "@/lib/skillshub/storage";
+import { getDirectoryProfiles } from "@/lib/skillshub/storage";
 import { DirectoryGrid } from "@/components/skillshub/directory-grid";
 
 export default async function EmployeesPage() {
   await requireSkillsHubRole("hr");
-  const profiles = await getApprovedProfiles();
+  const profiles = await getDirectoryProfiles();
   return (
     <div className="mx-auto max-w-6xl space-y-6 py-8">
       <div>
@@ -13,7 +13,7 @@ export default async function EmployeesPage() {
           {profiles.length} {profiles.length === 1 ? "person" : "people"}
         </h1>
         <p className="mt-2 text-ink-500">
-          Approved profiles, ready to be searched. Click any card to see the full picture.
+          All employee profiles, including those pending review.
         </p>
       </div>
       <DirectoryGrid profiles={profiles} />
