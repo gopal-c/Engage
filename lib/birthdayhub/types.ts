@@ -5,6 +5,7 @@ export interface Employee {
   birthday: string; // MM-DD, extracted from skillshub.profiles.date_of_birth
   city: string;
   seniority: string;
+  avatarUrl?: string;
 }
 
 export interface SendLog {

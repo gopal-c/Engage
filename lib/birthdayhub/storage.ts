@@ -18,6 +18,7 @@ function rowToEmployee(row: Record<string, unknown>): Employee {
     birthday,
     city:      (row.city as string) || "",
     seniority: (row.seniority as string) || "",
+    avatarUrl: (row.avatar_url as string) || undefined,
   };
 }
 
@@ -66,13 +67,15 @@ function rowToScheduledSend(row: Record<string, unknown>): ScheduledSend {
 
 export async function getEmployees(): Promise<Employee[]> {
   const rows = await sql`
-    SELECT DISTINCT ON (lower(email)) id, name, email, city, seniority, date_of_birth
+    SELECT DISTINCT ON (lower(email)) id, name, email, city, seniority, date_of_birth, avatar_url
     FROM (
-      SELECT id, name, email, city, seniority, date_of_birth
-      FROM skillshub.profiles
-      WHERE date_of_birth IS NOT NULL
+      SELECT p.id, p.name, p.email, p.city, p.seniority, p.date_of_birth,
+             COALESCE(p.avatar_url, u.avatar_url) AS avatar_url
+      FROM skillshub.profiles p
+      LEFT JOIN auth.users u ON lower(u.email) = lower(p.email)
+      WHERE p.date_of_birth IS NOT NULL
       UNION ALL
-      SELECT id, name, email, '' AS city, '' AS seniority, date_of_birth
+      SELECT id, name, email, '' AS city, '' AS seniority, date_of_birth, avatar_url
       FROM auth.users
       WHERE date_of_birth IS NOT NULL
     ) combined

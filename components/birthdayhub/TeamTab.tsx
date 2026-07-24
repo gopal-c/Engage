@@ -56,7 +56,7 @@ export default function TeamTab({ employees, onCompose }: Props) {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by name, email, or city..."
+            placeholder="Search by name or email..."
             className="w-full rounded-lg border bg-secondary pl-9 pr-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-ring outline-none transition"
           />
         </div>
@@ -78,12 +78,21 @@ export default function TeamTab({ employees, onCompose }: Props) {
               className="flex items-center justify-between rounded-xl border bg-card px-4 py-3 shadow-sm"
             >
               <div className="flex items-center gap-3 min-w-0">
-                <div
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xs font-bold"
-                  style={{ backgroundColor: "#EEEDFE", color: "#2D1B69" }}
-                >
-                  {initials(emp.name)}
-                </div>
+                {emp.avatarUrl ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src={emp.avatarUrl}
+                    alt={emp.name}
+                    className="h-10 w-10 shrink-0 rounded-full object-cover"
+                  />
+                ) : (
+                  <div
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xs font-bold"
+                    style={{ backgroundColor: "#EEEDFE", color: "#2D1B69" }}
+                  >
+                    {initials(emp.name)}
+                  </div>
+                )}
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-foreground truncate">
                     {emp.name}
@@ -101,8 +110,7 @@ export default function TeamTab({ employees, onCompose }: Props) {
                 </span>
                 <button
                   onClick={() => onCompose(emp)}
-                  className="rounded-lg px-2.5 py-1 text-xs font-medium transition"
-                  style={{ backgroundColor: "#EEEDFE", color: "#2D1B69" }}
+                  className="rounded-xl bg-indigo-deep px-3 py-1.5 text-xs font-medium text-white shadow-1 transition-all hover:bg-indigo-press hover:shadow-2"
                 >
                   Compose
                 </button>

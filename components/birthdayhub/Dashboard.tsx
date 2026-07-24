@@ -193,18 +193,18 @@ export default function Dashboard({ employees, logs, onCompose, isAdminOrHR = fa
                 className="flex items-center justify-between rounded-xl bg-card/10 px-4 py-3"
               >
                 <div className="flex items-center gap-3">
-                  <div
-                    className="flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold"
-                    style={{ backgroundColor: "#EF9F27", color: "#2D1B69" }}
-                  >
-                    {initials(emp.name)}
-                  </div>
-                  <div>
-                    <p className="font-semibold">{emp.name}</p>
-                    {emp.city && (
-                      <p className="text-xs text-white/70">{emp.city}</p>
-                    )}
-                  </div>
+                  {emp.avatarUrl ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img src={emp.avatarUrl} alt={emp.name} className="h-10 w-10 rounded-full object-cover" />
+                  ) : (
+                    <div
+                      className="flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold"
+                      style={{ backgroundColor: "#EF9F27", color: "#2D1B69" }}
+                    >
+                      {initials(emp.name)}
+                    </div>
+                  )}
+                  <p className="font-semibold">{emp.name}</p>
                 </div>
                 {isAdminOrHR && (
                   sentToday.has(emp.id) ? (
@@ -244,30 +244,25 @@ export default function Dashboard({ employees, logs, onCompose, isAdminOrHR = fa
                   className="flex items-center justify-between rounded-xl border bg-card px-4 py-3 shadow-sm"
                 >
                   <div className="flex items-center gap-3">
-                    <div
-                      className="flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold"
-                      style={{ backgroundColor: "#EEEDFE", color: "#2D1B69" }}
-                    >
-                      {initials(emp.name)}
-                    </div>
+                    {emp.avatarUrl ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img src={emp.avatarUrl} alt={emp.name} className="h-9 w-9 rounded-full object-cover" />
+                    ) : (
+                      <div
+                        className="flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold"
+                        style={{ backgroundColor: "#EEEDFE", color: "#2D1B69" }}
+                      >
+                        {initials(emp.name)}
+                      </div>
+                    )}
                     <div>
                       <p className="text-sm font-medium text-foreground">{emp.name}</p>
                       <p className="text-xs text-muted-foreground">{fmtBirthday(emp.birthday)}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    {emp.city && (
-                      <span
-                        className="hidden sm:inline-block rounded-full px-2.5 py-0.5 text-xs font-medium"
-                        style={{ backgroundColor: "#EEEDFE", color: "#2D1B69" }}
-                      >
-                        {emp.city}
-                      </span>
-                    )}
-                    <span className="text-xs font-medium text-muted-foreground">
-                      {days === 0 ? "Today" : `${days}d`}
-                    </span>
-                  </div>
+                  <span className="text-xs font-medium text-muted-foreground">
+                    {days === 0 ? "Today" : `${days}d`}
+                  </span>
                 </div>
               );
             })}
