@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { sql } from "@/lib/db";
+import { roleLevel } from "@/lib/auth-guard";
+
+const ALL_ROLES = ["employee", "manager", "hr", "admin"] as const;
 
 export async function GET() {
   const session = await auth();
-  if (!session?.user?.id || !["admin", "hr"].includes(session.user.role ?? "")) {
+  if (!session?.user?.id || roleLevel(session.user.role) < roleLevel("hr")) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -23,7 +26,7 @@ export async function GET() {
 
 export async function PATCH(request: NextRequest) {
   const session = await auth();
-  if (!session?.user?.id || session.user.role !== "admin") {
+  if (!session?.user?.id || roleLevel(session.user.role) < roleLevel("hr")) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -33,22 +36,40 @@ export async function PATCH(request: NextRequest) {
   if (!userId || !role) {
     return NextResponse.json(
       { error: "userId and role are required" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
-  const validRoles = ["employee", "hr", "admin"];
-  if (!validRoles.includes(role)) {
+  if (!ALL_ROLES.includes(role)) {
     return NextResponse.json(
-      { error: `role must be one of: ${validRoles.join(", ")}` },
-      { status: 400 }
+      { error: `role must be one of: ${ALL_ROLES.join(", ")}` },
+      { status: 400 },
     );
   }
 
   if (userId === session.user.id) {
     return NextResponse.json(
       { error: "Cannot change your own role" },
-      { status: 400 }
+      { status: 400 },
+    );
+  }
+
+  const myLevel = roleLevel(session.user.role);
+  if (roleLevel(role) >= myLevel) {
+    return NextResponse.json(
+      { error: "Cannot assign a role equal to or above your own" },
+      { status: 403 },
+    );
+  }
+
+  const target = await sql`SELECT role FROM auth.users WHERE id = ${userId}`;
+  if (target.length === 0) {
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
+  }
+  if (roleLevel(target[0].role as string) >= myLevel) {
+    return NextResponse.json(
+      { error: "Cannot modify a user at or above your role level" },
+      { status: 403 },
     );
   }
 
@@ -58,10 +79,6 @@ export async function PATCH(request: NextRequest) {
     WHERE id = ${userId}
     RETURNING id, email, name, role
   `;
-
-  if (rows.length === 0) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
-  }
 
   return NextResponse.json({ user: rows[0] });
 }
@@ -73,7 +90,7 @@ const DEV_USERS: Record<string, string> = {
 
 export async function DELETE(request: NextRequest) {
   const session = await auth();
-  if (!session?.user?.id || session.user.role !== "admin") {
+  if (!session?.user?.id || roleLevel(session.user.role) < roleLevel("hr")) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -92,15 +109,22 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "Cannot delete your own account" }, { status: 400 });
   }
 
-  const adminEmail = session.user.email ?? "";
-  const expectedPassword = DEV_USERS[adminEmail];
-  if (!expectedPassword || password !== expectedPassword) {
-    return NextResponse.json({ error: "Incorrect password" }, { status: 401 });
+  const myLevel = roleLevel(session.user.role);
+  const target = await sql`SELECT id, role FROM auth.users WHERE id = ${userId}`;
+  if (target.length === 0) {
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
+  }
+  if (roleLevel(target[0].role as string) >= myLevel) {
+    return NextResponse.json(
+      { error: "Cannot delete a user at or above your role level" },
+      { status: 403 },
+    );
   }
 
-  const existing = await sql`SELECT id FROM auth.users WHERE id = ${userId}`;
-  if (existing.length === 0) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
+  const callerEmail = session.user.email ?? "";
+  const expectedPassword = DEV_USERS[callerEmail];
+  if (!expectedPassword || password !== expectedPassword) {
+    return NextResponse.json({ error: "Incorrect password" }, { status: 401 });
   }
 
   await sql`DELETE FROM engage.activity_feed WHERE user_id = ${userId}`;

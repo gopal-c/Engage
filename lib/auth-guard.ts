@@ -1,6 +1,17 @@
 import { auth } from "./auth";
 import { redirect } from "next/navigation";
 
+export const ROLE_HIERARCHY: Record<string, number> = {
+  admin: 40,
+  hr: 30,
+  manager: 20,
+  employee: 10,
+};
+
+export function roleLevel(role: string): number {
+  return ROLE_HIERARCHY[role] ?? 0;
+}
+
 export async function requireAuth() {
   const session = await auth();
   if (!session?.user) redirect("/login");
@@ -9,7 +20,7 @@ export async function requireAuth() {
 
 export async function requireRole(role: string) {
   const session = await requireAuth();
-  if (session.user.role !== role && session.user.role !== "admin") {
+  if (roleLevel(session.user.role) < roleLevel(role)) {
     redirect("/dashboard");
   }
   return session;
@@ -17,4 +28,8 @@ export async function requireRole(role: string) {
 
 export async function requireAdmin() {
   return requireRole("admin");
+}
+
+export async function requireHR() {
+  return requireRole("hr");
 }

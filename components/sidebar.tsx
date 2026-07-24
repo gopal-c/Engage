@@ -25,6 +25,10 @@ const navItems = [
   { href: "/activity", label: "Activity Feed", icon: Activity },
 ];
 
+const hrItems = [
+  { href: "/hr", label: "HR Dashboard", icon: Shield },
+];
+
 const adminItems = [
   { href: "/admin", label: "Admin", icon: Shield },
 ];
@@ -60,6 +64,31 @@ function NavLinks({
           </Link>
         );
       })}
+      {role === "hr" && (
+        <>
+          <Separator className="my-2" />
+          {hrItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={onNavigate}
+                className={cn(
+                  "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all",
+                  isActive
+                    ? "bg-indigo-soft text-indigo-press shadow-1"
+                    : "text-ink-600 hover:bg-ink-100 hover:text-ink-800"
+                )}
+              >
+                <Icon className={cn("h-4 w-4", isActive && "text-indigo-deep")} />
+                {item.label}
+              </Link>
+            );
+          })}
+        </>
+      )}
       {role === "admin" && (
         <>
           <Separator className="my-2" />

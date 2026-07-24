@@ -46,6 +46,17 @@ export function UserMenu({ name, email, image, role, signOutAction }: UserMenuPr
           <p className="text-sm font-medium">{name}</p>
           <p className="text-xs text-muted-foreground">{email}</p>
         </div>
+        {role === "hr" && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link href="/hr" className="flex items-center gap-2">
+                <Shield className="h-4 w-4" />
+                HR Dashboard
+              </Link>
+            </DropdownMenuItem>
+          </>
+        )}
         {role === "admin" && (
           <>
             <DropdownMenuSeparator />

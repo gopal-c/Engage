@@ -13,9 +13,9 @@ export default async function PortalLayout({
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  const isAdmin = session.user.role === "admin";
+  const isAdminOrHR = session.user.role === "admin" || session.user.role === "hr";
   let profileCompleted = true;
-  if (!isAdmin) {
+  if (!isAdminOrHR) {
     const rows = await sql`
       SELECT profile_completed FROM auth.users WHERE id = ${session.user.id}
     `;

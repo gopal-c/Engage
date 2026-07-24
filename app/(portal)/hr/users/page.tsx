@@ -29,7 +29,7 @@ interface User {
 const ROLES = ["employee", "manager", "hr", "admin"] as const;
 const ROLE_LEVEL: Record<string, number> = { admin: 40, hr: 30, manager: 20, employee: 10 };
 
-export default function AdminUsersPage() {
+export default function HRUsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
@@ -56,7 +56,6 @@ export default function AdminUsersPage() {
   }, []);
 
   const myLevel = ROLE_LEVEL[currentUserRole ?? ""] ?? 0;
-  const canManage = myLevel >= ROLE_LEVEL.hr;
 
   async function changeRole(userId: string, role: string) {
     setUpdating(userId);
@@ -71,7 +70,7 @@ export default function AdminUsersPage() {
     if (res.ok) {
       const data = await res.json();
       setUsers((prev) =>
-        prev.map((u) => (u.id === userId ? { ...u, role: data.user.role } : u))
+        prev.map((u) => (u.id === userId ? { ...u, role: data.user.role } : u)),
       );
       setMessage(`Updated ${data.user.name} to ${data.user.role}`);
       setTimeout(() => setMessage(""), 3000);
@@ -102,7 +101,6 @@ export default function AdminUsersPage() {
     } else {
       const data = await res.json();
       setMessage(data.error || "Failed to delete user");
-      setDeleting(false);
     }
     setDeleting(false);
   }
@@ -144,6 +142,7 @@ export default function AdminUsersPage() {
                 .toUpperCase()
                 .slice(0, 2);
               const isSelf = user.id === currentUserId;
+              const targetLevel = ROLE_LEVEL[user.role] ?? 0;
 
               return (
                 <tr key={user.id} className="border-b last:border-0">
@@ -174,25 +173,24 @@ export default function AdminUsersPage() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-1">
-                      {canManage &&
-                        ROLES.filter((r) => ROLE_LEVEL[r] < myLevel).map((role) => (
-                          <Button
-                            key={role}
-                            size="sm"
-                            variant={user.role === role ? "default" : "outline"}
-                            disabled={
-                              user.role === role ||
-                              updating === user.id ||
-                              isSelf ||
-                              (ROLE_LEVEL[user.role] ?? 0) >= myLevel
-                            }
-                            onClick={() => changeRole(user.id, role)}
-                            className="capitalize"
-                          >
-                            {role}
-                          </Button>
-                        ))}
-                      {canManage && !isSelf && (ROLE_LEVEL[user.role] ?? 0) < myLevel && (
+                      {ROLES.filter((r) => ROLE_LEVEL[r] < myLevel).map((role) => (
+                        <Button
+                          key={role}
+                          size="sm"
+                          variant={user.role === role ? "default" : "outline"}
+                          disabled={
+                            user.role === role ||
+                            updating === user.id ||
+                            isSelf ||
+                            targetLevel >= myLevel
+                          }
+                          onClick={() => changeRole(user.id, role)}
+                          className="capitalize"
+                        >
+                          {role}
+                        </Button>
+                      ))}
+                      {!isSelf && targetLevel < myLevel && (
                         <Button
                           size="sm"
                           variant="ghost"

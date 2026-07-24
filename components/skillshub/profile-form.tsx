@@ -12,6 +12,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { HrResumeSection } from "@/components/skillshub/hr-resume-section";
 import { MilestonesPanel } from "@/components/skillshub/milestones-panel";
 import { maxDateOfBirth } from "@/lib/skillshub/domain";
@@ -415,14 +426,34 @@ export function ProfileForm({ profile, mode, onSaved, initialMilestones = [] }: 
             >
               Cancel
             </button>
-            <button
-              type="button"
-              disabled={isPending}
-              onClick={() => submit({ status: "rejected" }, "Profile rejected.", "/apps/skillshub/review")}
-              className="px-4 py-2 text-sm font-medium text-ink-500 transition-colors hover:text-ink-800 disabled:opacity-50"
-            >
-              Reject
-            </button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <button
+                  type="button"
+                  disabled={isPending}
+                  className="px-4 py-2 text-sm font-medium text-ink-500 transition-colors hover:text-ink-800 disabled:opacity-50"
+                >
+                  Reject
+                </button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Reject this profile?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will reject {profile.name}&apos;s profile. They will need to resubmit for review.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => submit({ status: "rejected" }, "Profile rejected.", "/apps/skillshub/review")}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Reject
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
             <button
               type="button"
               disabled={isPending}
