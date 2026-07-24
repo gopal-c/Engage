@@ -12,7 +12,7 @@ export type SkillsHubSession = {
 };
 
 function mapRole(engageRole: string): SkillsHubRole {
-  return engageRole === "admin" ? "hr" : "employee";
+  return engageRole === "admin" || engageRole === "hr" ? "hr" : "employee";
 }
 
 export async function getSkillsHubSession(): Promise<SkillsHubSession | null> {
