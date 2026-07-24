@@ -10,7 +10,7 @@ import { AiResumeUploadPanel } from "@/components/skillshub/ai-resume-upload-pan
 import type { Profile, Milestone } from "@/lib/skillshub/types";
 
 type Props = {
-  profile: Profile;
+  profile: Profile | null;
   milestones: Milestone[];
   hasResumeData: boolean;
   uploadEndpoint: string;
@@ -43,7 +43,7 @@ export function MeProfilePage({ profile, milestones, hasResumeData, uploadEndpoi
     });
   }
 
-  if (!hasResumeData) {
+  if (!profile || !hasResumeData) {
     return (
       <div className="space-y-6">
         <div>
@@ -63,7 +63,7 @@ export function MeProfilePage({ profile, milestones, hasResumeData, uploadEndpoi
     );
   }
 
-  if (editing) {
+  if (editing && profile) {
     return (
       <ProfileForm
         profile={profile}
@@ -86,7 +86,7 @@ export function MeProfilePage({ profile, milestones, hasResumeData, uploadEndpoi
         </button>
       </div>
 
-      <ProfileView profile={profile} canManage={false} editableAvatar />
+      <ProfileView profile={profile!} canManage={false} editableAvatar />
 
       {/* Update via Resume — collapsible */}
       <div className="rounded-2xl border border-ink-200/60 bg-ink-0/70 shadow-2 backdrop-blur-sm">
