@@ -58,75 +58,59 @@ export function AiResumeUploadPanel({ existingResume, onUpload, isLoading, isSuc
   }
 
   return (
-    <section className="glass-surface overflow-hidden rounded-2xl border border-white/70 shadow-2">
-      {/* Header bar */}
-      <div className="flex items-center justify-between border-b border-ink-200/40 px-6 py-4">
-        <div className="flex items-center gap-3">
-          <div className="flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo to-indigo-deep shadow-1">
-            <Sparkles size={16} className="text-white" />
-          </div>
+    <div className="rounded-2xl p-[2px]" style={{ background: "linear-gradient(135deg, #5B3DAF 0%, #a78bfa 50%, #5B3DAF 100%)" }}>
+      <div className="rounded-[14px] bg-white p-6">
+        {/* Header */}
+        <div className="flex items-start justify-between">
           <div>
-            <h3 className="text-sm font-semibold text-ink-800">AI Resume Extraction</h3>
-            <p className="text-[11px] text-ink-400">Upload a PDF — AI extracts skills, experience &amp; profile</p>
+            <h3 className="flex items-center gap-2 text-base font-semibold text-ink-800">
+              <Sparkles size={18} className="text-indigo-deep" />
+              AI Resume Extraction
+            </h3>
+            <p className="mt-1 text-sm text-ink-500">
+              Upload a PDF — Groq will read it and fill in this employee&apos;s skills, experience, and profile automatically.
+            </p>
           </div>
+          <span className="eyebrow shrink-0 text-[10px] text-indigo-deep">Powered by Groq</span>
         </div>
-        <span className="eyebrow text-[10px] text-indigo-deep">Powered by Groq</span>
-      </div>
 
-      <div className="p-6">
         {/* Success */}
         {isSuccess ? (
-          <div className="flex flex-col items-center gap-2 py-6">
-            <div className="flex size-12 items-center justify-center rounded-full bg-teal/10">
-              <CheckCircle2 size={24} className="text-teal-deep" />
-            </div>
+          <div className="mt-6 flex flex-col items-center gap-2 py-8">
+            <CheckCircle2 size={28} className="text-teal-deep" />
             <span className="text-sm font-medium text-ink-800">Profile updated from resume</span>
-            <button type="button" onClick={replaceResume} className="mt-1 text-xs font-medium text-indigo-deep hover:underline">
-              Upload another
+            <button type="button" onClick={replaceResume} className="text-xs text-indigo-deep underline">
+              Replace resume
             </button>
           </div>
         ) : isLoading ? (
-          <div className="py-8">
-            <div className="flex flex-col items-center gap-3">
-              <div className="flex size-12 items-center justify-center rounded-full bg-indigo-soft">
-                <Sparkles size={20} className="animate-pulse text-indigo-deep" />
-              </div>
-              <div className="text-center">
-                <p className="text-sm font-medium text-ink-700">Extracting profile&hellip;</p>
-                <p className="mt-0.5 text-xs text-ink-400">This usually takes 10-20 seconds</p>
-              </div>
+          <div className="mt-6 py-10">
+            <div className="flex animate-pulse flex-col items-center gap-2">
+              <Sparkles size={24} className="text-indigo" />
+              <span className="text-sm text-ink-500">Extracting profile with Groq&hellip;</span>
             </div>
           </div>
         ) : (
           <>
             {/* Resume-on-file indicator */}
             {existingResume && !showDropzone && (
-              <div className="flex items-center gap-3 rounded-xl border border-ink-200/60 bg-ink-50/50 px-4 py-3">
-                <div className="flex size-8 items-center justify-center rounded-lg bg-teal/10">
-                  <FileText size={14} className="text-teal-deep" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs font-medium text-ink-700">Resume on file</p>
-                  <p className="text-[11px] text-ink-400">Last updated {formatDate(existingResume.updatedAt)}</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setShowDropzone(true)}
-                  className="rounded-lg border border-ink-200/60 px-3 py-1.5 text-xs font-medium text-ink-600 transition-colors hover:bg-ink-100"
-                >
+              <div className="mt-5 flex items-center gap-2 rounded-xl border border-ink-200/60 bg-ink-50/50 px-4 py-2.5 text-xs text-ink-500">
+                <FileText size={16} className="shrink-0" />
+                <span>Resume on file &middot; last updated {formatDate(existingResume.updatedAt)}</span>
+                <button type="button" onClick={() => setShowDropzone(true)} className="ml-auto text-indigo-deep hover:underline">
                   Replace
                 </button>
               </div>
             )}
 
             {(!existingResume || showDropzone) && (
-              <div>
+              <div className="mt-5">
                 {!file ? (
                   <label
-                    className={`flex cursor-pointer flex-col items-center gap-3 rounded-xl border-2 border-dashed px-6 py-8 text-center transition-colors ${
+                    className={`flex cursor-pointer flex-col items-center gap-3 rounded-xl border-2 border-dashed px-6 py-10 text-center transition-colors ${
                       dragging
                         ? "border-indigo bg-indigo-soft/30"
-                        : "border-ink-200/70 hover:border-indigo/40 hover:bg-ink-50/30"
+                        : "border-ink-200/70 hover:border-indigo/40"
                     }`}
                     onDragEnter={(e) => { e.preventDefault(); setDragging(true); }}
                     onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
@@ -140,31 +124,25 @@ export function AiResumeUploadPanel({ existingResume, onUpload, isLoading, isSuc
                       onChange={(e) => pickFile(e.target.files?.[0] ?? null)}
                       className="hidden"
                     />
-                    <div className="flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-teal to-indigo shadow-1">
-                      <UploadCloud size={18} className="text-white" />
-                    </div>
-                    <div>
-                      <span className="text-sm text-ink-600">
-                        Drag &amp; drop a resume, or <span className="font-medium text-indigo-deep">browse</span>
-                      </span>
-                      <p className="mt-1 text-[11px] text-ink-400">PDF only &middot; 10 MB max</p>
-                    </div>
+                    <UploadCloud size={28} className="text-ink-300" />
+                    <span className="text-sm text-ink-600">
+                      Drop resume here or <span className="font-medium text-indigo-deep">click to browse</span>
+                    </span>
+                    <span className="text-xs text-ink-400">PDF only &middot; up to 10 MB</span>
                   </label>
                 ) : (
-                  <div className="space-y-3">
+                  <>
                     <div className="flex items-center gap-3 rounded-xl border border-ink-200/60 bg-ink-50/50 px-4 py-3">
-                      <div className="flex size-8 items-center justify-center rounded-lg bg-indigo-soft">
-                        <FileText size={14} className="text-indigo-deep" />
-                      </div>
+                      <FileText size={18} className="shrink-0 text-ink-400" />
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-medium text-ink-800">{file.name}</p>
-                        <p className="text-[11px] text-ink-400">{(file.size / (1024 * 1024)).toFixed(2)} MB</p>
+                        <p className="text-xs text-ink-400">{(file.size / (1024 * 1024)).toFixed(2)} MB</p>
                       </div>
                       <button
                         type="button"
                         onClick={clearFile}
                         aria-label="Remove file"
-                        className="flex size-7 items-center justify-center rounded-lg text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-700"
+                        className="rounded p-1 text-ink-400 hover:bg-ink-100 hover:text-ink-700"
                       >
                         <X size={14} />
                       </button>
@@ -173,11 +151,11 @@ export function AiResumeUploadPanel({ existingResume, onUpload, isLoading, isSuc
                       type="button"
                       onClick={() => onUpload(file)}
                       disabled={isLoading}
-                      className="rounded-xl bg-indigo-deep px-5 py-2 text-sm font-medium text-white shadow-2 transition-all hover:bg-indigo-press hover:shadow-3 disabled:opacity-50"
+                      className="mt-4 rounded-xl bg-indigo-deep px-5 py-2 text-sm font-medium text-white shadow-2 transition-all hover:bg-indigo-press hover:shadow-3 disabled:opacity-50"
                     >
                       Extract profile
                     </button>
-                  </div>
+                  </>
                 )}
                 {pickError && (
                   <p className="mt-2 text-xs text-coral-deep">{pickError}</p>
@@ -187,6 +165,6 @@ export function AiResumeUploadPanel({ existingResume, onUpload, isLoading, isSuc
           </>
         )}
       </div>
-    </section>
+    </div>
   );
 }
