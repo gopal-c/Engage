@@ -1,11 +1,16 @@
 import { requireSkillsHubRole } from "@/lib/skillshub/session";
-import { getProfileByEmail, getMilestonesByProfileId } from "@/lib/skillshub/storage";
+import { getProfileByEmail, getMilestonesByProfileId, syncAvatarFromAuth } from "@/lib/skillshub/storage";
 import { hasResumeData } from "@/lib/skillshub/domain";
 import { MeProfilePage } from "@/components/skillshub/me-profile-page";
 
 export default async function MePage() {
   const session = await requireSkillsHubRole("employee");
   const profile = await getProfileByEmail(session.email);
+
+  if (profile && !profile.avatarUrl) {
+    const synced = await syncAvatarFromAuth(profile.id, session.email).catch(() => null);
+    if (synced) profile.avatarUrl = synced;
+  }
 
   const hasData = profile ? hasResumeData(profile) : false;
   const milestones = profile ? await getMilestonesByProfileId(profile.id) : [];

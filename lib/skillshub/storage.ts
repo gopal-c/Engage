@@ -419,3 +419,18 @@ export async function linkProfileToUser(profileEmail: string, userId: string): P
     WHERE lower(email) = ${profileEmail.toLowerCase()} AND user_id IS NULL
   `;
 }
+
+export async function syncAvatarFromAuth(profileId: string, profileEmail: string): Promise<string | null> {
+  const sql = getSQL();
+  const rows = await sql`
+    UPDATE skillshub.profiles p
+    SET avatar_url = u.avatar_url
+    FROM auth.users u
+    WHERE p.id = ${profileId}
+      AND p.avatar_url IS NULL
+      AND u.avatar_url IS NOT NULL
+      AND lower(u.email) = ${profileEmail.toLowerCase()}
+    RETURNING p.avatar_url
+  `;
+  return rows.length > 0 ? (rows[0].avatar_url as string) : null;
+}
