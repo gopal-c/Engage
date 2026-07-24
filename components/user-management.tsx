@@ -124,14 +124,11 @@ export function UserManagement() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h2 className="text-lg font-semibold text-ink-800">Manage Users</h2>
-          <p className="text-sm text-ink-500">
-            {filtered.length} of {users.length} {users.length === 1 ? "user" : "users"}
-          </p>
-        </div>
-        <div className="relative w-64">
+      <div>
+        <h2 className="text-lg font-semibold text-ink-800">
+          Manage Users <span className="text-ink-400 font-normal">({users.length})</span>
+        </h2>
+        <div className="relative mt-2 w-64">
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-400" />
           <Input
             placeholder="Search name, email, or role..."
