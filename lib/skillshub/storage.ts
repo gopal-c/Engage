@@ -202,7 +202,7 @@ export async function updateProfile(
   values.push(id);
   const query = `UPDATE skillshub.profiles SET ${sets.join(", ")} WHERE id = $${values.length} RETURNING *`;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const rows = await (sql as any)(query, values) as Row[];
+  const rows = await (sql as any).query(query, values) as Row[];
   return rows[0] ? rowToProfile(rows[0]) : undefined;
 }
 
