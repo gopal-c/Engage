@@ -6,8 +6,9 @@ import TeamTab from "@/components/birthdayhub/TeamTab";
 import ComposeTab from "@/components/birthdayhub/ComposeTab";
 import ScheduledTab from "@/components/birthdayhub/ScheduledTab";
 import SettingsTab from "@/components/birthdayhub/SettingsTab";
+import MyProfileTab from "@/components/birthdayhub/MyProfileTab";
 
-type Tab = "dashboard" | "team" | "compose" | "scheduled" | "settings";
+type Tab = "dashboard" | "myprofile" | "team" | "compose" | "scheduled" | "settings";
 
 export default function BirthdayHubPage() {
   const [tab, setTab] = useState<Tab>("dashboard");
@@ -100,11 +101,12 @@ export default function BirthdayHubPage() {
   }
 
   const allTabs: { key: Tab; label: string; icon: string; adminOnly?: boolean }[] = [
-    { key: "dashboard", label: "Dashboard", icon: "🏠" },
-    { key: "team",      label: "Team",      icon: "👥", adminOnly: true },
-    { key: "compose",   label: "Compose",   icon: "✉️", adminOnly: true },
-    { key: "scheduled", label: "Scheduled", icon: "⏰", adminOnly: true },
-    { key: "settings",  label: "Settings",  icon: "⚙️", adminOnly: true },
+    { key: "dashboard",  label: "Dashboard",  icon: "🏠" },
+    { key: "myprofile",  label: "My Profile", icon: "👤" },
+    { key: "team",       label: "Team",       icon: "👥", adminOnly: true },
+    { key: "compose",    label: "Compose",    icon: "✉️", adminOnly: true },
+    { key: "scheduled",  label: "Scheduled",  icon: "⏰", adminOnly: true },
+    { key: "settings",   label: "Settings",   icon: "⚙️", adminOnly: true },
   ];
   const tabs = allTabs.filter((t) => !t.adminOnly || isAdminOrHR);
 
@@ -150,6 +152,9 @@ export default function BirthdayHubPage() {
         <>
           {tab === "dashboard" && (
             <Dashboard employees={employees} logs={logs} onCompose={handleCompose} isAdminOrHR={isAdminOrHR} />
+          )}
+          {tab === "myprofile" && (
+            <MyProfileTab />
           )}
           {tab === "team" && (
             <TeamTab
