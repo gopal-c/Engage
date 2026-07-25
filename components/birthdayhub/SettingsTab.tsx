@@ -131,12 +131,13 @@ export default function SettingsTab() {
     Promise.all([
       fetch("/api/birthdayhub/settings").then((r) => r.json()),
       fetch("/api/birthdayhub/excluded-users").then((r) => r.json()),
-      fetch("/api/users").then((r) => r.json()).catch(() => []),
+      fetch("/api/users").then((r) => r.json()).catch(() => ({ users: [] })),
     ])
-      .then(([s, ex, users]) => {
+      .then(([s, ex, usersData]) => {
         setSettings({ ...defaults, ...s });
         if (Array.isArray(ex)) setExcludedUsers(ex);
-        if (Array.isArray(users)) setAllUsers(users.map((u: Record<string, string>) => ({ id: u.id, name: u.name, email: u.email })));
+        const userList = usersData?.users ?? [];
+        if (Array.isArray(userList)) setAllUsers(userList.map((u: Record<string, string>) => ({ id: u.id, name: u.name, email: u.email })));
       })
       .catch(() => {})
       .finally(() => setLoading(false));
