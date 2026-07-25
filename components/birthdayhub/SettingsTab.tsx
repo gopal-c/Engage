@@ -120,11 +120,13 @@ export default function SettingsTab({ onExcludedChange }: { onExcludedChange?: (
   const [clearing, setClearing] = useState(false);
 
   const [excludedUsers, setExcludedUsers] = useState<ExcludedUser[]>([]);
+  const [savedExcludedIds, setSavedExcludedIds] = useState<Set<string>>(new Set());
+  const [pendingAdds, setPendingAdds] = useState<{ userId: string; reason?: string }[]>([]);
+  const [pendingRemovals, setPendingRemovals] = useState<Set<string>>(new Set());
   const [allUsers, setAllUsers] = useState<{ id: string; name: string; email: string }[]>([]);
   const [excludeSearch, setExcludeSearch] = useState("");
   const [excludeReason, setExcludeReason] = useState("");
   const [excludeDropdownOpen, setExcludeDropdownOpen] = useState(false);
-  const [excludeAdding, setExcludeAdding] = useState(false);
 
   /* ---- Load settings + excluded users ---- */
   useEffect(() => {
@@ -135,7 +137,10 @@ export default function SettingsTab({ onExcludedChange }: { onExcludedChange?: (
     ])
       .then(([s, ex, usersData]) => {
         setSettings({ ...defaults, ...s });
-        if (Array.isArray(ex)) setExcludedUsers(ex);
+        if (Array.isArray(ex)) {
+          setExcludedUsers(ex);
+          setSavedExcludedIds(new Set(ex.map((u: ExcludedUser) => u.userId)));
+        }
         const userList = usersData?.users ?? [];
         if (Array.isArray(userList)) setAllUsers(userList.map((u: Record<string, string>) => ({ id: u.id, name: u.name, email: u.email })));
       })
@@ -182,22 +187,47 @@ export default function SettingsTab({ onExcludedChange }: { onExcludedChange?: (
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(settings),
       });
-      if (res.ok) {
-        toast.success("Settings saved");
+      if (!res.ok) { toast.error("Failed to save settings"); return; }
 
-        /* Sync cron to GitHub */
-        if (settings.autoSendEnabled) {
-          fetch("/api/birthdayhub/settings/cron", {
+      /* Sync excluded user changes */
+      const excludeOps = [
+        ...pendingAdds.map((p) =>
+          fetch("/api/birthdayhub/excluded-users", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ cronExpression: settings.cronExpression }),
-          }).catch(() => {});
-        }
+            body: JSON.stringify(p),
+          })
+        ),
+        ...Array.from(pendingRemovals).map((userId) =>
+          fetch("/api/birthdayhub/excluded-users", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId }),
+          })
+        ),
+      ];
+      if (excludeOps.length > 0) await Promise.all(excludeOps);
 
-        onExcludedChange?.();
-      } else {
-        toast.error("Failed to save settings");
+      /* Refresh excluded list from server */
+      const refreshed = await fetch("/api/birthdayhub/excluded-users").then((r) => r.json());
+      if (Array.isArray(refreshed)) {
+        setExcludedUsers(refreshed);
+        setSavedExcludedIds(new Set(refreshed.map((u: ExcludedUser) => u.userId)));
       }
+      setPendingAdds([]);
+      setPendingRemovals(new Set());
+
+      /* Sync cron to GitHub */
+      if (settings.autoSendEnabled) {
+        fetch("/api/birthdayhub/settings/cron", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ cronExpression: settings.cronExpression }),
+        }).catch(() => {});
+      }
+
+      toast.success("Settings saved");
+      onExcludedChange?.();
     } catch {
       toast.error("Network error — try again");
     } finally {
@@ -239,36 +269,35 @@ export default function SettingsTab({ onExcludedChange }: { onExcludedChange?: (
     }
   }
 
-  async function handleExcludeUser(userId: string) {
-    setExcludeAdding(true);
-    try {
-      const res = await fetch("/api/birthdayhub/excluded-users", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, reason: excludeReason.trim() || undefined }),
-      });
-      if (res.ok) {
-        const refreshed = await fetch("/api/birthdayhub/excluded-users").then((r) => r.json());
-        if (Array.isArray(refreshed)) setExcludedUsers(refreshed);
-        setExcludeSearch("");
-        setExcludeReason("");
-        setExcludeDropdownOpen(false);
-      }
-    } catch { /* */ }
-    finally { setExcludeAdding(false); }
+  function handleExcludeUser(userId: string) {
+    const user = allUsers.find((u) => u.id === userId);
+    if (!user) return;
+
+    if (pendingRemovals.has(userId)) {
+      setPendingRemovals((prev) => { const next = new Set(prev); next.delete(userId); return next; });
+    } else {
+      setPendingAdds((prev) => [...prev, { userId, reason: excludeReason.trim() || undefined }]);
+      setExcludedUsers((prev) => [...prev, {
+        id: `pending-${userId}`,
+        userId,
+        name: user.name,
+        email: user.email,
+        reason: excludeReason.trim() || undefined,
+        createdAt: new Date().toISOString(),
+      }]);
+    }
+    setExcludeSearch("");
+    setExcludeReason("");
+    setExcludeDropdownOpen(false);
   }
 
-  async function handleRemoveExcluded(userId: string) {
-    try {
-      const res = await fetch("/api/birthdayhub/excluded-users", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId }),
-      });
-      if (res.ok) {
-        setExcludedUsers((prev) => prev.filter((u) => u.userId !== userId));
-      }
-    } catch { /* */ }
+  function handleRemoveExcluded(userId: string) {
+    setExcludedUsers((prev) => prev.filter((u) => u.userId !== userId));
+    if (savedExcludedIds.has(userId)) {
+      setPendingRemovals((prev) => new Set(prev).add(userId));
+    } else {
+      setPendingAdds((prev) => prev.filter((p) => p.userId !== userId));
+    }
   }
 
   /* ---- Render ---- */
@@ -535,9 +564,8 @@ export default function SettingsTab({ onExcludedChange }: { onExcludedChange?: (
                         <button
                           key={u.id}
                           type="button"
-                          disabled={excludeAdding}
                           onClick={() => handleExcludeUser(u.id)}
-                          className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-secondary transition disabled:opacity-50"
+                          className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-secondary transition"
                         >
                           <span className="font-medium text-foreground">{u.name}</span>
                           <span className="text-xs text-muted-foreground">{u.email}</span>
