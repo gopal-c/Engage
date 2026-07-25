@@ -111,11 +111,16 @@ export default function BirthdayHubPage() {
 
   const refreshExcluded = useCallback(async () => {
     try {
-      const exRes = await fetch("/api/birthdayhub/excluded-users");
+      const [exRes, checkRes] = await Promise.all([
+        fetch("/api/birthdayhub/excluded-users"),
+        fetch("/api/birthdayhub/excluded-users/check"),
+      ]);
       const excluded: ExcludedUser[] = await exRes.json();
       if (Array.isArray(excluded)) {
         setExcludedEmails(new Set(excluded.map((u) => u.email.toLowerCase())));
       }
+      const checkData = await checkRes.json();
+      setCurrentUserExcluded(!!checkData.excluded);
     } catch { /* */ }
   }, []);
 

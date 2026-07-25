@@ -193,6 +193,8 @@ export default function SettingsTab({ onExcludedChange }: { onExcludedChange?: (
             body: JSON.stringify({ cronExpression: settings.cronExpression }),
           }).catch(() => {});
         }
+
+        onExcludedChange?.();
       } else {
         toast.error("Failed to save settings");
       }
@@ -251,8 +253,6 @@ export default function SettingsTab({ onExcludedChange }: { onExcludedChange?: (
         setExcludeSearch("");
         setExcludeReason("");
         setExcludeDropdownOpen(false);
-        toast.success("User excluded");
-        onExcludedChange?.();
       }
     } catch { /* */ }
     finally { setExcludeAdding(false); }
@@ -267,8 +267,6 @@ export default function SettingsTab({ onExcludedChange }: { onExcludedChange?: (
       });
       if (res.ok) {
         setExcludedUsers((prev) => prev.filter((u) => u.userId !== userId));
-        toast.success("User exclusion removed");
-        onExcludedChange?.();
       }
     } catch { /* */ }
   }
