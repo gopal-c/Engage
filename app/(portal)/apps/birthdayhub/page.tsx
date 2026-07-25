@@ -109,6 +109,16 @@ export default function BirthdayHubPage() {
     setLoading(false);
   }, []);
 
+  const refreshExcluded = useCallback(async () => {
+    try {
+      const exRes = await fetch("/api/birthdayhub/excluded-users");
+      const excluded: ExcludedUser[] = await exRes.json();
+      if (Array.isArray(excluded)) {
+        setExcludedEmails(new Set(excluded.map((u) => u.email.toLowerCase())));
+      }
+    } catch { /* */ }
+  }, []);
+
   useEffect(() => { fetchData(); }, [fetchData]);
 
   useEffect(() => {
@@ -181,6 +191,7 @@ export default function BirthdayHubPage() {
           {tab === "team" && (
             <TeamTab
               employees={employees}
+              excludedEmails={excludedEmails}
               onCompose={handleCompose}
             />
           )}
@@ -199,7 +210,7 @@ export default function BirthdayHubPage() {
             <ScheduledTab refreshKey={scheduledRefreshKey} />
           )}
           {tab === "settings" && (
-            <SettingsTab />
+            <SettingsTab onExcludedChange={refreshExcluded} />
           )}
         </>
       )}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 import type { AppSettings, ExcludedUser } from "@/lib/birthdayhub/types";
 
 /* ------------------------------------------------------------------ */
@@ -107,11 +108,10 @@ const defaults: AppSettings = {
   bccOverride: false,
 };
 
-export default function SettingsTab() {
+export default function SettingsTab({ onExcludedChange }: { onExcludedChange?: () => void }) {
   const [settings, setSettings] = useState<AppSettings>(defaults);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
   const [cronStatus, setCronStatus] = useState<string | null>(null);
   const [cronRunning, setCronRunning] = useState(false);
   const [ccInput, setCcInput] = useState("");
@@ -176,7 +176,6 @@ export default function SettingsTab() {
 
   async function handleSave() {
     setSaving(true);
-    setSaved(false);
     try {
       const res = await fetch("/api/birthdayhub/settings", {
         method: "POST",
@@ -184,8 +183,7 @@ export default function SettingsTab() {
         body: JSON.stringify(settings),
       });
       if (res.ok) {
-        setSaved(true);
-        setTimeout(() => setSaved(false), 3000);
+        toast.success("Settings saved");
 
         /* Sync cron to GitHub */
         if (settings.autoSendEnabled) {
@@ -195,9 +193,11 @@ export default function SettingsTab() {
             body: JSON.stringify({ cronExpression: settings.cronExpression }),
           }).catch(() => {});
         }
+      } else {
+        toast.error("Failed to save settings");
       }
     } catch {
-      /* */
+      toast.error("Network error — try again");
     } finally {
       setSaving(false);
     }
@@ -251,6 +251,8 @@ export default function SettingsTab() {
         setExcludeSearch("");
         setExcludeReason("");
         setExcludeDropdownOpen(false);
+        toast.success("User excluded");
+        onExcludedChange?.();
       }
     } catch { /* */ }
     finally { setExcludeAdding(false); }
@@ -265,6 +267,8 @@ export default function SettingsTab() {
       });
       if (res.ok) {
         setExcludedUsers((prev) => prev.filter((u) => u.userId !== userId));
+        toast.success("User exclusion removed");
+        onExcludedChange?.();
       }
     } catch { /* */ }
   }
@@ -579,7 +583,7 @@ export default function SettingsTab() {
       </SectionCard>
 
       {/* ---- Save button ---- */}
-      <div className="flex items-center gap-3">
+      <div>
         <button
           onClick={handleSave}
           disabled={saving}
@@ -588,11 +592,6 @@ export default function SettingsTab() {
         >
           {saving ? "Saving..." : "Save Settings"}
         </button>
-        {saved && (
-          <span className="text-sm text-green-600 font-medium">
-            Settings saved
-          </span>
-        )}
       </div>
     </div>
   );

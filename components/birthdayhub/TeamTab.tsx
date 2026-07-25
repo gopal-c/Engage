@@ -23,10 +23,11 @@ function fmtBirthday(mmdd: string) {
 
 interface Props {
   employees: Employee[];
+  excludedEmails?: Set<string>;
   onCompose: (emp: Employee) => void;
 }
 
-export default function TeamTab({ employees, onCompose }: Props) {
+export default function TeamTab({ employees, excludedEmails = new Set(), onCompose }: Props) {
   const [search, setSearch] = useState("");
 
   const filtered = employees.filter((e) => {
@@ -72,51 +73,61 @@ export default function TeamTab({ employees, onCompose }: Props) {
         </div>
       ) : (
         <div className="space-y-2">
-          {filtered.map((emp) => (
-            <div
-              key={emp.id}
-              className="flex items-center justify-between rounded-xl border bg-card px-4 py-3 shadow-sm"
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                {emp.avatarUrl ? (
-                  /* eslint-disable-next-line @next/next/no-img-element */
-                  <img
-                    src={emp.avatarUrl}
-                    alt={emp.name}
-                    className="h-10 w-10 shrink-0 rounded-full object-cover"
-                  />
-                ) : (
-                  <div
-                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xs font-bold"
+          {filtered.map((emp) => {
+            const isExcluded = excludedEmails.has(emp.email.toLowerCase());
+            return (
+              <div
+                key={emp.id}
+                className={`flex items-center justify-between rounded-xl border bg-card px-4 py-3 shadow-sm${isExcluded ? " opacity-50" : ""}`}
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  {emp.avatarUrl ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img
+                      src={emp.avatarUrl}
+                      alt={emp.name}
+                      className="h-10 w-10 shrink-0 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div
+                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xs font-bold"
+                      style={{ backgroundColor: "#EEEDFE", color: "#2D1B69" }}
+                    >
+                      {initials(emp.name)}
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    <p className={`text-sm font-medium text-foreground truncate${isExcluded ? " line-through" : ""}`}>
+                      {emp.name}
+                    </p>
+                    <p className="text-xs text-muted-foreground truncate">{emp.email}</p>
+                  </div>
+                  {isExcluded && (
+                    <span className="shrink-0 rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-[10px] font-semibold uppercase text-red-500">
+                      Excluded
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-3 shrink-0 ml-3">
+                  <span
+                    className="hidden sm:inline-block rounded-full px-2.5 py-0.5 text-xs font-medium"
                     style={{ backgroundColor: "#EEEDFE", color: "#2D1B69" }}
                   >
-                    {initials(emp.name)}
-                  </div>
-                )}
-                <div className="min-w-0">
-                  <p className="text-sm font-medium text-foreground truncate">
-                    {emp.name}
-                  </p>
-                  <p className="text-xs text-muted-foreground truncate">{emp.email}</p>
+                    {fmtBirthday(emp.birthday)}
+                  </span>
+                  {!isExcluded && (
+                    <button
+                      onClick={() => onCompose(emp)}
+                      className="rounded-xl bg-indigo-deep px-3 py-1.5 text-xs font-medium text-white shadow-1 transition-all hover:bg-indigo-press hover:shadow-2"
+                    >
+                      Compose
+                    </button>
+                  )}
                 </div>
               </div>
-
-              <div className="flex items-center gap-3 shrink-0 ml-3">
-                <span
-                  className="hidden sm:inline-block rounded-full px-2.5 py-0.5 text-xs font-medium"
-                  style={{ backgroundColor: "#EEEDFE", color: "#2D1B69" }}
-                >
-                  {fmtBirthday(emp.birthday)}
-                </span>
-                <button
-                  onClick={() => onCompose(emp)}
-                  className="rounded-xl bg-indigo-deep px-3 py-1.5 text-xs font-medium text-white shadow-1 transition-all hover:bg-indigo-press hover:shadow-2"
-                >
-                  Compose
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
