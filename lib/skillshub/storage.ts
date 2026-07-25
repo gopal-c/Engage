@@ -30,6 +30,8 @@ type Row = {
   work_email_verification_expires_at: string | null;
   joining_date: string | null;
   date_of_birth: string | null;
+  auth_dob?: string | null;
+  auth_bio?: string | null;
 };
 
 type MilestoneRow = {
@@ -72,7 +74,8 @@ function rowToProfile(r: Row): Profile {
     workEmailVerificationToken: r.work_email_verification_token ?? null,
     workEmailVerificationExpiresAt: r.work_email_verification_expires_at ?? null,
     joiningDate: toDateStr(r.joining_date),
-    dateOfBirth: toDateStr(r.date_of_birth),
+    dateOfBirth: toDateStr(r.auth_dob ?? r.date_of_birth),
+    bio: (r.auth_bio as string) ?? null,
   };
 }
 
@@ -93,20 +96,33 @@ function rowToMilestone(r: MilestoneRow): Milestone {
 
 export async function getProfiles(): Promise<Profile[]> {
   const sql = getSQL();
-  const rows = await sql`SELECT * FROM skillshub.profiles ORDER BY created_at DESC` as Row[];
+  const rows = await sql`
+    SELECT p.*, u.date_of_birth AS auth_dob, u.bio AS auth_bio
+    FROM skillshub.profiles p
+    LEFT JOIN auth.users u ON lower(u.email) = lower(p.email)
+    ORDER BY p.created_at DESC
+  ` as Row[];
   return rows.map(rowToProfile);
 }
 
 export async function getProfile(id: string): Promise<Profile | undefined> {
   const sql = getSQL();
-  const rows = await sql`SELECT * FROM skillshub.profiles WHERE id = ${id} LIMIT 1` as Row[];
+  const rows = await sql`
+    SELECT p.*, u.date_of_birth AS auth_dob, u.bio AS auth_bio
+    FROM skillshub.profiles p
+    LEFT JOIN auth.users u ON lower(u.email) = lower(p.email)
+    WHERE p.id = ${id} LIMIT 1
+  ` as Row[];
   return rows[0] ? rowToProfile(rows[0]) : undefined;
 }
 
 export async function getProfileByEmail(email: string): Promise<Profile | undefined> {
   const sql = getSQL();
   const rows = await sql`
-    SELECT * FROM skillshub.profiles WHERE lower(email) = ${email.toLowerCase()} ORDER BY created_at DESC LIMIT 1
+    SELECT p.*, u.date_of_birth AS auth_dob, u.bio AS auth_bio
+    FROM skillshub.profiles p
+    LEFT JOIN auth.users u ON lower(u.email) = lower(p.email)
+    WHERE lower(p.email) = ${email.toLowerCase()} ORDER BY p.created_at DESC LIMIT 1
   ` as Row[];
   return rows[0] ? rowToProfile(rows[0]) : undefined;
 }
@@ -114,7 +130,10 @@ export async function getProfileByEmail(email: string): Promise<Profile | undefi
 export async function getProfileByWorkEmail(workEmail: string): Promise<Profile | undefined> {
   const sql = getSQL();
   const rows = await sql`
-    SELECT * FROM skillshub.profiles WHERE lower(work_email) = ${workEmail.toLowerCase()} LIMIT 1
+    SELECT p.*, u.date_of_birth AS auth_dob, u.bio AS auth_bio
+    FROM skillshub.profiles p
+    LEFT JOIN auth.users u ON lower(u.email) = lower(p.email)
+    WHERE lower(p.work_email) = ${workEmail.toLowerCase()} LIMIT 1
   ` as Row[];
   return rows[0] ? rowToProfile(rows[0]) : undefined;
 }
@@ -122,7 +141,10 @@ export async function getProfileByWorkEmail(workEmail: string): Promise<Profile 
 export async function getProfileByUserId(userId: string): Promise<Profile | undefined> {
   const sql = getSQL();
   const rows = await sql`
-    SELECT * FROM skillshub.profiles WHERE user_id = ${userId} ORDER BY created_at DESC LIMIT 1
+    SELECT p.*, u.date_of_birth AS auth_dob, u.bio AS auth_bio
+    FROM skillshub.profiles p
+    LEFT JOIN auth.users u ON lower(u.email) = lower(p.email)
+    WHERE p.user_id = ${userId} ORDER BY p.created_at DESC LIMIT 1
   ` as Row[];
   return rows[0] ? rowToProfile(rows[0]) : undefined;
 }
@@ -130,7 +152,10 @@ export async function getProfileByUserId(userId: string): Promise<Profile | unde
 export async function getApprovedProfiles(): Promise<Profile[]> {
   const sql = getSQL();
   const rows = await sql`
-    SELECT * FROM skillshub.profiles WHERE status = 'approved' ORDER BY created_at DESC
+    SELECT p.*, u.date_of_birth AS auth_dob, u.bio AS auth_bio
+    FROM skillshub.profiles p
+    LEFT JOIN auth.users u ON lower(u.email) = lower(p.email)
+    WHERE p.status = 'approved' ORDER BY p.created_at DESC
   ` as Row[];
   return rows.map(rowToProfile);
 }
@@ -138,9 +163,11 @@ export async function getApprovedProfiles(): Promise<Profile[]> {
 export async function getPendingProfiles(): Promise<Profile[]> {
   const sql = getSQL();
   const rows = await sql`
-    SELECT * FROM skillshub.profiles
-    WHERE status = 'pending' AND (work_email IS NULL OR work_email_verified = TRUE)
-    ORDER BY created_at DESC
+    SELECT p.*, u.date_of_birth AS auth_dob, u.bio AS auth_bio
+    FROM skillshub.profiles p
+    LEFT JOIN auth.users u ON lower(u.email) = lower(p.email)
+    WHERE p.status = 'pending' AND (p.work_email IS NULL OR p.work_email_verified = TRUE)
+    ORDER BY p.created_at DESC
   ` as Row[];
   return rows.map(rowToProfile);
 }
@@ -148,15 +175,17 @@ export async function getPendingProfiles(): Promise<Profile[]> {
 export async function getDirectoryProfiles(): Promise<Profile[]> {
   const sql = getSQL();
   const rows = await sql`
-    SELECT * FROM skillshub.profiles
-    WHERE status IN ('approved', 'pending')
-    ORDER BY created_at DESC
+    SELECT p.*, u.date_of_birth AS auth_dob, u.bio AS auth_bio
+    FROM skillshub.profiles p
+    LEFT JOIN auth.users u ON lower(u.email) = lower(p.email)
+    WHERE p.status IN ('approved', 'pending')
+    ORDER BY p.created_at DESC
   ` as Row[];
   return rows.map(rowToProfile);
 }
 
 export async function addProfile(
-  input: Omit<Profile, "id" | "userId" | "status" | "createdAt" | "updatedAt" | "avatarUrl" | "workEmail" | "workEmailVerified" | "workEmailVerificationToken" | "workEmailVerificationExpiresAt" | "joiningDate" | "dateOfBirth">,
+  input: Omit<Profile, "id" | "userId" | "status" | "createdAt" | "updatedAt" | "avatarUrl" | "workEmail" | "workEmailVerified" | "workEmailVerificationToken" | "workEmailVerificationExpiresAt" | "joiningDate" | "dateOfBirth" | "bio">,
 ): Promise<Profile> {
   const sql = getSQL();
   const id = randomUUID();
@@ -203,7 +232,18 @@ export async function updateProfile(
   const query = `UPDATE skillshub.profiles SET ${sets.join(", ")} WHERE id = $${values.length} RETURNING *`;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rows = await (sql as any).query(query, values) as Row[];
-  return rows[0] ? rowToProfile(rows[0]) : undefined;
+  if (!rows[0]) return undefined;
+
+  if ("dateOfBirth" in patch) {
+    const email = rows[0].email as string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (sql as any).query(
+      `UPDATE auth.users SET date_of_birth = $1, updated_at = NOW() WHERE lower(email) = lower($2)`,
+      [patch.dateOfBirth ?? null, email],
+    );
+  }
+
+  return rowToProfile(rows[0]);
 }
 
 export async function updateAvatarByEmail(

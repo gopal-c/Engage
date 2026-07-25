@@ -44,6 +44,7 @@ export type Profile = {
   workEmailVerificationExpiresAt: string | null;
   joiningDate: string | null;
   dateOfBirth: string | null;
+  bio: string | null;
 };
 
 export type MilestoneCreator = "hr" | "employee";
