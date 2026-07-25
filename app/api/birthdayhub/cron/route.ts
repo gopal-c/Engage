@@ -4,6 +4,7 @@ import Groq from "groq-sdk";
 import {
   getEmployees, getLogs, appendLog, todayMMDD, alreadySentThisYear,
   getDueScheduledSends, updateScheduledSendStatus, getSettings,
+  getExcludedEmails,
 } from "@/lib/birthdayhub/storage";
 import { buildEmailHTML, resolvePalette } from "@/lib/birthdayhub/email-template";
 import { generateIllustrationUrl } from "@/lib/birthdayhub/generate-illustration";
@@ -34,10 +35,12 @@ export async function GET(req: NextRequest) {
     results.birthdayFailed = 0;
   } else
   try {
-    [employees, logs] = await Promise.all([getEmployees(), getLogs()]);
+    const [emps, l, excludedEmails] = await Promise.all([getEmployees(), getLogs(), getExcludedEmails()]);
+    employees = emps;
+    logs = l;
 
     birthdayPeople = employees.filter(
-      (e) => e.birthday === today && !alreadySentThisYear(logs, e.id)
+      (e) => e.birthday === today && !alreadySentThisYear(logs, e.id) && !excludedEmails.has(e.email.toLowerCase())
     );
 
     if (birthdayPeople.length > 0) {
@@ -94,10 +97,10 @@ Return ONLY a valid JSON object:
           let ccEmails: string[] = [];
           if (settings.ccMode === "all") {
             ccEmails = employees
-              .filter((e) => e.id !== employee.id && e.email)
+              .filter((e) => e.id !== employee.id && e.email && !excludedEmails.has(e.email.toLowerCase()))
               .map((e) => e.email);
           } else if (settings.ccMode === "custom") {
-            ccEmails = settings.customCCList || [];
+            ccEmails = (settings.customCCList || []).filter((e) => !excludedEmails.has(e.toLowerCase()));
           }
 
           const useBcc = settings.bccOverride && ccEmails.length > 50;

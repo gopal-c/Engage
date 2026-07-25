@@ -9,7 +9,16 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json();
-  const { date_of_birth, bio } = body;
+  const { date_of_birth, bio, skip } = body;
+
+  if (skip) {
+    await sql`
+      UPDATE auth.users
+      SET profile_completed = true, updated_at = NOW()
+      WHERE id = ${session.user.id}
+    `;
+    return NextResponse.json({ ok: true });
+  }
 
   if (!date_of_birth) {
     return NextResponse.json({ error: "Date of birth is required" }, { status: 400 });

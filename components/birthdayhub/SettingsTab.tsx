@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import type { AppSettings } from "@/lib/birthdayhub/types";
+import type { AppSettings, ExcludedUser } from "@/lib/birthdayhub/types";
 
 /* ------------------------------------------------------------------ */
 /*  Helpers                                                            */
@@ -119,13 +119,24 @@ export default function SettingsTab() {
   const [confirmClear, setConfirmClear] = useState(false);
   const [clearing, setClearing] = useState(false);
 
-  /* ---- Load settings ---- */
+  const [excludedUsers, setExcludedUsers] = useState<ExcludedUser[]>([]);
+  const [allUsers, setAllUsers] = useState<{ id: string; name: string; email: string }[]>([]);
+  const [excludeSearch, setExcludeSearch] = useState("");
+  const [excludeReason, setExcludeReason] = useState("");
+  const [excludeDropdownOpen, setExcludeDropdownOpen] = useState(false);
+  const [excludeAdding, setExcludeAdding] = useState(false);
+
+  /* ---- Load settings + excluded users ---- */
   useEffect(() => {
     Promise.all([
       fetch("/api/birthdayhub/settings").then((r) => r.json()),
+      fetch("/api/birthdayhub/excluded-users").then((r) => r.json()),
+      fetch("/api/users").then((r) => r.json()).catch(() => []),
     ])
-      .then(([s]) => {
+      .then(([s, ex, users]) => {
         setSettings({ ...defaults, ...s });
+        if (Array.isArray(ex)) setExcludedUsers(ex);
+        if (Array.isArray(users)) setAllUsers(users.map((u: Record<string, string>) => ({ id: u.id, name: u.name, email: u.email })));
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -223,6 +234,38 @@ export default function SettingsTab() {
       setClearing(false);
       setConfirmClear(false);
     }
+  }
+
+  async function handleExcludeUser(userId: string) {
+    setExcludeAdding(true);
+    try {
+      const res = await fetch("/api/birthdayhub/excluded-users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, reason: excludeReason.trim() || undefined }),
+      });
+      if (res.ok) {
+        const refreshed = await fetch("/api/birthdayhub/excluded-users").then((r) => r.json());
+        if (Array.isArray(refreshed)) setExcludedUsers(refreshed);
+        setExcludeSearch("");
+        setExcludeReason("");
+        setExcludeDropdownOpen(false);
+      }
+    } catch { /* */ }
+    finally { setExcludeAdding(false); }
+  }
+
+  async function handleRemoveExcluded(userId: string) {
+    try {
+      const res = await fetch("/api/birthdayhub/excluded-users", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      });
+      if (res.ok) {
+        setExcludedUsers((prev) => prev.filter((u) => u.userId !== userId));
+      }
+    } catch { /* */ }
   }
 
   /* ---- Render ---- */
@@ -416,6 +459,101 @@ export default function SettingsTab() {
               No one will be CC&apos;d. Emails go to the birthday person only.
             </p>
           )}
+        </div>
+      </SectionCard>
+
+      {/* ---- Excluded Users ---- */}
+      <SectionCard>
+        <SectionHeader
+          title="Excluded Users"
+          subtitle="Users who will not receive birthday emails and won't appear in CC/BCC lists"
+        />
+        <div className="space-y-4">
+          {/* Current excluded list */}
+          {excludedUsers.length > 0 ? (
+            <div className="space-y-2">
+              {excludedUsers.map((eu) => (
+                <div
+                  key={eu.id}
+                  className="flex items-center justify-between rounded-lg border bg-secondary/50 px-4 py-3"
+                >
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">
+                      {eu.name}
+                    </p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {eu.email}
+                      {eu.reason && (
+                        <span className="ml-2 text-muted-foreground/70">— {eu.reason}</span>
+                      )}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveExcluded(eu.userId)}
+                    className="ml-3 shrink-0 rounded-lg border border-red-200 px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-50 transition"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">No excluded users</p>
+          )}
+
+          {/* Add user */}
+          <div className="relative">
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <input
+                  placeholder="Search users to exclude..."
+                  value={excludeSearch}
+                  onChange={(e) => {
+                    setExcludeSearch(e.target.value);
+                    setExcludeDropdownOpen(true);
+                  }}
+                  onFocus={() => setExcludeDropdownOpen(true)}
+                  className="w-full rounded-lg border bg-secondary px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-ring outline-none transition"
+                />
+                {excludeDropdownOpen && excludeSearch.trim() && (
+                  <div className="absolute z-20 mt-1 w-full max-h-48 overflow-y-auto rounded-lg border bg-card shadow-lg">
+                    {(() => {
+                      const excludedIds = new Set(excludedUsers.map((u) => u.userId));
+                      const q = excludeSearch.toLowerCase();
+                      const filtered = allUsers.filter(
+                        (u) =>
+                          !excludedIds.has(u.id) &&
+                          (u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q))
+                      );
+                      if (filtered.length === 0)
+                        return <p className="px-3 py-2 text-xs text-muted-foreground">No matching users</p>;
+                      return filtered.slice(0, 10).map((u) => (
+                        <button
+                          key={u.id}
+                          type="button"
+                          disabled={excludeAdding}
+                          onClick={() => handleExcludeUser(u.id)}
+                          className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-secondary transition disabled:opacity-50"
+                        >
+                          <span className="font-medium text-foreground">{u.name}</span>
+                          <span className="text-xs text-muted-foreground">{u.email}</span>
+                        </button>
+                      ));
+                    })()}
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="mt-2">
+              <input
+                placeholder="Reason (optional)"
+                value={excludeReason}
+                onChange={(e) => setExcludeReason(e.target.value)}
+                className="w-full rounded-lg border bg-secondary px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-ring outline-none transition"
+              />
+            </div>
+          </div>
         </div>
       </SectionCard>
 

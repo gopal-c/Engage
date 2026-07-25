@@ -85,9 +85,10 @@ interface Props {
   logs: SendLog[];
   onCompose: (emp: Employee) => void;
   isAdminOrHR?: boolean;
+  excludedEmails?: Set<string>;
 }
 
-export default function Dashboard({ employees, logs, onCompose, isAdminOrHR = false }: Props) {
+export default function Dashboard({ employees, logs, onCompose, isAdminOrHR = false, excludedEmails = new Set() }: Props) {
   const today = todayMMDD();
   const month = currentMonth();
 
@@ -238,10 +239,11 @@ export default function Dashboard({ employees, logs, onCompose, isAdminOrHR = fa
           <div className="space-y-2">
             {upcoming.map((emp) => {
               const days = daysUntil(emp.birthday);
+              const isExcluded = excludedEmails.has(emp.email.toLowerCase());
               return (
                 <div
                   key={emp.id}
-                  className="flex items-center justify-between rounded-xl border bg-card px-4 py-3 shadow-sm"
+                  className={`flex items-center justify-between rounded-xl border bg-card px-4 py-3 shadow-sm${isExcluded ? " opacity-50" : ""}`}
                 >
                   <div className="flex items-center gap-3">
                     {emp.avatarUrl ? (
@@ -256,9 +258,14 @@ export default function Dashboard({ employees, logs, onCompose, isAdminOrHR = fa
                       </div>
                     )}
                     <div>
-                      <p className="text-sm font-medium text-foreground">{emp.name}</p>
+                      <p className={`text-sm font-medium text-foreground${isExcluded ? " line-through" : ""}`}>{emp.name}</p>
                       <p className="text-xs text-muted-foreground">{fmtBirthday(emp.birthday)}</p>
                     </div>
+                    {isExcluded && (
+                      <span className="rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-[10px] font-semibold uppercase text-red-500">
+                        Excluded
+                      </span>
+                    )}
                   </div>
                   <span className="text-xs font-medium text-muted-foreground">
                     {days === 0 ? "Today" : `${days}d`}

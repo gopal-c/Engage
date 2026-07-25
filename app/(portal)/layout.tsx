@@ -4,6 +4,7 @@ import { sql } from "@/lib/db";
 import { Sidebar } from "@/components/sidebar";
 import { Header } from "@/components/header";
 import { OnboardingModal } from "@/components/onboarding-modal";
+import { isUserExcluded } from "@/lib/birthdayhub/storage";
 
 export default async function PortalLayout({
   children,
@@ -15,11 +16,14 @@ export default async function PortalLayout({
 
   const isAdminOrHR = session.user.role === "admin" || session.user.role === "hr";
   let profileCompleted = true;
+  let userExcluded = false;
   if (!isAdminOrHR) {
-    const rows = await sql`
-      SELECT profile_completed FROM auth.users WHERE id = ${session.user.id}
-    `;
+    const [rows, excluded] = await Promise.all([
+      sql`SELECT profile_completed FROM auth.users WHERE id = ${session.user.id}`,
+      isUserExcluded(session.user.id).catch(() => false),
+    ]);
     profileCompleted = rows.length > 0 && (rows[0].profile_completed as boolean);
+    userExcluded = excluded;
   }
 
   return (
@@ -38,7 +42,7 @@ export default async function PortalLayout({
           {children}
         </main>
       </div>
-      {!profileCompleted && <OnboardingModal />}
+      {!profileCompleted && <OnboardingModal canSkip={userExcluded} />}
     </div>
   );
 }

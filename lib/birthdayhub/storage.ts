@@ -1,5 +1,5 @@
 import { sql } from "@/lib/db";
-import type { Employee, SendLog, ScheduledSend, AppSettings } from "./types";
+import type { Employee, SendLog, ScheduledSend, AppSettings, ExcludedUser } from "./types";
 
 // ── Row mappers ───────────────────────────────────────────────────────────────
 
@@ -227,4 +227,63 @@ export async function getDueScheduledSends(): Promise<ScheduledSend[]> {
     ORDER BY scheduled_at ASC
   `;
   return rows.map(rowToScheduledSend);
+}
+
+// ── Excluded Users ──────────────────────────────────────────────────────────
+
+export async function getExcludedUsers(): Promise<ExcludedUser[]> {
+  const rows = await sql`
+    SELECT eu.id, eu.user_id, u.name, u.email, eu.reason,
+           eb.name AS excluded_by_name, eu.created_at
+    FROM birthdayhub.excluded_users eu
+    JOIN auth.users u ON u.id = eu.user_id
+    LEFT JOIN auth.users eb ON eb.id = eu.excluded_by
+    ORDER BY eu.created_at DESC
+  `;
+  return rows.map((r) => ({
+    id:             r.id as string,
+    userId:         r.user_id as string,
+    name:           r.name as string,
+    email:          r.email as string,
+    reason:         (r.reason as string) || undefined,
+    excludedByName: (r.excluded_by_name as string) || undefined,
+    createdAt:      (r.created_at as string) || new Date().toISOString(),
+  }));
+}
+
+export async function addExcludedUser(
+  userId: string,
+  excludedBy: string,
+  reason?: string
+): Promise<void> {
+  await sql`
+    INSERT INTO birthdayhub.excluded_users (user_id, excluded_by, reason)
+    VALUES (${userId}, ${excludedBy}, ${reason || null})
+    ON CONFLICT (user_id) DO NOTHING
+  `;
+}
+
+export async function removeExcludedUser(userId: string): Promise<void> {
+  await sql`DELETE FROM birthdayhub.excluded_users WHERE user_id = ${userId}`;
+}
+
+export async function getExcludedUserIds(): Promise<Set<string>> {
+  const rows = await sql`SELECT user_id FROM birthdayhub.excluded_users`;
+  return new Set(rows.map((r) => r.user_id as string));
+}
+
+export async function getExcludedEmails(): Promise<Set<string>> {
+  const rows = await sql`
+    SELECT lower(u.email) AS email
+    FROM birthdayhub.excluded_users eu
+    JOIN auth.users u ON u.id = eu.user_id
+  `;
+  return new Set(rows.map((r) => r.email as string));
+}
+
+export async function isUserExcluded(userId: string): Promise<boolean> {
+  const rows = await sql`
+    SELECT 1 FROM birthdayhub.excluded_users WHERE user_id = ${userId} LIMIT 1
+  `;
+  return rows.length > 0;
 }

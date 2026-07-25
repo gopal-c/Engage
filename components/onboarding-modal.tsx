@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
-export function OnboardingModal() {
+export function OnboardingModal({ canSkip = false }: { canSkip?: boolean }) {
   const router = useRouter();
   const [dob, setDob] = useState("");
   const [bio, setBio] = useState("");
@@ -23,7 +23,7 @@ export function OnboardingModal() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!dob || !bio.trim()) return;
+    if (!canSkip && (!dob || !bio.trim())) return;
 
     setSaving(true);
     setError("");
@@ -32,7 +32,11 @@ export function OnboardingModal() {
       const res = await fetch("/api/profile/onboarding", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ date_of_birth: dob, bio: bio.trim() }),
+        body: JSON.stringify({
+          date_of_birth: dob || undefined,
+          bio: bio.trim() || undefined,
+          skip: canSkip && !dob && !bio.trim(),
+        }),
       });
 
       if (!res.ok) {
@@ -72,7 +76,7 @@ export function OnboardingModal() {
             <Input
               id="onboard-dob"
               type="date"
-              required
+              required={!canSkip}
               max={maxDob}
               value={dob}
               onChange={(e) => setDob(e.target.value)}
@@ -86,7 +90,7 @@ export function OnboardingModal() {
             </label>
             <Textarea
               id="onboard-bio"
-              required
+              required={!canSkip}
               rows={4}
               maxLength={500}
               placeholder="Tell us a few lines about yourself..."
@@ -105,11 +109,32 @@ export function OnboardingModal() {
 
         <Button
           type="submit"
-          disabled={saving || !dob || !bio.trim()}
+          disabled={saving || (!canSkip && (!dob || !bio.trim()))}
           className="mt-6 w-full rounded-xl bg-indigo-deep text-white hover:bg-indigo-press"
         >
           {saving ? "Saving..." : "Complete Profile"}
         </Button>
+        {canSkip && (
+          <button
+            type="button"
+            disabled={saving}
+            onClick={async () => {
+              setSaving(true);
+              try {
+                const res = await fetch("/api/profile/onboarding", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ skip: true }),
+                });
+                if (res.ok) router.refresh();
+              } catch { /* */ }
+              finally { setSaving(false); }
+            }}
+            className="mt-2 w-full text-center text-sm text-ink-400 hover:text-ink-600 transition"
+          >
+            You can fill this in later
+          </button>
+        )}
       </form>
     </div>
   );

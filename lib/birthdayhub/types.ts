@@ -49,6 +49,16 @@ export interface ScheduledSend {
   sentAt?: string;
 }
 
+export interface ExcludedUser {
+  id: string;
+  userId: string;
+  name: string;
+  email: string;
+  reason?: string;
+  excludedByName?: string;
+  createdAt: string;
+}
+
 export interface AppSettings {
   fromName: string;
   replyTo: string;

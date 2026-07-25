@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback, useRef } from "react";
-import type { Employee, SendLog, ScheduledSend } from "@/lib/birthdayhub/types";
+import type { Employee, SendLog, ScheduledSend, ExcludedUser } from "@/lib/birthdayhub/types";
 import Dashboard from "@/components/birthdayhub/Dashboard";
 import TeamTab from "@/components/birthdayhub/TeamTab";
 import ComposeTab from "@/components/birthdayhub/ComposeTab";
@@ -17,6 +17,8 @@ export default function BirthdayHubPage() {
   const [loading, setLoading] = useState(true);
   const [userRole, setUserRole] = useState<string>("employee");
   const [composeTarget, setComposeTarget] = useState<Employee | null>(null);
+  const [excludedEmails, setExcludedEmails] = useState<Set<string>>(new Set());
+  const [currentUserExcluded, setCurrentUserExcluded] = useState(false);
   const [scheduledRefreshKey, setScheduledRefreshKey] = useState(0);
   const [toasts, setToasts] = useState<{ id: string; text: string }[]>([]);
   const checkingRef = useRef(false);
@@ -83,7 +85,27 @@ export default function BirthdayHubPage() {
     setEmployees(await empRes.json());
     setLogs(await logRes.json());
     const profileData = await profileRes.json();
-    if (profileData.user?.role) setUserRole(profileData.user.role);
+    const role = profileData.user?.role;
+    if (role) setUserRole(role);
+
+    if (role === "admin" || role === "hr") {
+      try {
+        const exRes = await fetch("/api/birthdayhub/excluded-users");
+        const excluded: ExcludedUser[] = await exRes.json();
+        if (Array.isArray(excluded)) {
+          setExcludedEmails(new Set(excluded.map((u) => u.email.toLowerCase())));
+        }
+      } catch { /* */ }
+    }
+
+    if (profileData.user?.id) {
+      try {
+        const exRes = await fetch("/api/birthdayhub/excluded-users/check");
+        const data = await exRes.json();
+        setCurrentUserExcluded(!!data.excluded);
+      } catch { /* */ }
+    }
+
     setLoading(false);
   }, []);
 
@@ -100,15 +122,15 @@ export default function BirthdayHubPage() {
     setTab("compose");
   }
 
-  const allTabs: { key: Tab; label: string; icon: string; adminOnly?: boolean }[] = [
+  const allTabs: { key: Tab; label: string; icon: string; adminOnly?: boolean; hidden?: boolean }[] = [
     { key: "dashboard",  label: "Dashboard",  icon: "🏠" },
-    { key: "myprofile",  label: "My Profile", icon: "👤" },
+    { key: "myprofile",  label: "My Profile", icon: "👤", hidden: currentUserExcluded },
     { key: "team",       label: "Team",       icon: "👥", adminOnly: true },
     { key: "compose",    label: "Compose",    icon: "✉️", adminOnly: true },
     { key: "scheduled",  label: "Scheduled",  icon: "⏰", adminOnly: true },
     { key: "settings",   label: "Settings",   icon: "⚙️", adminOnly: true },
   ];
-  const tabs = allTabs.filter((t) => !t.adminOnly || isAdminOrHR);
+  const tabs = allTabs.filter((t) => !t.hidden && (!t.adminOnly || isAdminOrHR));
 
   const todayCount = employees.filter((e) => {
     const n = new Date();
@@ -151,7 +173,7 @@ export default function BirthdayHubPage() {
       ) : (
         <>
           {tab === "dashboard" && (
-            <Dashboard employees={employees} logs={logs} onCompose={handleCompose} isAdminOrHR={isAdminOrHR} />
+            <Dashboard employees={employees} logs={logs} onCompose={handleCompose} isAdminOrHR={isAdminOrHR} excludedEmails={excludedEmails} />
           )}
           {tab === "myprofile" && (
             <MyProfileTab />

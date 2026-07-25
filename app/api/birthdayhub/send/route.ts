@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
-import { getEmployee, appendLog, updateScheduledSendStatus } from "@/lib/birthdayhub/storage";
+import { getEmployee, appendLog, updateScheduledSendStatus, getExcludedEmails } from "@/lib/birthdayhub/storage";
 import { buildEmailHTML } from "@/lib/birthdayhub/email-template";
 import { generateIllustrationUrl } from "@/lib/birthdayhub/generate-illustration";
 import { logActivity } from "@/lib/activity";
@@ -51,9 +51,12 @@ export async function POST(req: Request) {
 
   try {
     const transporter = getTransporter(resolvedGmailUser, resolvedGmailPass);
-    const ccList = cc as string[] | undefined;
-    const behavior: string = (ccList && ccList.length > 50) ? "bcc" : (ccBehavior || "cc");
-    const recipientField = ccList?.length && behavior !== "none"
+    const excludedEmails = await getExcludedEmails();
+    const ccList = ((cc as string[] | undefined) || []).filter(
+      (e) => !excludedEmails.has(e.toLowerCase())
+    );
+    const behavior: string = (ccList.length > 50) ? "bcc" : (ccBehavior || "cc");
+    const recipientField = ccList.length > 0 && behavior !== "none"
       ? { [behavior]: ccList.join(", ") }
       : {};
     await transporter.sendMail({
