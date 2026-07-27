@@ -218,11 +218,13 @@ export function ProfileForm({ profile, mode, onSaved, initialMilestones = [] }: 
       {/* Resume — HR only */}
       {mode !== "self" && <HrResumeSection profile={profile} />}
 
-      {/* Milestones & Achievements */}
-      <MilestonesPanel
-        profileId={profile.id}
-        initialMilestones={initialMilestones}
-      />
+      {/* Milestones & Achievements — shown in HR views; employees use /apps/skillshub/milestones */}
+      {mode !== "self" && (
+        <MilestonesPanel
+          profileId={profile.id}
+          initialMilestones={initialMilestones}
+        />
+      )}
 
       {/* Skills */}
       <SectionCard title={`Skills (${skills.length})`}>
