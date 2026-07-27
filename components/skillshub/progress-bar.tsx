@@ -10,14 +10,19 @@ export function TenureProgressBar({ percent }: { percent: number }) {
   }, [percent]);
 
   return (
-    <div className="tenure-progress-wrap">
-      <div className="tenure-progress-track">
+    <div className="mt-6">
+      <div className="relative h-2 w-full rounded-full bg-muted overflow-hidden">
         <div
-          className="tenure-progress-fill"
-          style={{ width: `${width}%` }}
+          className="absolute inset-y-0 left-0 rounded-full transition-all duration-700 ease-out"
+          style={{
+            width: `${width}%`,
+            background: "linear-gradient(90deg, #14b8a6, #6366f1, #a78bfa)",
+          }}
         />
       </div>
-      <p className="tenure-progress-label">Progress to next work anniversary</p>
+      <p className="mt-1.5 text-xs text-muted-foreground">
+        Progress to next work anniversary
+      </p>
     </div>
   );
 }
