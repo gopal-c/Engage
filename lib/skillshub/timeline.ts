@@ -72,7 +72,11 @@ function generateAutoEntries(profile: Profile): TimelineItem[] {
     });
 
     const years = fullYearsBetween(jd, today);
-    for (let y = 1; y <= years; y++) {
+    const showYears = new Set<number>();
+    if (years >= 1) showYears.add(1);
+    for (let y = 5; y <= years; y += 5) showYears.add(y);
+    if (years >= 1) showYears.add(years);
+    for (const y of Array.from(showYears)) {
       const d = new Date(jd);
       d.setFullYear(jd.getFullYear() + y);
       entries.push({
