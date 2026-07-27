@@ -110,7 +110,7 @@ export function MilestonesPanel({ profileId, initialMilestones }: Props) {
             type="button"
             disabled={isAdding || !newTitle.trim() || !newDate}
             onClick={handleAdd}
-            className="flex size-8 items-center justify-center rounded-lg text-sm font-medium text-ink-600 transition-colors hover:bg-ink-100 hover:text-ink-800 disabled:opacity-50"
+            className="flex size-8 items-center justify-center rounded-lg bg-indigo-deep text-sm font-medium text-white shadow-1 transition-all hover:bg-indigo-press hover:shadow-2 disabled:opacity-50"
           >
             {isAdding ? "…" : "+"}
           </button>
