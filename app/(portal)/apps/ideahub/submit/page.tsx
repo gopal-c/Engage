@@ -24,7 +24,6 @@ export default function SubmitIdeaPage() {
   const [aiResult, setAiResult] = useState<AIResult | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [step, setStep] = useState<"form" | "review">("form");
 
   useEffect(() => {
     fetch("/api/ideahub/categories")
@@ -61,7 +60,7 @@ export default function SubmitIdeaPage() {
         scores: data.scores ?? null,
         similar: data.similar ?? [],
       });
-      setStep("review");
+      toast.success("AI enrichment complete — review below.");
     } catch {
       toast.error("Network error — try again.");
     } finally {
@@ -69,7 +68,8 @@ export default function SubmitIdeaPage() {
     }
   }
 
-  async function handleSubmit(useAI: boolean) {
+  async function handleSubmit() {
+    const useAI = !!aiResult;
     setSubmitting(true);
     try {
       const res = await fetch("/api/ideahub/ideas", {
@@ -124,105 +124,103 @@ export default function SubmitIdeaPage() {
         </div>
       </div>
 
-      {step === "form" && (
-        <div className="rounded-2xl border bg-card p-6 shadow-sm space-y-5">
-          <div>
-            <label htmlFor="idea-title" className="mb-1.5 block text-sm font-medium">
-              Title
-            </label>
-            <input
-              id="idea-title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="A concise title for your idea..."
-              maxLength={200}
-              className="w-full rounded-lg border bg-background px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-ring outline-none transition"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="idea-desc" className="mb-1.5 block text-sm font-medium">
-              Description
-            </label>
-            <textarea
-              id="idea-desc"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe your idea in detail — what problem does it solve? How would it work?"
-              rows={6}
-              maxLength={5000}
-              className="w-full rounded-lg border bg-background px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-ring outline-none transition resize-none"
-            />
-            <p className="mt-1 text-right text-xs text-muted-foreground">
-              {description.length}/5000
-            </p>
-          </div>
-
-          <div>
-            <label htmlFor="idea-cat" className="mb-1.5 block text-sm font-medium">
-              Category
-            </label>
-            <select
-              id="idea-cat"
-              value={categoryId}
-              onChange={(e) => setCategoryId(e.target.value)}
-              className="w-full rounded-lg border bg-background px-3 py-2.5 text-sm focus:border-primary outline-none"
-            >
-              <option value="">Select a category...</option>
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.icon} {c.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => setIsAnonymous(!isAnonymous)}
-              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${
-                isAnonymous ? "bg-indigo-deep" : "bg-muted"
-              }`}
-            >
-              <span
-                className={`pointer-events-none inline-block size-5 rounded-full bg-white shadow-lg transition-transform ${
-                  isAnonymous ? "translate-x-5" : "translate-x-0"
-                }`}
-              />
-            </button>
-            <span className="text-sm text-foreground">
-              Post anonymously
-            </span>
-          </div>
-
-          <div className="flex items-center gap-3 pt-2">
-            <button
-              onClick={handleAIEnrich}
-              disabled={aiLoading || !title.trim() || !description.trim()}
-              className="inline-flex items-center gap-2 rounded-xl bg-indigo-deep px-5 py-2.5 text-sm font-medium text-white shadow-2 transition-all hover:bg-indigo-press hover:shadow-3 disabled:opacity-50"
-            >
-              {aiLoading ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                <Sparkles className="size-4" />
-              )}
-              {aiLoading ? "AI is thinking..." : "Enrich with AI & Submit"}
-            </button>
-            <button
-              onClick={() => handleSubmit(false)}
-              disabled={submitting || !title.trim() || !description.trim()}
-              className="rounded-xl border px-5 py-2.5 text-sm font-medium text-foreground hover:bg-secondary transition disabled:opacity-50"
-            >
-              {submitting ? "Submitting..." : "Submit without AI"}
-            </button>
-          </div>
+      <div className="rounded-2xl border bg-card p-6 shadow-sm space-y-5">
+        <div>
+          <label htmlFor="idea-title" className="mb-1.5 block text-sm font-medium">
+            Title
+          </label>
+          <input
+            id="idea-title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="A concise title for your idea..."
+            maxLength={200}
+            className="w-full rounded-lg border bg-background px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-ring outline-none transition"
+          />
         </div>
-      )}
 
-      {step === "review" && aiResult && (
+        <div>
+          <label htmlFor="idea-desc" className="mb-1.5 block text-sm font-medium">
+            Description
+          </label>
+          <textarea
+            id="idea-desc"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Describe your idea in detail — what problem does it solve? How would it work?"
+            rows={6}
+            maxLength={5000}
+            className="w-full rounded-lg border bg-background px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-ring outline-none transition resize-none"
+          />
+          <p className="mt-1 text-right text-xs text-muted-foreground">
+            {description.length}/5000
+          </p>
+        </div>
+
+        <div>
+          <label htmlFor="idea-cat" className="mb-1.5 block text-sm font-medium">
+            Category
+          </label>
+          <select
+            id="idea-cat"
+            value={categoryId}
+            onChange={(e) => setCategoryId(e.target.value)}
+            className="w-full rounded-lg border bg-background px-3 py-2.5 text-sm focus:border-primary outline-none"
+          >
+            <option value="">Select a category...</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.icon} {c.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setIsAnonymous(!isAnonymous)}
+            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${
+              isAnonymous ? "bg-indigo-deep" : "bg-muted"
+            }`}
+          >
+            <span
+              className={`pointer-events-none inline-block size-5 rounded-full bg-white shadow-lg transition-transform ${
+                isAnonymous ? "translate-x-5" : "translate-x-0"
+              }`}
+            />
+          </button>
+          <span className="text-sm text-foreground">
+            Post anonymously
+          </span>
+        </div>
+
+        <div className="flex items-center justify-between pt-2">
+          <button
+            onClick={handleAIEnrich}
+            disabled={aiLoading || !title.trim() || !description.trim()}
+            className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium text-white shadow-2 transition-all hover:shadow-3 disabled:opacity-50"
+            style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6, #a78bfa)" }}
+          >
+            {aiLoading ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <Sparkles className="size-4" />
+            )}
+            {aiLoading ? "AI is thinking..." : "Enrich with AI"}
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={submitting || !title.trim() || !description.trim()}
+            className="inline-flex items-center gap-2 rounded-xl bg-indigo-deep px-5 py-2.5 text-sm font-medium text-white shadow-2 transition-all hover:bg-indigo-press hover:shadow-3 disabled:opacity-50"
+          >
+            {submitting ? "Submitting..." : "Submit"}
+          </button>
+        </div>
+      </div>
+
+      {aiResult && (
         <div className="space-y-4">
-          {/* Similar ideas warning */}
           {aiResult.similar.length > 0 && (
             <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
               <div className="flex items-start gap-2">
@@ -244,7 +242,6 @@ export default function SubmitIdeaPage() {
             </div>
           )}
 
-          {/* AI enrichment */}
           {aiResult.enrichment && (
             <div className="rounded-2xl border bg-card p-6 shadow-sm">
               <div className="flex items-center gap-2 mb-4">
@@ -269,7 +266,6 @@ export default function SubmitIdeaPage() {
             </div>
           )}
 
-          {/* AI scores */}
           {aiResult.scores && (
             <div className="rounded-2xl border bg-card p-6 shadow-sm">
               <h3 className="text-sm font-semibold mb-4">AI Assessment</h3>
@@ -291,30 +287,6 @@ export default function SubmitIdeaPage() {
               </div>
             </div>
           )}
-
-          {/* Actions */}
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => handleSubmit(true)}
-              disabled={submitting}
-              className="inline-flex items-center gap-2 rounded-xl bg-indigo-deep px-5 py-2.5 text-sm font-medium text-white shadow-2 transition-all hover:bg-indigo-press hover:shadow-3 disabled:opacity-50"
-            >
-              {submitting ? "Submitting..." : "Accept AI & Submit"}
-            </button>
-            <button
-              onClick={() => handleSubmit(false)}
-              disabled={submitting}
-              className="rounded-xl border px-5 py-2.5 text-sm font-medium text-foreground hover:bg-secondary transition disabled:opacity-50"
-            >
-              Submit Original
-            </button>
-            <button
-              onClick={() => setStep("form")}
-              className="text-sm text-muted-foreground hover:text-foreground transition"
-            >
-              Edit
-            </button>
-          </div>
         </div>
       )}
     </div>
