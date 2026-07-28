@@ -15,24 +15,35 @@ export async function GET(request: NextRequest) {
   const sourceApp = searchParams.get("source");
   const offset = (page - 1) * limit;
 
+  const noDeletedIdeas = `
+    AND (
+      af.source_app != 'ideahub'
+      OR af.metadata->>'ideaId' IS NULL
+      OR EXISTS (SELECT 1 FROM ideahub.ideas i WHERE i.id::text = af.metadata->>'ideaId')
+    )
+  `;
+
   let rows;
   if (sourceApp && ["ideahub", "skillshub", "birthdayhub", "engage"].includes(sourceApp)) {
-    rows = await sql`
-      SELECT af.*, u.name AS user_name, u.avatar_url AS user_avatar
-      FROM engage.activity_feed af
-      JOIN auth.users u ON u.id = af.user_id
-      WHERE af.source_app = ${sourceApp}
-      ORDER BY af.created_at DESC
-      LIMIT ${limit} OFFSET ${offset}
-    `;
+    rows = await (sql as any).query(
+      `SELECT af.*, u.name AS user_name, u.avatar_url AS user_avatar
+       FROM engage.activity_feed af
+       JOIN auth.users u ON u.id = af.user_id
+       WHERE af.source_app = $1 ${noDeletedIdeas}
+       ORDER BY af.created_at DESC
+       LIMIT $2 OFFSET $3`,
+      [sourceApp, limit, offset],
+    );
   } else {
-    rows = await sql`
-      SELECT af.*, u.name AS user_name, u.avatar_url AS user_avatar
-      FROM engage.activity_feed af
-      JOIN auth.users u ON u.id = af.user_id
-      ORDER BY af.created_at DESC
-      LIMIT ${limit} OFFSET ${offset}
-    `;
+    rows = await (sql as any).query(
+      `SELECT af.*, u.name AS user_name, u.avatar_url AS user_avatar
+       FROM engage.activity_feed af
+       JOIN auth.users u ON u.id = af.user_id
+       WHERE true ${noDeletedIdeas}
+       ORDER BY af.created_at DESC
+       LIMIT $1 OFFSET $2`,
+      [limit, offset],
+    );
   }
 
   return NextResponse.json({ items: rows, page, limit });
