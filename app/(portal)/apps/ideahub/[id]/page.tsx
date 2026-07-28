@@ -338,15 +338,6 @@ export default function IdeaDetailPage() {
             <Sparkles className="size-4 text-indigo-deep" />
             <h3 className="text-sm font-semibold">AI Insights</h3>
           </div>
-          {idea.aiEnrichment.tags && (idea.aiEnrichment.tags as string[]).length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mb-3">
-              {(idea.aiEnrichment.tags as string[]).map((tag) => (
-                <span key={tag} className="rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-medium text-indigo-700">
-                  {tag}
-                </span>
-              ))}
-            </div>
-          )}
           <div className="grid gap-3 sm:grid-cols-2">
             {idea.impactScore && (
               <div className="rounded-lg bg-amber-50 p-3">

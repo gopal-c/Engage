@@ -8,7 +8,7 @@ import Link from "next/link";
 
 type Category = { id: string; name: string; icon: string | null };
 type SimilarIdea = { id: string; title: string; similarity: string };
-type AIEnrichment = { improvedDescription: string; tags: string[] };
+type AIScores = { impactScore: number; feasibilityScore: number; impactReason: string; feasibilityReason: string };
 
 export default function SubmitIdeaPage() {
   const router = useRouter();
@@ -16,11 +16,11 @@ export default function SubmitIdeaPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [categoryId, setCategoryId] = useState("");
-  const [isAnonymous, setIsAnonymous] = useState(true);
+  const [isAnonymous, setIsAnonymous] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [originalDescription, setOriginalDescription] = useState<string | null>(null);
-  const [aiTags, setAiTags] = useState<string[]>([]);
+  const [aiScores, setAiScores] = useState<AIScores | null>(null);
   const [similarIdeas, setSimilarIdeas] = useState<SimilarIdea[]>([]);
 
   useEffect(() => {
@@ -53,11 +53,12 @@ export default function SubmitIdeaPage() {
         toast.error(data.error ?? "AI enrichment failed.");
         return;
       }
-      const enrichment: AIEnrichment | null = data.enrichment ?? null;
-      if (enrichment?.improvedDescription) {
+      if (data.enrichment?.improvedDescription) {
         setOriginalDescription(description);
-        setDescription(enrichment.improvedDescription);
-        setAiTags(enrichment.tags ?? []);
+        setDescription(data.enrichment.improvedDescription);
+      }
+      if (data.scores) {
+        setAiScores(data.scores);
       }
       setSimilarIdeas(data.similar ?? []);
       toast.success("Description enhanced by AI.");
@@ -72,7 +73,7 @@ export default function SubmitIdeaPage() {
     if (originalDescription !== null) {
       setDescription(originalDescription);
       setOriginalDescription(null);
-      setAiTags([]);
+      setAiScores(null);
       toast.info("Reverted to your original description.");
     }
   }
@@ -91,9 +92,12 @@ export default function SubmitIdeaPage() {
           isAnonymous,
           submit: true,
           aiEnrichment: isEnriched ? {
-            tags: aiTags,
             improvedDescription: description.trim(),
+            impactReason: aiScores?.impactReason,
+            feasibilityReason: aiScores?.feasibilityReason,
           } : null,
+          impactScore: isEnriched ? aiScores?.impactScore : null,
+          feasibilityScore: isEnriched ? aiScores?.feasibilityScore : null,
         }),
       });
       const data = await res.json();
@@ -206,25 +210,9 @@ export default function SubmitIdeaPage() {
             maxLength={5000}
             className="w-full rounded-lg border bg-background px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-ring outline-none transition resize-none"
           />
-          <div className="mt-1 flex items-center justify-between">
-            {aiTags.length > 0 ? (
-              <div className="flex flex-wrap gap-1.5">
-                {aiTags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-medium text-indigo-700"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            ) : (
-              <span />
-            )}
-            <p className="text-xs text-muted-foreground">
-              {description.length}/5000
-            </p>
-          </div>
+          <p className="mt-1 text-right text-xs text-muted-foreground">
+            {description.length}/5000
+          </p>
         </div>
 
         <div className="flex items-center gap-3">
