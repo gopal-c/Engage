@@ -3,16 +3,12 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { ArrowLeft, Sparkles, Loader2, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Sparkles, Loader2, AlertTriangle, Undo2 } from "lucide-react";
 import Link from "next/link";
 
 type Category = { id: string; name: string; icon: string | null };
 type SimilarIdea = { id: string; title: string; similarity: string };
-type AIResult = {
-  enrichment: { improvedDescription: string; tags: string[] } | null;
-  scores: { impactScore: number; feasibilityScore: number; impactReason: string; feasibilityReason: string } | null;
-  similar: SimilarIdea[];
-};
+type AIEnrichment = { improvedDescription: string; tags: string[] };
 
 export default function SubmitIdeaPage() {
   const router = useRouter();
@@ -21,9 +17,11 @@ export default function SubmitIdeaPage() {
   const [description, setDescription] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [isAnonymous, setIsAnonymous] = useState(true);
-  const [aiResult, setAiResult] = useState<AIResult | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [originalDescription, setOriginalDescription] = useState<string | null>(null);
+  const [aiTags, setAiTags] = useState<string[]>([]);
+  const [similarIdeas, setSimilarIdeas] = useState<SimilarIdea[]>([]);
 
   useEffect(() => {
     fetch("/api/ideahub/categories")
@@ -55,12 +53,14 @@ export default function SubmitIdeaPage() {
         toast.error(data.error ?? "AI enrichment failed.");
         return;
       }
-      setAiResult({
-        enrichment: data.enrichment ?? null,
-        scores: data.scores ?? null,
-        similar: data.similar ?? [],
-      });
-      toast.success("AI enrichment complete — review below.");
+      const enrichment: AIEnrichment | null = data.enrichment ?? null;
+      if (enrichment?.improvedDescription) {
+        setOriginalDescription(description);
+        setDescription(enrichment.improvedDescription);
+        setAiTags(enrichment.tags ?? []);
+      }
+      setSimilarIdeas(data.similar ?? []);
+      toast.success("Description enhanced by AI.");
     } catch {
       toast.error("Network error — try again.");
     } finally {
@@ -68,29 +68,32 @@ export default function SubmitIdeaPage() {
     }
   }
 
+  function handleUndo() {
+    if (originalDescription !== null) {
+      setDescription(originalDescription);
+      setOriginalDescription(null);
+      setAiTags([]);
+      toast.info("Reverted to your original description.");
+    }
+  }
+
   async function handleSubmit() {
-    const useAI = !!aiResult;
     setSubmitting(true);
+    const isEnriched = originalDescription !== null;
     try {
       const res = await fetch("/api/ideahub/ideas", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: title.trim(),
-          description: useAI && aiResult?.enrichment
-            ? aiResult.enrichment.improvedDescription
-            : description.trim(),
+          description: description.trim(),
           categoryId: categoryId || null,
           isAnonymous,
           submit: true,
-          aiEnrichment: useAI && aiResult ? {
-            tags: aiResult.enrichment?.tags ?? [],
-            improvedDescription: aiResult.enrichment?.improvedDescription,
-            impactReason: aiResult.scores?.impactReason,
-            feasibilityReason: aiResult.scores?.feasibilityReason,
+          aiEnrichment: isEnriched ? {
+            tags: aiTags,
+            improvedDescription: description.trim(),
           } : null,
-          impactScore: useAI ? aiResult?.scores?.impactScore : null,
-          feasibilityScore: useAI ? aiResult?.scores?.feasibilityScore : null,
         }),
       });
       const data = await res.json();
@@ -124,39 +127,28 @@ export default function SubmitIdeaPage() {
         </div>
       </div>
 
+      {similarIdeas.length > 0 && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+          <div className="flex items-start gap-2">
+            <AlertTriangle className="size-5 text-amber-600 mt-0.5 shrink-0" />
+            <div>
+              <p className="text-sm font-medium text-amber-800">Similar ideas found</p>
+              <ul className="mt-2 space-y-1">
+                {similarIdeas.map((s) => (
+                  <li key={s.id} className="text-xs text-amber-700">
+                    <Link href={`/apps/ideahub/${s.id}`} className="underline hover:no-underline">
+                      {s.title}
+                    </Link>
+                    {" — "}{s.similarity}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="rounded-2xl border bg-card p-6 shadow-sm space-y-5">
-        <div>
-          <label htmlFor="idea-title" className="mb-1.5 block text-sm font-medium">
-            Title
-          </label>
-          <input
-            id="idea-title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="A concise title for your idea..."
-            maxLength={200}
-            className="w-full rounded-lg border bg-background px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-ring outline-none transition"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="idea-desc" className="mb-1.5 block text-sm font-medium">
-            Description
-          </label>
-          <textarea
-            id="idea-desc"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Describe your idea in detail — what problem does it solve? How would it work?"
-            rows={6}
-            maxLength={5000}
-            className="w-full rounded-lg border bg-background px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-ring outline-none transition resize-none"
-          />
-          <p className="mt-1 text-right text-xs text-muted-foreground">
-            {description.length}/5000
-          </p>
-        </div>
-
         <div>
           <label htmlFor="idea-cat" className="mb-1.5 block text-sm font-medium">
             Category
@@ -174,6 +166,65 @@ export default function SubmitIdeaPage() {
               </option>
             ))}
           </select>
+        </div>
+
+        <div>
+          <label htmlFor="idea-title" className="mb-1.5 block text-sm font-medium">
+            Title
+          </label>
+          <input
+            id="idea-title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="A concise title for your idea..."
+            maxLength={200}
+            className="w-full rounded-lg border bg-background px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-ring outline-none transition"
+          />
+        </div>
+
+        <div>
+          <div className="mb-1.5 flex items-center justify-between">
+            <label htmlFor="idea-desc" className="block text-sm font-medium">
+              Description
+            </label>
+            {originalDescription !== null && (
+              <button
+                onClick={handleUndo}
+                className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition"
+              >
+                <Undo2 className="size-3" />
+                Undo AI changes
+              </button>
+            )}
+          </div>
+          <textarea
+            id="idea-desc"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Describe your idea in detail — what problem does it solve? How would it work?"
+            rows={6}
+            maxLength={5000}
+            className="w-full rounded-lg border bg-background px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-ring outline-none transition resize-none"
+          />
+          <div className="mt-1 flex items-center justify-between">
+            {aiTags.length > 0 ? (
+              <div className="flex flex-wrap gap-1.5">
+                {aiTags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-medium text-indigo-700"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <span />
+            )}
+            <p className="text-xs text-muted-foreground">
+              {description.length}/5000
+            </p>
+          </div>
         </div>
 
         <div className="flex items-center gap-3">
@@ -199,8 +250,7 @@ export default function SubmitIdeaPage() {
           <button
             onClick={handleAIEnrich}
             disabled={aiLoading || !title.trim() || !description.trim()}
-            className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium text-white shadow-2 transition-all hover:shadow-3 disabled:opacity-50"
-            style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6, #a78bfa)" }}
+            className="ai-gradient-btn inline-flex items-center gap-2 rounded-xl bg-white px-5 py-2.5 text-sm font-medium text-indigo-deep transition-all disabled:opacity-50"
           >
             {aiLoading ? (
               <Loader2 className="size-4 animate-spin" />
@@ -219,76 +269,18 @@ export default function SubmitIdeaPage() {
         </div>
       </div>
 
-      {aiResult && (
-        <div className="space-y-4">
-          {aiResult.similar.length > 0 && (
-            <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
-              <div className="flex items-start gap-2">
-                <AlertTriangle className="size-5 text-amber-600 mt-0.5 shrink-0" />
-                <div>
-                  <p className="text-sm font-medium text-amber-800">Similar ideas found</p>
-                  <ul className="mt-2 space-y-1">
-                    {aiResult.similar.map((s) => (
-                      <li key={s.id} className="text-xs text-amber-700">
-                        <Link href={`/apps/ideahub/${s.id}`} className="underline hover:no-underline">
-                          {s.title}
-                        </Link>
-                        {" — "}{s.similarity}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {aiResult.enrichment && (
-            <div className="rounded-2xl border bg-card p-6 shadow-sm">
-              <div className="flex items-center gap-2 mb-4">
-                <Sparkles className="size-4 text-indigo-deep" />
-                <h3 className="text-sm font-semibold">AI-Enhanced Description</h3>
-              </div>
-              <div className="rounded-lg bg-secondary p-4 text-sm whitespace-pre-wrap">
-                {aiResult.enrichment.improvedDescription}
-              </div>
-              {aiResult.enrichment.tags.length > 0 && (
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  {aiResult.enrichment.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-medium text-indigo-700"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {aiResult.scores && (
-            <div className="rounded-2xl border bg-card p-6 shadow-sm">
-              <h3 className="text-sm font-semibold mb-4">AI Assessment</h3>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="rounded-lg bg-amber-50 p-4">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-medium text-amber-800">Impact</span>
-                    <span className="text-lg font-bold text-amber-700">{aiResult.scores.impactScore}/10</span>
-                  </div>
-                  <p className="text-xs text-amber-600">{aiResult.scores.impactReason}</p>
-                </div>
-                <div className="rounded-lg bg-blue-50 p-4">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-medium text-blue-800">Feasibility</span>
-                    <span className="text-lg font-bold text-blue-700">{aiResult.scores.feasibilityScore}/10</span>
-                  </div>
-                  <p className="text-xs text-blue-600">{aiResult.scores.feasibilityReason}</p>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
+      <style jsx>{`
+        .ai-gradient-btn {
+          border: 2px solid transparent;
+          background-image: linear-gradient(white, white), linear-gradient(135deg, #8B7BE8, #7CD3C5, #FFCB6B, #FF9A82);
+          background-origin: border-box;
+          background-clip: padding-box, border-box;
+          box-shadow: 0 2px 8px rgba(139, 123, 232, 0.2), 0 1px 3px rgba(124, 211, 197, 0.15);
+        }
+        .ai-gradient-btn:hover:not(:disabled) {
+          box-shadow: 0 4px 14px rgba(139, 123, 232, 0.3), 0 2px 6px rgba(124, 211, 197, 0.2);
+        }
+      `}</style>
     </div>
   );
 }
