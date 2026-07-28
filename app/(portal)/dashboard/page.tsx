@@ -4,6 +4,15 @@ import { AppCard } from "@/components/app-card";
 import { ActivityItem, type ActivityItemData } from "@/components/activity-item";
 import Link from "next/link";
 
+async function getSkillsHubStats() {
+  try {
+    const rows = await sql`SELECT COUNT(*)::int AS count FROM skillshub.profiles WHERE status = 'approved'`;
+    return { profileCount: (rows[0] as { count: number }).count };
+  } catch {
+    return null;
+  }
+}
+
 async function getIdeaHubStats() {
   try {
     const countRows = await sql`SELECT COUNT(*)::int AS count FROM ideahub.ideas`;
@@ -67,9 +76,10 @@ async function getBirthdayStats() {
 export default async function DashboardPage() {
   const session = await auth();
 
-  const [birthdayStats, ideaHubStats, recentActivity] = await Promise.all([
+  const [birthdayStats, ideaHubStats, skillsHubStats, recentActivity] = await Promise.all([
     getBirthdayStats(),
     getIdeaHubStats(),
+    getSkillsHubStats(),
     (async () => {
       try {
         return (await sql`
@@ -106,6 +116,9 @@ export default async function DashboardPage() {
       icon: "🎯",
       colorClasses: "bg-indigo-soft border-indigo/20",
       href: "/apps/skillshub",
+      stat: skillsHubStats
+        ? { label: "employee profiles", value: skillsHubStats.profileCount }
+        : undefined,
     },
     {
       title: "BirthdayHub",
