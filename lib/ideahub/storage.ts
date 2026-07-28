@@ -88,7 +88,7 @@ export async function getCategories(): Promise<Category[]> {
   const rows = await sql`
     SELECT id, name, description, icon, created_at
     FROM ideahub.categories
-    ORDER BY name
+    ORDER BY CASE WHEN name = 'Other' THEN 1 ELSE 0 END, name
   `;
   return (rows as Record<string, unknown>[]).map((r) => ({
     id: r.id as string,

@@ -79,10 +79,12 @@ CREATE INDEX IF NOT EXISTS idx_badges_user ON ideahub.badges(user_id);
 
 -- Seed default categories
 INSERT INTO ideahub.categories (name, description, icon) VALUES
-  ('Technology',          'Tech innovations, tools, and infrastructure ideas',  '💻'),
-  ('Process Improvement', 'Workflow and process optimization suggestions',      '⚙️'),
-  ('Culture',             'Workplace culture and team building ideas',          '🤝'),
   ('Cost Saving',         'Ideas to reduce costs and improve efficiency',       '💰'),
-  ('Product',             'Product features and enhancements',                  '🚀'),
+  ('Culture',             'Workplace culture and team building ideas',          '🎭'),
+  ('Facilities',          'Office space, amenities, and workplace environment', '🏢'),
+  ('Infrastructure',      'Internal tools, systems, and technical foundations', '🔧'),
+  ('Process Improvement', 'Workflow and process optimization suggestions',      '⚙️'),
+  ('Product',             'Product features and enhancements',                  '📦'),
+  ('Technology',          'Tech innovations, tools, and infrastructure ideas',  '💻'),
   ('Other',               'Ideas that don''t fit other categories',             '💡')
-ON CONFLICT (name) DO NOTHING;
+ON CONFLICT (name) DO UPDATE SET icon = EXCLUDED.icon, description = EXCLUDED.description;
