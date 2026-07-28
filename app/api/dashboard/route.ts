@@ -73,12 +73,17 @@ export async function GET() {
         LIMIT 1
       `,
 
-      // Recent activity
+      // Recent activity (exclude entries referencing deleted ideas)
       sql`
         SELECT af.id, af.source_app, af.event_type, af.title, af.description, af.created_at,
                u.name AS user_name, u.avatar_url AS user_avatar
         FROM engage.activity_feed af
         JOIN auth.users u ON u.id = af.user_id
+        WHERE (
+          af.source_app != 'ideahub'
+          OR af.metadata->>'ideaId' IS NULL
+          OR EXISTS (SELECT 1 FROM ideahub.ideas i WHERE i.id::text = af.metadata->>'ideaId')
+        )
         ORDER BY af.created_at DESC
         LIMIT 8
       `,
