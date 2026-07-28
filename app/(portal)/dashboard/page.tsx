@@ -4,6 +4,20 @@ import { AppCard } from "@/components/app-card";
 import { ActivityItem, type ActivityItemData } from "@/components/activity-item";
 import Link from "next/link";
 
+async function getIdeaHubStats() {
+  try {
+    const countRows = await sql`SELECT COUNT(*)::int AS count FROM ideahub.ideas`;
+    const totalIdeas = (countRows[0] as { count: number }).count;
+    const trendingRows = await sql`
+      SELECT title FROM ideahub.ideas ORDER BY trending_score DESC, created_at DESC LIMIT 1
+    `;
+    const trendingTitle = trendingRows.length > 0 ? (trendingRows[0] as { title: string }).title : null;
+    return { totalIdeas, trendingTitle };
+  } catch {
+    return null;
+  }
+}
+
 async function getBirthdayStats() {
   try {
     const now = new Date();
@@ -53,8 +67,9 @@ async function getBirthdayStats() {
 export default async function DashboardPage() {
   const session = await auth();
 
-  const [birthdayStats, recentActivity] = await Promise.all([
+  const [birthdayStats, ideaHubStats, recentActivity] = await Promise.all([
     getBirthdayStats(),
+    getIdeaHubStats(),
     (async () => {
       try {
         return (await sql`
@@ -77,8 +92,13 @@ export default async function DashboardPage() {
       description: "Share and vote on innovative ideas",
       icon: "💡",
       colorClasses: "bg-amber-soft border-amber-deep/20",
-      href: process.env.IDEAHUB_URL || "/apps/ideahub",
-      external: !!process.env.IDEAHUB_URL,
+      href: "/apps/ideahub",
+      stat: ideaHubStats
+        ? { label: "ideas shared", value: ideaHubStats.totalIdeas }
+        : undefined,
+      latestItem: ideaHubStats?.trendingTitle
+        ? `Trending: ${ideaHubStats.trendingTitle}`
+        : undefined,
     },
     {
       title: "SkillsHub",
