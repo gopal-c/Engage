@@ -105,8 +105,7 @@ export default async function DashboardPage() {
       description: "Track and develop your professional skills",
       icon: "🎯",
       colorClasses: "bg-indigo-soft border-indigo/20",
-      href: process.env.SKILLSHUB_URL || "/apps/skillshub",
-      external: !!process.env.SKILLSHUB_URL,
+      href: "/apps/skillshub",
     },
     {
       title: "BirthdayHub",
