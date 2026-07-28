@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { sql } from "@/lib/db";
+import { neon } from "@neondatabase/serverless";
 import { logActivity } from "@/lib/activity";
+
+function getClient() {
+  return neon(process.env.POSTGRES_URL!);
+}
 
 export async function GET(request: NextRequest) {
   const session = await auth();
@@ -15,7 +20,7 @@ export async function GET(request: NextRequest) {
   const sourceApp = searchParams.get("source");
   const offset = (page - 1) * limit;
 
-  const noDeletedIdeas = `
+  const deletedFilter = `
     AND (
       af.source_app != 'ideahub'
       OR af.metadata->>'ideaId' IS NULL
@@ -23,23 +28,24 @@ export async function GET(request: NextRequest) {
     )
   `;
 
+  const client = getClient();
   let rows;
   if (sourceApp && ["ideahub", "skillshub", "birthdayhub", "engage"].includes(sourceApp)) {
-    rows = await (sql as any).query(
+    rows = await client.query(
       `SELECT af.*, u.name AS user_name, u.avatar_url AS user_avatar
        FROM engage.activity_feed af
        JOIN auth.users u ON u.id = af.user_id
-       WHERE af.source_app = $1 ${noDeletedIdeas}
+       WHERE af.source_app = $1 ${deletedFilter}
        ORDER BY af.created_at DESC
        LIMIT $2 OFFSET $3`,
       [sourceApp, limit, offset],
     );
   } else {
-    rows = await (sql as any).query(
+    rows = await client.query(
       `SELECT af.*, u.name AS user_name, u.avatar_url AS user_avatar
        FROM engage.activity_feed af
        JOIN auth.users u ON u.id = af.user_id
-       WHERE true ${noDeletedIdeas}
+       WHERE true ${deletedFilter}
        ORDER BY af.created_at DESC
        LIMIT $1 OFFSET $2`,
       [limit, offset],
