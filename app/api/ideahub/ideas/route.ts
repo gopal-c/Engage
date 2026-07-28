@@ -84,15 +84,32 @@ export async function POST(request: Request) {
   }
 
   try {
+    let aiEnrichment = body.aiEnrichment || null;
+    let impactScore = body.impactScore || null;
+    let feasibilityScore = body.feasibilityScore || null;
+
+    if (!impactScore || !feasibilityScore) {
+      try {
+        const scores = await scoreIdea(title.trim(), description.trim());
+        impactScore = scores.impactScore;
+        feasibilityScore = scores.feasibilityScore;
+        aiEnrichment = {
+          ...aiEnrichment,
+          impactReason: scores.impactReason,
+          feasibilityReason: scores.feasibilityReason,
+        };
+      } catch { /* proceed without scores */ }
+    }
+
     const idea = await createIdea({
       title: title.trim(),
       description: description.trim(),
       categoryId: categoryId || null,
       authorId: session.user.id,
       isAnonymous: isAnonymous ?? true,
-      aiEnrichment: body.aiEnrichment || null,
-      impactScore: body.impactScore || null,
-      feasibilityScore: body.feasibilityScore || null,
+      aiEnrichment,
+      impactScore,
+      feasibilityScore,
     });
 
     await logActivity({
