@@ -8,7 +8,7 @@ const FOOD_OPTIONS = ["Vegetarian", "Non-Vegetarian", "Vegan", "Eggetarian"];
 const INTERESTS = ["Technology", "Finance", "Design", "Health & Wellness", "Sustainability", "Entrepreneurship", "Education", "Social Impact"];
 const CELEBRATION_STYLES = ["Love surprises", "Keep it simple", "Cake & party", "Just wishes are fine"];
 
-type Preferences = {
+type AboutMeData = {
   hobbies: string[];
   favorite_drinks: string[];
   food_preference: string | null;
@@ -23,15 +23,13 @@ function toggleItem(arr: string[], item: string) {
 
 export default function MyProfileTab() {
   const [dob, setDob] = useState("");
-  const [bio, setBio] = useState("");
   const [originalDob, setOriginalDob] = useState("");
-  const [originalBio, setOriginalBio] = useState("");
 
-  const [prefs, setPrefs] = useState<Preferences>({
+  const [aboutMe, setAboutMe] = useState<AboutMeData>({
     hobbies: [], favorite_drinks: [], food_preference: null,
     interests: [], celebration_style: null, about_me: null,
   });
-  const [originalPrefs, setOriginalPrefs] = useState<string>("");
+  const [originalAboutMe, setOriginalAboutMe] = useState<string>("");
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -40,38 +38,35 @@ export default function MyProfileTab() {
   useEffect(() => {
     Promise.all([
       fetch("/api/profile").then((r) => r.json()),
-      fetch("/api/birthdayhub/preferences").then((r) => r.json()),
+      fetch("/api/birthdayhub/about-me").then((r) => r.json()),
     ])
-      .then(([profileData, prefsData]) => {
+      .then(([profileData, aboutMeData]) => {
         const d = profileData.user?.date_of_birth || "";
-        const b = profileData.user?.bio || "";
         setDob(d);
-        setBio(b);
         setOriginalDob(d);
-        setOriginalBio(b);
 
-        if (prefsData.preferences) {
-          const p: Preferences = {
-            hobbies: prefsData.preferences.hobbies ?? [],
-            favorite_drinks: prefsData.preferences.favorite_drinks ?? [],
-            food_preference: prefsData.preferences.food_preference ?? null,
-            interests: prefsData.preferences.interests ?? [],
-            celebration_style: prefsData.preferences.celebration_style ?? null,
-            about_me: prefsData.preferences.about_me ?? null,
+        if (aboutMeData.aboutMe) {
+          const a: AboutMeData = {
+            hobbies: aboutMeData.aboutMe.hobbies ?? [],
+            favorite_drinks: aboutMeData.aboutMe.favorite_drinks ?? [],
+            food_preference: aboutMeData.aboutMe.food_preference ?? null,
+            interests: aboutMeData.aboutMe.interests ?? [],
+            celebration_style: aboutMeData.aboutMe.celebration_style ?? null,
+            about_me: aboutMeData.aboutMe.about_me ?? null,
           };
-          setPrefs(p);
-          setOriginalPrefs(JSON.stringify(p));
+          setAboutMe(a);
+          setOriginalAboutMe(JSON.stringify(a));
         } else {
-          setOriginalPrefs(JSON.stringify(prefs));
+          setOriginalAboutMe(JSON.stringify(aboutMe));
         }
       })
       .finally(() => setLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const hasProfileChanges = dob !== originalDob || bio !== originalBio;
-  const hasPrefsChanges = JSON.stringify(prefs) !== originalPrefs;
-  const hasChanges = hasProfileChanges || hasPrefsChanges;
+  const hasDobChange = dob !== originalDob;
+  const hasAboutMeChange = JSON.stringify(aboutMe) !== originalAboutMe;
+  const hasChanges = hasDobChange || hasAboutMeChange;
 
   const maxDob = new Date(
     new Date().getFullYear() - 16,
@@ -86,22 +81,22 @@ export default function MyProfileTab() {
     try {
       const promises: Promise<Response>[] = [];
 
-      if (hasProfileChanges) {
+      if (hasDobChange) {
         promises.push(
           fetch("/api/profile", {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ date_of_birth: dob || null, bio: bio.trim() || null }),
+            body: JSON.stringify({ date_of_birth: dob || null }),
           })
         );
       }
 
-      if (hasPrefsChanges) {
+      if (hasAboutMeChange) {
         promises.push(
-          fetch("/api/birthdayhub/preferences", {
+          fetch("/api/birthdayhub/about-me", {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(prefs),
+            body: JSON.stringify(aboutMe),
           })
         );
       }
@@ -111,8 +106,7 @@ export default function MyProfileTab() {
 
       if (allOk) {
         setOriginalDob(dob);
-        setOriginalBio(bio);
-        setOriginalPrefs(JSON.stringify(prefs));
+        setOriginalAboutMe(JSON.stringify(aboutMe));
         setMessage({ text: "Profile updated!", ok: true });
       } else {
         setMessage({ text: "Failed to save some changes", ok: false });
@@ -131,10 +125,15 @@ export default function MyProfileTab() {
 
   return (
     <div className="mx-auto max-w-xl space-y-6">
-      {/* DOB + Bio card */}
-      <div className="rounded-xl border bg-card p-6 shadow-sm space-y-5">
-        <h3 className="text-base font-semibold text-foreground">My Birthday Profile</h3>
+      <div className="rounded-xl border bg-card p-6 shadow-sm space-y-6">
+        <div>
+          <h3 className="text-base font-semibold text-foreground">About Me</h3>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Help us personalize your birthday wishes — all optional
+          </p>
+        </div>
 
+        {/* DOB */}
         <div className="space-y-1.5">
           <label className="block text-sm font-medium text-foreground">Date of Birth</label>
           <input
@@ -149,85 +148,59 @@ export default function MyProfileTab() {
           </p>
         </div>
 
-        <div className="space-y-1.5">
-          <label className="block text-sm font-medium text-foreground">Bio</label>
-          <textarea
-            rows={3}
-            maxLength={500}
-            placeholder="A short bio about yourself..."
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
-            className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-          <div className="flex items-center justify-between">
-            <p className="text-xs text-muted-foreground">Shown on your SkillsHub profile</p>
-            <span className="text-xs text-muted-foreground">{bio.length}/500</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Preferences card */}
-      <div className="rounded-xl border bg-card p-6 shadow-sm space-y-6">
-        <div>
-          <h3 className="text-base font-semibold text-foreground">Preferences</h3>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Help us personalize your birthday wishes — all optional
-          </p>
-        </div>
-
         {/* Hobbies */}
         <ChipSection
           label="Hobbies"
           options={HOBBIES}
-          selected={prefs.hobbies}
-          onToggle={(item) => setPrefs((p) => ({ ...p, hobbies: toggleItem(p.hobbies, item) }))}
+          selected={aboutMe.hobbies}
+          onToggle={(item) => setAboutMe((p) => ({ ...p, hobbies: toggleItem(p.hobbies, item) }))}
         />
 
         {/* Favorite Drinks */}
         <ChipSection
           label="Favorite Drinks"
           options={DRINKS}
-          selected={prefs.favorite_drinks}
-          onToggle={(item) => setPrefs((p) => ({ ...p, favorite_drinks: toggleItem(p.favorite_drinks, item) }))}
+          selected={aboutMe.favorite_drinks}
+          onToggle={(item) => setAboutMe((p) => ({ ...p, favorite_drinks: toggleItem(p.favorite_drinks, item) }))}
         />
 
         {/* Food Preference */}
         <RadioChipSection
           label="Food Preference"
           options={FOOD_OPTIONS}
-          selected={prefs.food_preference}
-          onSelect={(val) => setPrefs((p) => ({ ...p, food_preference: p.food_preference === val ? null : val }))}
+          selected={aboutMe.food_preference}
+          onSelect={(val) => setAboutMe((p) => ({ ...p, food_preference: p.food_preference === val ? null : val }))}
         />
 
         {/* Interests */}
         <ChipSection
           label="Interests"
           options={INTERESTS}
-          selected={prefs.interests}
-          onToggle={(item) => setPrefs((p) => ({ ...p, interests: toggleItem(p.interests, item) }))}
+          selected={aboutMe.interests}
+          onToggle={(item) => setAboutMe((p) => ({ ...p, interests: toggleItem(p.interests, item) }))}
         />
 
         {/* Celebration Style */}
         <RadioChipSection
           label="Celebration Style"
           options={CELEBRATION_STYLES}
-          selected={prefs.celebration_style}
-          onSelect={(val) => setPrefs((p) => ({ ...p, celebration_style: p.celebration_style === val ? null : val }))}
+          selected={aboutMe.celebration_style}
+          onSelect={(val) => setAboutMe((p) => ({ ...p, celebration_style: p.celebration_style === val ? null : val }))}
         />
 
-        {/* About Me */}
+        {/* About Me text */}
         <div className="space-y-1.5">
-          <label className="block text-sm font-medium text-foreground">About Me</label>
+          <label className="block text-sm font-medium text-foreground">Anything else?</label>
           <textarea
             rows={3}
             maxLength={500}
             placeholder="Anything else you'd like us to know?"
-            value={prefs.about_me ?? ""}
-            onChange={(e) => setPrefs((p) => ({ ...p, about_me: e.target.value || null }))}
+            value={aboutMe.about_me ?? ""}
+            onChange={(e) => setAboutMe((p) => ({ ...p, about_me: e.target.value || null }))}
             className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
           />
           <p className="text-right text-xs text-muted-foreground">
-            {(prefs.about_me ?? "").length}/500
+            {(aboutMe.about_me ?? "").length}/500
           </p>
         </div>
       </div>

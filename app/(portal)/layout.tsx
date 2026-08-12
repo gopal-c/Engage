@@ -19,10 +19,15 @@ export default async function PortalLayout({
   let userExcluded = false;
   if (!isAdminOrHR) {
     const [rows, excluded] = await Promise.all([
-      sql`SELECT profile_completed FROM auth.users WHERE id = ${session.user.id}`,
+      sql`
+        SELECT u.date_of_birth,
+               EXISTS(SELECT 1 FROM birthdayhub.about_me am WHERE am.user_id = u.id) AS has_about_me
+        FROM auth.users u
+        WHERE u.id = ${session.user.id}
+      `,
       isUserExcluded(session.user.id).catch(() => false),
     ]);
-    profileCompleted = rows.length > 0 && (rows[0].profile_completed as boolean);
+    profileCompleted = rows.length > 0 && !!(rows[0].date_of_birth) && !!(rows[0].has_about_me);
     userExcluded = excluded;
   }
 

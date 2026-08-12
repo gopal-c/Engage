@@ -97,9 +97,10 @@ function rowToMilestone(r: MilestoneRow): Milestone {
 export async function getProfiles(): Promise<Profile[]> {
   const sql = getSQL();
   const rows = await sql`
-    SELECT p.*, u.date_of_birth AS auth_dob, u.bio AS auth_bio
+    SELECT p.*, u.date_of_birth AS auth_dob, am.about_me AS auth_bio
     FROM skillshub.profiles p
     LEFT JOIN auth.users u ON lower(u.email) = lower(p.email)
+    LEFT JOIN birthdayhub.about_me am ON am.user_id = u.id
     ORDER BY p.created_at DESC
   ` as Row[];
   return rows.map(rowToProfile);
@@ -108,9 +109,10 @@ export async function getProfiles(): Promise<Profile[]> {
 export async function getProfile(id: string): Promise<Profile | undefined> {
   const sql = getSQL();
   const rows = await sql`
-    SELECT p.*, u.date_of_birth AS auth_dob, u.bio AS auth_bio
+    SELECT p.*, u.date_of_birth AS auth_dob, am.about_me AS auth_bio
     FROM skillshub.profiles p
     LEFT JOIN auth.users u ON lower(u.email) = lower(p.email)
+    LEFT JOIN birthdayhub.about_me am ON am.user_id = u.id
     WHERE p.id = ${id} LIMIT 1
   ` as Row[];
   return rows[0] ? rowToProfile(rows[0]) : undefined;
@@ -119,9 +121,10 @@ export async function getProfile(id: string): Promise<Profile | undefined> {
 export async function getProfileByEmail(email: string): Promise<Profile | undefined> {
   const sql = getSQL();
   const rows = await sql`
-    SELECT p.*, u.date_of_birth AS auth_dob, u.bio AS auth_bio
+    SELECT p.*, u.date_of_birth AS auth_dob, am.about_me AS auth_bio
     FROM skillshub.profiles p
     LEFT JOIN auth.users u ON lower(u.email) = lower(p.email)
+    LEFT JOIN birthdayhub.about_me am ON am.user_id = u.id
     WHERE lower(p.email) = ${email.toLowerCase()} ORDER BY p.created_at DESC LIMIT 1
   ` as Row[];
   return rows[0] ? rowToProfile(rows[0]) : undefined;
@@ -130,9 +133,10 @@ export async function getProfileByEmail(email: string): Promise<Profile | undefi
 export async function getProfileByWorkEmail(workEmail: string): Promise<Profile | undefined> {
   const sql = getSQL();
   const rows = await sql`
-    SELECT p.*, u.date_of_birth AS auth_dob, u.bio AS auth_bio
+    SELECT p.*, u.date_of_birth AS auth_dob, am.about_me AS auth_bio
     FROM skillshub.profiles p
     LEFT JOIN auth.users u ON lower(u.email) = lower(p.email)
+    LEFT JOIN birthdayhub.about_me am ON am.user_id = u.id
     WHERE lower(p.work_email) = ${workEmail.toLowerCase()} LIMIT 1
   ` as Row[];
   return rows[0] ? rowToProfile(rows[0]) : undefined;
@@ -141,9 +145,10 @@ export async function getProfileByWorkEmail(workEmail: string): Promise<Profile 
 export async function getProfileByUserId(userId: string): Promise<Profile | undefined> {
   const sql = getSQL();
   const rows = await sql`
-    SELECT p.*, u.date_of_birth AS auth_dob, u.bio AS auth_bio
+    SELECT p.*, u.date_of_birth AS auth_dob, am.about_me AS auth_bio
     FROM skillshub.profiles p
     LEFT JOIN auth.users u ON lower(u.email) = lower(p.email)
+    LEFT JOIN birthdayhub.about_me am ON am.user_id = u.id
     WHERE p.user_id = ${userId} ORDER BY p.created_at DESC LIMIT 1
   ` as Row[];
   return rows[0] ? rowToProfile(rows[0]) : undefined;
@@ -152,9 +157,10 @@ export async function getProfileByUserId(userId: string): Promise<Profile | unde
 export async function getApprovedProfiles(): Promise<Profile[]> {
   const sql = getSQL();
   const rows = await sql`
-    SELECT p.*, u.date_of_birth AS auth_dob, u.bio AS auth_bio
+    SELECT p.*, u.date_of_birth AS auth_dob, am.about_me AS auth_bio
     FROM skillshub.profiles p
     LEFT JOIN auth.users u ON lower(u.email) = lower(p.email)
+    LEFT JOIN birthdayhub.about_me am ON am.user_id = u.id
     WHERE p.status = 'approved' ORDER BY p.created_at DESC
   ` as Row[];
   return rows.map(rowToProfile);
@@ -163,9 +169,10 @@ export async function getApprovedProfiles(): Promise<Profile[]> {
 export async function getPendingProfiles(): Promise<Profile[]> {
   const sql = getSQL();
   const rows = await sql`
-    SELECT p.*, u.date_of_birth AS auth_dob, u.bio AS auth_bio
+    SELECT p.*, u.date_of_birth AS auth_dob, am.about_me AS auth_bio
     FROM skillshub.profiles p
     LEFT JOIN auth.users u ON lower(u.email) = lower(p.email)
+    LEFT JOIN birthdayhub.about_me am ON am.user_id = u.id
     WHERE p.status = 'pending' AND (p.work_email IS NULL OR p.work_email_verified = TRUE)
     ORDER BY p.created_at DESC
   ` as Row[];
@@ -175,9 +182,10 @@ export async function getPendingProfiles(): Promise<Profile[]> {
 export async function getDirectoryProfiles(): Promise<Profile[]> {
   const sql = getSQL();
   const rows = await sql`
-    SELECT p.*, u.date_of_birth AS auth_dob, u.bio AS auth_bio
+    SELECT p.*, u.date_of_birth AS auth_dob, am.about_me AS auth_bio
     FROM skillshub.profiles p
     LEFT JOIN auth.users u ON lower(u.email) = lower(p.email)
+    LEFT JOIN birthdayhub.about_me am ON am.user_id = u.id
     WHERE p.status IN ('approved', 'pending')
     ORDER BY p.created_at DESC
   ` as Row[];

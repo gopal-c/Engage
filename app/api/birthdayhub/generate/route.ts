@@ -15,7 +15,7 @@ async function getUserPreferences(name: string, email?: string) {
       rows = await sql`
         SELECT p.hobbies, p.favorite_drinks, p.food_preference, p.interests,
                p.celebration_style, p.about_me
-        FROM birthdayhub.user_preferences p
+        FROM birthdayhub.about_me p
         JOIN auth.users u ON u.id = p.user_id
         WHERE lower(u.email) = lower(${email})
       `;
@@ -24,7 +24,7 @@ async function getUserPreferences(name: string, email?: string) {
       rows = await sql`
         SELECT p.hobbies, p.favorite_drinks, p.food_preference, p.interests,
                p.celebration_style, p.about_me
-        FROM birthdayhub.user_preferences p
+        FROM birthdayhub.about_me p
         JOIN auth.users u ON u.id = p.user_id
         WHERE lower(u.name) = lower(${name})
       `;

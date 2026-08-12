@@ -4,12 +4,25 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+
+const HOBBIES = ["Reading", "Gaming", "Cooking", "Traveling", "Photography", "Music", "Sports", "Gardening", "Art", "Movies", "Fitness", "Dancing"];
+const DRINKS = ["Tea", "Coffee", "Juice", "Smoothie", "Soda", "Hot Chocolate", "Lassi", "Milkshake"];
+const FOOD_OPTIONS = ["Vegetarian", "Non-Vegetarian", "Vegan", "Eggetarian"];
+const INTERESTS = ["Technology", "Finance", "Design", "Health & Wellness", "Sustainability", "Entrepreneurship", "Education", "Social Impact"];
+const CELEBRATION_STYLES = ["Love surprises", "Keep it simple", "Cake & party", "Just wishes are fine"];
+
+function toggleItem(arr: string[], item: string) {
+  return arr.includes(item) ? arr.filter((x) => x !== item) : [...arr, item];
+}
 
 export function OnboardingModal({ canSkip = false }: { canSkip?: boolean }) {
   const router = useRouter();
   const [dob, setDob] = useState("");
-  const [bio, setBio] = useState("");
+  const [hobbies, setHobbies] = useState<string[]>([]);
+  const [drinks, setDrinks] = useState<string[]>([]);
+  const [foodPref, setFoodPref] = useState<string | null>(null);
+  const [interests, setInterests] = useState<string[]>([]);
+  const [celebrationStyle, setCelebrationStyle] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -23,7 +36,7 @@ export function OnboardingModal({ canSkip = false }: { canSkip?: boolean }) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!canSkip && (!dob || !bio.trim())) return;
+    if (!canSkip && !dob) return;
 
     setSaving(true);
     setError("");
@@ -34,8 +47,12 @@ export function OnboardingModal({ canSkip = false }: { canSkip?: boolean }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           date_of_birth: dob || undefined,
-          bio: bio.trim() || undefined,
-          skip: canSkip && !dob && !bio.trim(),
+          hobbies,
+          favorite_drinks: drinks,
+          food_preference: foodPref,
+          interests,
+          celebration_style: celebrationStyle,
+          skip: canSkip && !dob,
         }),
       });
 
@@ -57,7 +74,7 @@ export function OnboardingModal({ canSkip = false }: { canSkip?: boolean }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-md rounded-2xl border border-white/70 bg-white p-8 shadow-xl"
+        className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-white/70 bg-white p-8 shadow-xl"
       >
         <div className="mb-6 text-center">
           <h2 className="text-2xl font-semibold text-ink-800">
@@ -84,23 +101,40 @@ export function OnboardingModal({ canSkip = false }: { canSkip?: boolean }) {
             <p className="mt-1 text-xs text-ink-400">Must be at least 16 years old.</p>
           </div>
 
-          <div>
-            <label htmlFor="onboard-bio" className="mb-1.5 block text-sm font-medium text-ink-700">
-              About Me
-            </label>
-            <Textarea
-              id="onboard-bio"
-              required={!canSkip}
-              rows={4}
-              maxLength={500}
-              placeholder="Tell us a few lines about yourself..."
-              value={bio}
-              onChange={(e) => setBio(e.target.value)}
-            />
-            <p className="mt-1 text-right text-xs text-ink-400">
-              {bio.length}/500
-            </p>
-          </div>
+          <ChipSection
+            label="Hobbies"
+            options={HOBBIES}
+            selected={hobbies}
+            onToggle={(item) => setHobbies((p) => toggleItem(p, item))}
+          />
+
+          <ChipSection
+            label="Favorite Drinks"
+            options={DRINKS}
+            selected={drinks}
+            onToggle={(item) => setDrinks((p) => toggleItem(p, item))}
+          />
+
+          <RadioChipSection
+            label="Food Preference"
+            options={FOOD_OPTIONS}
+            selected={foodPref}
+            onSelect={(val) => setFoodPref((p) => p === val ? null : val)}
+          />
+
+          <ChipSection
+            label="Interests"
+            options={INTERESTS}
+            selected={interests}
+            onToggle={(item) => setInterests((p) => toggleItem(p, item))}
+          />
+
+          <RadioChipSection
+            label="Celebration Style"
+            options={CELEBRATION_STYLES}
+            selected={celebrationStyle}
+            onSelect={(val) => setCelebrationStyle((p) => p === val ? null : val)}
+          />
         </div>
 
         {error && (
@@ -109,7 +143,7 @@ export function OnboardingModal({ canSkip = false }: { canSkip?: boolean }) {
 
         <Button
           type="submit"
-          disabled={saving || (!canSkip && (!dob || !bio.trim()))}
+          disabled={saving || (!canSkip && !dob)}
           className="mt-6 w-full rounded-xl bg-indigo-deep text-white hover:bg-indigo-press"
         >
           {saving ? "Saving..." : "Complete Profile"}
@@ -136,6 +170,68 @@ export function OnboardingModal({ canSkip = false }: { canSkip?: boolean }) {
           </button>
         )}
       </form>
+    </div>
+  );
+}
+
+function ChipSection({
+  label, options, selected, onToggle,
+}: {
+  label: string; options: string[]; selected: string[]; onToggle: (item: string) => void;
+}) {
+  return (
+    <div>
+      <label className="mb-1.5 block text-sm font-medium text-ink-700">{label}</label>
+      <div className="flex flex-wrap gap-2">
+        {options.map((opt) => {
+          const active = selected.includes(opt);
+          return (
+            <button
+              key={opt}
+              type="button"
+              onClick={() => onToggle(opt)}
+              className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-all ${
+                active
+                  ? "border-indigo-deep bg-indigo-soft text-indigo-deep shadow-sm"
+                  : "border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700"
+              }`}
+            >
+              {opt}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function RadioChipSection({
+  label, options, selected, onSelect,
+}: {
+  label: string; options: string[]; selected: string | null; onSelect: (val: string) => void;
+}) {
+  return (
+    <div>
+      <label className="mb-1.5 block text-sm font-medium text-ink-700">{label}</label>
+      <div className="flex flex-wrap gap-2">
+        {options.map((opt) => {
+          const active = selected === opt;
+          return (
+            <button
+              key={opt}
+              type="button"
+              onClick={() => onSelect(opt)}
+              className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-all ${
+                active
+                  ? "border-indigo-deep bg-indigo-soft text-indigo-deep shadow-sm"
+                  : "border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700"
+              }`}
+            >
+              {opt}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

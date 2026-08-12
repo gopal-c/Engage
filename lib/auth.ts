@@ -80,15 +80,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               name = EXCLUDED.name,
               avatar_url = EXCLUDED.avatar_url,
               updated_at = NOW()
-            RETURNING id, role, profile_completed
+            RETURNING id, role
           `;
           token.id = rows[0].id;
           token.role = rows[0].role;
-          token.profileCompleted = rows[0].profile_completed as boolean;
         } else if (user) {
           token.id = user.id;
           token.role = (user as Record<string, unknown>).role as string;
-          token.profileCompleted = (user as Record<string, unknown>).profileCompleted as boolean ?? false;
         }
       }
       return token;
@@ -97,7 +95,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (token.id) {
         session.user.id = token.id as string;
         session.user.role = token.role as string;
-        session.user.profileCompleted = token.profileCompleted ?? false;
       }
       return session;
     },

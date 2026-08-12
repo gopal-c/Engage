@@ -27,7 +27,8 @@ export async function GET() {
       // Profile data for greeting banner
       sql`
         SELECT p.id, p.name, p.joining_date, p.date_of_birth AS p_dob, p.skills, p.avatar_url,
-               u.date_of_birth AS u_dob, u.bio
+               u.date_of_birth AS u_dob,
+               EXISTS(SELECT 1 FROM birthdayhub.about_me am WHERE am.user_id = u.id) AS has_about_me
         FROM skillshub.profiles p
         LEFT JOIN auth.users u ON lower(u.email) = lower(p.email)
         WHERE p.user_id = ${userId} AND p.status = 'approved'
@@ -38,16 +39,16 @@ export async function GET() {
       sql`
         SELECT DISTINCT ON (lower(combined.email))
           combined.name, combined.email, combined.avatar_url, combined.department,
-          combined.bio, combined.user_id,
+          combined.user_id,
           to_char(combined.date_of_birth, 'MM-DD') AS birthday_mmdd
         FROM (
-          SELECT p.name, p.email, p.avatar_url, p.city AS department, u.bio, p.user_id,
+          SELECT p.name, p.email, p.avatar_url, p.city AS department, p.user_id,
                  COALESCE(u.date_of_birth, p.date_of_birth) AS date_of_birth
           FROM skillshub.profiles p
           LEFT JOIN auth.users u ON lower(u.email) = lower(p.email)
           WHERE p.status = 'approved' AND COALESCE(u.date_of_birth, p.date_of_birth) IS NOT NULL
           UNION ALL
-          SELECT u.name, u.email, u.avatar_url, NULL AS department, u.bio, u.id AS user_id,
+          SELECT u.name, u.email, u.avatar_url, NULL AS department, u.id AS user_id,
                  u.date_of_birth
           FROM auth.users u
           WHERE u.date_of_birth IS NOT NULL
@@ -156,13 +157,13 @@ export async function GET() {
 
     if (profile) {
       const dob = profile.u_dob ?? profile.p_dob;
-      const bio = profile.bio as string | null;
+      const hasAboutMe = !!(profile.has_about_me);
       const skills = profile.skills as unknown[];
       const hasMilestone = (milestonesRows as unknown[]).length > 0;
 
       profileFields = {
         hasDob: !!dob,
-        hasBio: !!bio && bio.trim().length > 0,
+        hasBio: hasAboutMe,
         hasSkills: Array.isArray(skills) && skills.length > 0,
         hasMilestone,
       };

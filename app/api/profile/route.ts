@@ -9,7 +9,7 @@ export async function GET() {
   }
 
   const rows = await sql`
-    SELECT id, email, name, avatar_url, role, date_of_birth, bio, profile_completed, created_at, updated_at
+    SELECT id, email, name, avatar_url, role, date_of_birth, created_at, updated_at
     FROM auth.users
     WHERE id = ${session.user.id}
   `;
@@ -44,7 +44,7 @@ export async function PATCH(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { name, date_of_birth, bio } = body;
+  const { name, date_of_birth } = body;
 
   if (name !== undefined) {
     if (typeof name !== "string" || name.trim().length === 0) {
@@ -52,12 +52,7 @@ export async function PATCH(request: NextRequest) {
     }
   }
 
-  if (bio !== undefined && typeof bio === "string" && bio.length > 500) {
-    return NextResponse.json({ error: "Bio must be 500 characters or less" }, { status: 400 });
-  }
-
   const sanitizedName = name ? name.trim().slice(0, 100) : undefined;
-  const sanitizedBio = typeof bio === "string" ? bio.trim().slice(0, 500) : undefined;
   const dob = date_of_birth || null;
 
   const rows = await sql`
@@ -65,10 +60,9 @@ export async function PATCH(request: NextRequest) {
     SET
       name = COALESCE(${sanitizedName ?? null}, name),
       date_of_birth = COALESCE(${dob}, date_of_birth),
-      bio = COALESCE(${sanitizedBio ?? null}, bio),
       updated_at = NOW()
     WHERE id = ${session.user.id}
-    RETURNING id, email, name, avatar_url, role, date_of_birth, bio, profile_completed, created_at, updated_at
+    RETURNING id, email, name, avatar_url, role, date_of_birth, created_at, updated_at
   `;
 
   const user = rows[0];

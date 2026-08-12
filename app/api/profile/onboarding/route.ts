@@ -9,13 +9,21 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json();
-  const { date_of_birth, bio, skip } = body;
+  const {
+    date_of_birth,
+    hobbies = [],
+    favorite_drinks = [],
+    food_preference = null,
+    interests = [],
+    celebration_style = null,
+    skip,
+  } = body;
 
   if (skip) {
     await sql`
-      UPDATE auth.users
-      SET profile_completed = true, updated_at = NOW()
-      WHERE id = ${session.user.id}
+      INSERT INTO birthdayhub.about_me (user_id, updated_at)
+      VALUES (${session.user.id}, NOW())
+      ON CONFLICT (user_id) DO NOTHING
     `;
     return NextResponse.json({ ok: true });
   }
@@ -24,21 +32,30 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Date of birth is required" }, { status: 400 });
   }
 
-  if (!bio || typeof bio !== "string" || bio.trim().length === 0) {
-    return NextResponse.json({ error: "Bio is required" }, { status: 400 });
-  }
-
-  if (bio.length > 500) {
-    return NextResponse.json({ error: "Bio must be 500 characters or less" }, { status: 400 });
-  }
-
   await sql`
     UPDATE auth.users
-    SET date_of_birth = ${date_of_birth},
-        bio = ${bio.trim().slice(0, 500)},
-        profile_completed = true,
-        updated_at = NOW()
+    SET date_of_birth = ${date_of_birth}, updated_at = NOW()
     WHERE id = ${session.user.id}
+  `;
+
+  await sql`
+    INSERT INTO birthdayhub.about_me (user_id, hobbies, favorite_drinks, food_preference, interests, celebration_style, updated_at)
+    VALUES (
+      ${session.user.id},
+      ${hobbies as string[]},
+      ${favorite_drinks as string[]},
+      ${food_preference},
+      ${interests as string[]},
+      ${celebration_style},
+      NOW()
+    )
+    ON CONFLICT (user_id) DO UPDATE SET
+      hobbies = EXCLUDED.hobbies,
+      favorite_drinks = EXCLUDED.favorite_drinks,
+      food_preference = EXCLUDED.food_preference,
+      interests = EXCLUDED.interests,
+      celebration_style = EXCLUDED.celebration_style,
+      updated_at = NOW()
   `;
 
   return NextResponse.json({ ok: true });

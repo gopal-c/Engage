@@ -11,11 +11,11 @@ export async function GET() {
   const rows = await sql`
     SELECT hobbies, favorite_drinks, food_preference, interests,
            celebration_style, about_me, updated_at
-    FROM birthdayhub.user_preferences
+    FROM birthdayhub.about_me
     WHERE user_id = ${session.user.id}
   `;
 
-  return NextResponse.json({ preferences: rows[0] ?? null });
+  return NextResponse.json({ aboutMe: rows[0] ?? null });
 }
 
 export async function PUT(request: NextRequest) {
@@ -39,7 +39,7 @@ export async function PUT(request: NextRequest) {
   }
 
   const rows = await sql`
-    INSERT INTO birthdayhub.user_preferences (user_id, hobbies, favorite_drinks, food_preference, interests, celebration_style, about_me, updated_at)
+    INSERT INTO birthdayhub.about_me (user_id, hobbies, favorite_drinks, food_preference, interests, celebration_style, about_me, updated_at)
     VALUES (
       ${session.user.id},
       ${hobbies as string[]},
@@ -61,5 +61,5 @@ export async function PUT(request: NextRequest) {
     RETURNING hobbies, favorite_drinks, food_preference, interests, celebration_style, about_me, updated_at
   `;
 
-  return NextResponse.json({ preferences: rows[0] });
+  return NextResponse.json({ aboutMe: rows[0] });
 }
