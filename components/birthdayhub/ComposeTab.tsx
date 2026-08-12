@@ -74,7 +74,7 @@ export default function ComposeTab({
       const genRes = await fetch("/api/birthdayhub/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: target.name }),
+        body: JSON.stringify({ name: target.name, email: target.email }),
       });
       const genData = await genRes.json();
       if (!genRes.ok) throw new Error(genData.error ?? "Generation failed");
