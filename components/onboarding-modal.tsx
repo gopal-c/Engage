@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -24,7 +25,6 @@ export function OnboardingModal({ canSkip = false }: { canSkip?: boolean }) {
   const [interests, setInterests] = useState<string[]>([]);
   const [celebrationStyle, setCelebrationStyle] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
 
   const maxDob = new Date(
     new Date().getFullYear() - 16,
@@ -39,7 +39,6 @@ export function OnboardingModal({ canSkip = false }: { canSkip?: boolean }) {
     if (!canSkip && !dob) return;
 
     setSaving(true);
-    setError("");
 
     try {
       const res = await fetch("/api/profile/onboarding", {
@@ -58,13 +57,13 @@ export function OnboardingModal({ canSkip = false }: { canSkip?: boolean }) {
 
       if (!res.ok) {
         const data = await res.json();
-        setError(data.error || "Something went wrong");
+        toast.error(data.error || "Something went wrong");
         return;
       }
 
       router.refresh();
     } catch {
-      setError("Network error — please try again.");
+      toast.error("Network error — please try again.");
     } finally {
       setSaving(false);
     }
@@ -136,10 +135,6 @@ export function OnboardingModal({ canSkip = false }: { canSkip?: boolean }) {
             onSelect={(val) => setCelebrationStyle((p) => p === val ? null : val)}
           />
         </div>
-
-        {error && (
-          <p className="mt-3 text-sm text-red-600">{error}</p>
-        )}
 
         <Button
           type="submit"

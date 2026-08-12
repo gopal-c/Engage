@@ -112,7 +112,6 @@ export default function SettingsTab({ onExcludedChange }: { onExcludedChange?: (
   const [settings, setSettings] = useState<AppSettings>(defaults);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [cronStatus, setCronStatus] = useState<string | null>(null);
   const [cronRunning, setCronRunning] = useState(false);
   const [ccInput, setCcInput] = useState("");
 
@@ -237,7 +236,6 @@ export default function SettingsTab({ onExcludedChange }: { onExcludedChange?: (
 
   async function handleRunNow() {
     setCronRunning(true);
-    setCronStatus(null);
     try {
       const res = await fetch("/api/birthdayhub/settings/cron", {
         method: "POST",
@@ -245,9 +243,13 @@ export default function SettingsTab({ onExcludedChange }: { onExcludedChange?: (
         body: JSON.stringify({ dispatch: true }),
       });
       const data = await res.json();
-      setCronStatus(res.ok ? "Dispatched! Check GitHub Actions." : data.error ?? "Failed");
+      if (res.ok) {
+        toast.success("Dispatched! Check GitHub Actions.");
+      } else {
+        toast.error(data.error ?? "Failed to dispatch");
+      }
     } catch {
-      setCronStatus("Network error");
+      toast.error("Network error");
     } finally {
       setCronRunning(false);
     }
@@ -399,9 +401,6 @@ export default function SettingsTab({ onExcludedChange }: { onExcludedChange?: (
               >
                 {cronRunning ? "Dispatching..." : "Run Auto-Send Now"}
               </button>
-              {cronStatus && (
-                <p className="text-xs text-muted-foreground">{cronStatus}</p>
-              )}
             </>
           )}
         </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,7 +34,6 @@ export function UserManagement() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
-  const [message, setMessage] = useState("");
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<User | null>(null);
@@ -72,7 +72,6 @@ export function UserManagement() {
 
   async function changeRole(userId: string, role: string) {
     setUpdating(userId);
-    setMessage("");
 
     const res = await fetch("/api/users", {
       method: "PATCH",
@@ -85,11 +84,10 @@ export function UserManagement() {
       setUsers((prev) =>
         prev.map((u) => (u.id === userId ? { ...u, role: data.user.role } : u)),
       );
-      setMessage(`Updated ${data.user.name} to ${data.user.role}`);
-      setTimeout(() => setMessage(""), 3000);
+      toast.success(`Updated ${data.user.name} to ${data.user.role}`);
     } else {
       const data = await res.json();
-      setMessage(data.error || "Failed to update role");
+      toast.error(data.error || "Failed to update role");
     }
     setUpdating(null);
   }
@@ -97,7 +95,6 @@ export function UserManagement() {
   async function confirmDelete() {
     if (!deleteTarget || !deletePassword) return;
     setDeleting(true);
-    setMessage("");
 
     const res = await fetch("/api/users", {
       method: "DELETE",
@@ -107,13 +104,12 @@ export function UserManagement() {
 
     if (res.ok) {
       setUsers((prev) => prev.filter((u) => u.id !== deleteTarget.id));
-      setMessage(`Deleted ${deleteTarget.name}`);
-      setTimeout(() => setMessage(""), 3000);
+      toast.success(`Deleted ${deleteTarget.name}`);
       setDeleteTarget(null);
       setDeletePassword("");
     } else {
       const data = await res.json();
-      setMessage(data.error || "Failed to delete user");
+      toast.error(data.error || "Failed to delete user");
     }
     setDeleting(false);
   }
@@ -138,10 +134,6 @@ export function UserManagement() {
           />
         </div>
       </div>
-
-      {message && (
-        <p className="text-sm text-teal-deep">{message}</p>
-      )}
 
       <div className="overflow-x-auto rounded-xl border border-ink-200/60 bg-ink-0/70 shadow-2 backdrop-blur-sm">
         <table className="w-full text-sm">

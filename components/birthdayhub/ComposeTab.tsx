@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { toast } from "sonner";
 import type { Employee } from "@/lib/birthdayhub/types";
 import CredentialsModal, {
   type CcPerson,
@@ -42,8 +43,7 @@ export default function ComposeTab({
   const [previewHtml, setPreviewHtml] = useState("");
   const [showSource, setShowSource] = useState(false);
 
-  const [status, setStatus] = useState<"idle" | "sent" | "scheduled" | "error">("idle");
-  const [errorMsg, setErrorMsg] = useState("");
+  const [status, setStatus] = useState<"idle" | "sent" | "scheduled">("idle");
   const [showCreds, setShowCreds] = useState(false);
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -66,7 +66,6 @@ export default function ComposeTab({
     if (!target) return;
     setGenerating(true);
     setStatus("idle");
-    setErrorMsg("");
     setPaletteId("");
 
     try {
@@ -98,8 +97,7 @@ export default function ComposeTab({
         true
       );
     } catch (err) {
-      setErrorMsg(err instanceof Error ? err.message : "Generation failed");
-      setStatus("error");
+      toast.error(err instanceof Error ? err.message : "Generation failed");
     } finally {
       setGenerating(false);
     }
@@ -141,7 +139,6 @@ export default function ComposeTab({
     setMessage("");
     setPreviewHtml("");
     setStatus("idle");
-    setErrorMsg("");
 
     const emp = employees.find((e) => e.id === id);
     if (emp) handleGenerate(emp);
@@ -192,10 +189,10 @@ export default function ComposeTab({
           throw new Error(data.error ?? "Scheduling failed");
         }
         setStatus("scheduled");
+        toast.success("Email scheduled successfully!");
         onScheduled?.();
       } catch (err) {
-        setErrorMsg(err instanceof Error ? err.message : "Scheduling failed");
-        setStatus("error");
+        toast.error(err instanceof Error ? err.message : "Scheduling failed");
       }
     } else {
       /* Send immediately */
@@ -222,10 +219,10 @@ export default function ComposeTab({
           throw new Error(data.error ?? "Send failed");
         }
         setStatus("sent");
+        toast.success("Email sent successfully!");
         onSent();
       } catch (err) {
-        setErrorMsg(err instanceof Error ? err.message : "Send failed");
-        setStatus("error");
+        toast.error(err instanceof Error ? err.message : "Send failed");
       }
     }
   }
@@ -248,23 +245,6 @@ export default function ComposeTab({
 
   return (
     <div className="space-y-5">
-      {/* Status banners */}
-      {status === "sent" && (
-        <div className="rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-700">
-          Email sent successfully!
-        </div>
-      )}
-      {status === "scheduled" && (
-        <div className="rounded-lg border border-primary/20 bg-accent p-4 text-sm text-primary">
-          Email scheduled successfully!
-        </div>
-      )}
-      {status === "error" && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-          {errorMsg}
-        </div>
-      )}
-
       {/* Employee dropdown */}
       <div className="rounded-xl border bg-card p-5 shadow-sm">
         <label className="block text-sm font-medium text-foreground mb-1.5">

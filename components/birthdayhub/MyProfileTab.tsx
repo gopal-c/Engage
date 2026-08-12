@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 
 const HOBBIES = ["Reading", "Gaming", "Cooking", "Traveling", "Photography", "Music", "Sports", "Gardening", "Art", "Movies", "Fitness", "Dancing"];
 const DRINKS = ["Tea", "Coffee", "Juice", "Smoothie", "Soda", "Hot Chocolate", "Lassi", "Milkshake"];
@@ -33,7 +34,6 @@ export default function MyProfileTab() {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState<{ text: string; ok: boolean } | null>(null);
 
   useEffect(() => {
     Promise.all([
@@ -76,7 +76,6 @@ export default function MyProfileTab() {
 
   async function handleSave() {
     setSaving(true);
-    setMessage(null);
 
     try {
       const promises: Promise<Response>[] = [];
@@ -107,16 +106,15 @@ export default function MyProfileTab() {
       if (allOk) {
         setOriginalDob(dob);
         setOriginalAboutMe(JSON.stringify(aboutMe));
-        setMessage({ text: "Profile updated!", ok: true });
+        toast.success("Profile updated!");
       } else {
-        setMessage({ text: "Failed to save some changes", ok: false });
+        toast.error("Failed to save some changes");
       }
     } catch {
-      setMessage({ text: "Failed to save changes", ok: false });
+      toast.error("Failed to save changes");
     }
 
     setSaving(false);
-    setTimeout(() => setMessage(null), 3000);
   }
 
   if (loading) {
@@ -206,7 +204,7 @@ export default function MyProfileTab() {
       </div>
 
       {/* Save */}
-      <div className="flex items-center gap-3">
+      <div>
         <button
           onClick={handleSave}
           disabled={saving || !hasChanges}
@@ -214,11 +212,6 @@ export default function MyProfileTab() {
         >
           {saving ? "Saving..." : "Save Changes"}
         </button>
-        {message && (
-          <span className={`text-sm ${message.ok ? "text-green-600" : "text-red-500"}`}>
-            {message.text}
-          </span>
-        )}
       </div>
     </div>
   );
