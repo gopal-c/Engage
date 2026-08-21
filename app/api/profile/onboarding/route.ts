@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { sql } from "@/lib/db";
+import { createFeedEvent } from "@/lib/feed";
+import { awardXP } from "@/lib/xp";
 
 export async function POST(request: Request) {
   const session = await auth();
@@ -57,6 +59,17 @@ export async function POST(request: Request) {
       celebration_style = EXCLUDED.celebration_style,
       updated_at = NOW()
   `;
+
+  createFeedEvent({
+    eventType: "new_joiner",
+    sourceApp: "engage",
+    userId: session.user.id,
+    title: `${session.user.name ?? "Someone"} just joined Engage!`,
+    description: "Welcome them to the team",
+    metadata: { sayHello: "Drop a comment to say hi!" },
+  }).catch(() => {});
+
+  awardXP(session.user.id, "engage", "onboarding_completed").catch(() => {});
 
   return NextResponse.json({ ok: true });
 }

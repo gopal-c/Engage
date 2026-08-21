@@ -1,6 +1,5 @@
 import { NextResponse, NextRequest } from "next/server";
 import nodemailer from "nodemailer";
-import Groq from "groq-sdk";
 import {
   getEmployees, getLogs, appendLog, todayMMDD, alreadySentThisYear,
   getDueScheduledSends, updateScheduledSendStatus, getSettings,
@@ -9,12 +8,7 @@ import {
 import { buildEmailHTML, resolvePalette } from "@/lib/birthdayhub/email-template";
 import { generateIllustrationUrl } from "@/lib/birthdayhub/generate-illustration";
 import { randomUUID } from "crypto";
-
-let _groq: Groq | null = null;
-function getGroq() {
-  if (!_groq) _groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-  return _groq;
-}
+import { getGroqClient, GROQ_MODEL } from "@/lib/groq";
 
 export async function GET(req: NextRequest) {
   const secret = req.headers.get("authorization")?.replace("Bearer ", "");
@@ -59,8 +53,8 @@ export async function GET(req: NextRequest) {
 
       const birthdayResults = await Promise.allSettled(
         birthdayPeople.map(async (employee) => {
-          const completion = await getGroq().chat.completions.create({
-            model: "llama-3.3-70b-versatile",
+          const completion = await getGroqClient().chat.completions.create({
+            model: GROQ_MODEL,
             max_tokens: 300,
             messages: [{
               role: "user",

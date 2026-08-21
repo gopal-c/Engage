@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import OpenAI from "openai";
 import { requireApiRole } from "@/lib/skillshub/session";
+import { getGroqClient, GROQ_MODEL } from "@/lib/groq";
 import { getApprovedProfiles } from "@/lib/skillshub/storage";
 import type { Profile } from "@/lib/skillshub/types";
 
@@ -78,15 +78,12 @@ export async function POST(req: Request) {
 
   const numbered = profiles.map((p, i) => compactProfile(p, i));
 
-  const groq = new OpenAI({
-    apiKey: process.env.GROQ_API_KEY,
-    baseURL: "https://api.groq.com/openai/v1",
-  });
+  const groq = getGroqClient();
 
   let rawResults: LLMResult[] = [];
   try {
     const completion = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
+      model: GROQ_MODEL,
       response_format: { type: "json_object" },
       temperature: 0.3,
       messages: [

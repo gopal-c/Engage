@@ -3,6 +3,8 @@ import { auth } from "@/lib/auth";
 import { getIdeas, createIdea } from "@/lib/ideahub/storage";
 import { enrichIdea, scoreIdea, findSimilarIdeas } from "@/lib/ideahub/ai";
 import { logActivity } from "@/lib/activity";
+import { createFeedEvent } from "@/lib/feed";
+import { awardXP } from "@/lib/xp";
 
 export async function GET(request: NextRequest) {
   const session = await auth();
@@ -120,6 +122,17 @@ export async function POST(request: Request) {
       description: isAnonymous ? "An anonymous idea was submitted" : undefined,
       metadata: { ideaId: idea.id },
     }).catch(() => {});
+
+    createFeedEvent({
+      eventType: "idea_shared",
+      sourceApp: "ideahub",
+      userId: session.user.id,
+      title: title.trim(),
+      description: description.trim().slice(0, 200),
+      metadata: { ideaId: idea.id, isAnonymous },
+    }).catch(() => {});
+
+    awardXP(session.user.id, "ideahub", "idea_submitted").catch(() => {});
 
     return NextResponse.json({ ok: true, idea });
   } catch (err) {

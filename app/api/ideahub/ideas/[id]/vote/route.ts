@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getVote, upsertVote, removeVote, getVoteCounts } from "@/lib/ideahub/storage";
+import { awardXP } from "@/lib/xp";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -23,6 +24,7 @@ export async function POST(request: Request, { params }: Params) {
     await removeVote(id, session.user.id);
   } else {
     await upsertVote(id, session.user.id, voteType);
+    if (!existing) awardXP(session.user.id, "ideahub", "idea_upvoted").catch(() => {});
   }
 
   const counts = await getVoteCounts(id);

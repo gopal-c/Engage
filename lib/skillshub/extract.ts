@@ -1,5 +1,5 @@
-import OpenAI from "openai";
 import { extractText, getDocumentProxy } from "unpdf";
+import { getGroqClient, GROQ_MODEL } from "@/lib/groq";
 import type { Proficiency, Seniority } from "./types";
 
 export type ExtractedProfile = {
@@ -120,12 +120,9 @@ export async function extractProfileFromPdf(buffer: Uint8Array | Buffer): Promis
 
   let parsed: unknown;
   try {
-    const groq = new OpenAI({
-      apiKey: process.env.GROQ_API_KEY,
-      baseURL: "https://api.groq.com/openai/v1",
-    });
+    const groq = getGroqClient();
     const completion = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
+      model: GROQ_MODEL,
       response_format: { type: "json_object" },
       temperature: 0.2,
       messages: [

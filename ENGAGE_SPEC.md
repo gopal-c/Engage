@@ -17,7 +17,7 @@ GitHub: `gopal-c/Engage`
 | Database | Neon Postgres (provisioned via Vercel Storage) |
 | SQL | Raw SQL via `@neondatabase/serverless` — **NO ORM** |
 | Auth | NextAuth v5, Google OAuth restricted to `@valueaddsofttech.com` |
-| AI | Groq (Llama 3.3 70B) for any AI-powered features |
+| AI | Groq (Qwen 3 32B) for any AI-powered features |
 | Deployment | Vercel |
 | Mobile | PWA (manifest + service worker), future Capacitor wrap |
 

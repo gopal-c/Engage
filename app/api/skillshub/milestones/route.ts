@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { requireApiRole } from "@/lib/skillshub/session";
 import { getProfile, getProfileByEmail, getMilestonesByProfileId, addMilestone } from "@/lib/skillshub/storage";
 import type { MilestoneCategory } from "@/lib/skillshub/types";
+import { createFeedEvent } from "@/lib/feed";
+import { awardXP } from "@/lib/xp";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -52,5 +54,18 @@ export async function POST(req: Request) {
   }
 
   const milestone = await addMilestone(profileId, title, milestoneDate, session.role, category);
+
+  const feedType = category === "certification" ? "certification" : "milestone";
+  createFeedEvent({
+    eventType: feedType,
+    sourceApp: "skillshub",
+    userId: session.userId,
+    title,
+    metadata: { milestoneId: milestone.id, category, xpAwarded: 15 },
+    eventDate: milestoneDate,
+  }).catch(() => {});
+
+  awardXP(session.userId, "skillshub", "milestone_added").catch(() => {});
+
   return NextResponse.json({ ok: true, milestone });
 }

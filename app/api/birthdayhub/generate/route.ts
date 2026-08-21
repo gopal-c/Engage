@@ -1,12 +1,6 @@
 import { NextResponse } from "next/server";
-import Groq from "groq-sdk";
 import { sql } from "@/lib/db";
-
-let _groq: Groq | null = null;
-function getGroq() {
-  if (!_groq) _groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-  return _groq;
-}
+import { getGroqClient, GROQ_MODEL } from "@/lib/groq";
 
 async function getUserPreferences(name: string, email?: string) {
   try {
@@ -72,8 +66,8 @@ export async function POST(req: Request) {
   ].filter(Boolean).join("");
 
   try {
-    const completion = await getGroq().chat.completions.create({
-      model: "llama-3.3-70b-versatile",
+    const completion = await getGroqClient().chat.completions.create({
+      model: GROQ_MODEL,
       max_tokens: 300,
       messages: [
         {

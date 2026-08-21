@@ -1,4 +1,4 @@
-import OpenAI from "openai";
+import { getGroqClient, GROQ_MODEL } from "@/lib/groq";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -23,17 +23,11 @@ export type SimilarIdea = {
 };
 
 // ---------------------------------------------------------------------------
-// Groq client (lazy singleton, same pattern as lib/skillshub/extract.ts)
+// Groq client
 // ---------------------------------------------------------------------------
 
-function getGroq() {
-  return new OpenAI({
-    apiKey: process.env.GROQ_API_KEY,
-    baseURL: "https://api.groq.com/openai/v1",
-  });
-}
-
-const MODEL = "llama-3.3-70b-versatile";
+const getGroq = getGroqClient;
+const MODEL = GROQ_MODEL;
 const TEMPERATURE = 0.3;
 
 // ---------------------------------------------------------------------------
