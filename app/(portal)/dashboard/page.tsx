@@ -7,7 +7,7 @@ import FeedCard, { type FeedEvent } from "@/components/feed/FeedCard";
 import LevelCard from "@/components/feed/LevelCard";
 import RightSidebar from "@/components/feed/RightSidebar";
 
-function greeting() {
+function getGreeting() {
   const h = new Date().getHours();
   if (h < 12) return "Good morning";
   if (h < 17) return "Good afternoon";
@@ -43,6 +43,7 @@ export default function DashboardPage() {
   const [hasMore, setHasMore] = useState(true);
   const [currentUserId, setCurrentUserId] = useState("");
   const [userName, setUserName] = useState("");
+  const [greetingText, setGreetingText] = useState("");
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   const fetchFeed = useCallback(async (p: number, append = false) => {
@@ -60,6 +61,7 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
+    setGreetingText(getGreeting());
     fetchFeed(1);
     fetch("/api/dashboard")
       .then((r) => r.json())
@@ -94,7 +96,7 @@ export default function DashboardPage() {
       {/* Greeting */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-foreground">
-          {greeting()}{userName ? ", " : ""}<span className="serif-italic">{userName}</span>
+          {greetingText}{userName ? ", " : ""}<span className="serif-italic">{userName}</span>
         </h1>
         <p className="text-sm text-muted-foreground mt-0.5">
           Here&apos;s what&apos;s happening in your team
