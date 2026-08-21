@@ -106,9 +106,11 @@ export async function GET() {
 
     // --- c) Milestones / certifications + XP ---
     const milestones = await sql`
-      SELECT m.id, m.title, m.milestone_date, m.category, p.user_id
+      SELECT m.id, m.title, m.milestone_date, m.category,
+        COALESCE(p.user_id, u.id) AS user_id
       FROM skillshub.milestones m
       JOIN skillshub.profiles p ON p.id = m.profile_id
+      LEFT JOIN auth.users u ON lower(u.email) = lower(p.email)
       WHERE NOT EXISTS (
         SELECT 1 FROM engage.feed_events fe
         WHERE fe.event_type IN ('milestone', 'certification')
@@ -121,7 +123,7 @@ export async function GET() {
     for (const row of milestones) {
       try {
         if (!row.user_id || !row.title) {
-          skipped.push(`milestone ${row.id}: missing user_id or title`);
+          skipped.push(`milestone ${row.id}: no linked user`);
           continue;
         }
         const eventType = row.category === "certification" ? "certification" : "milestone";
