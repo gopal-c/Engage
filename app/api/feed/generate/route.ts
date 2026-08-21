@@ -55,6 +55,31 @@ export async function GET() {
       }
     }
 
+    // --- a2) Backfill XP for ideas that have feed events but no xp_event ---
+    const ideasMissingXP = await sql`
+      SELECT i.id, i.author_id
+      FROM ideahub.ideas i
+      WHERE i.author_id IS NOT NULL
+        AND EXISTS (
+          SELECT 1 FROM engage.feed_events fe
+          WHERE fe.event_type = 'idea_shared' AND fe.metadata->>'ideaId' = i.id::text
+        )
+        AND NOT EXISTS (
+          SELECT 1 FROM engage.xp_events xe
+          WHERE xe.user_id = i.author_id AND xe.action = 'idea_submitted'
+            AND xe.source_app = 'ideahub'
+        )
+    `;
+
+    for (const row of ideasMissingXP) {
+      try {
+        await awardXP(row.author_id, "ideahub", "idea_submitted");
+        counts.ideas++;
+      } catch (err) {
+        skipped.push(`idea-xp-backfill ${row.id}: ${String(err)}`);
+      }
+    }
+
     // --- b) Birthdays today + next 3 days ---
     const todayMmDd = new Date().toISOString().slice(5, 10);
     const currentYear = new Date().getFullYear();
@@ -141,6 +166,34 @@ export async function GET() {
         counts.milestones++;
       } catch (err) {
         skipped.push(`milestone ${row.id}: ${String(err)}`);
+      }
+    }
+
+    // --- c2) Backfill XP for milestones that have feed events but no xp_event ---
+    const milestonesMissingXP = await sql`
+      SELECT m.id, COALESCE(p.user_id, u.id) AS user_id
+      FROM skillshub.milestones m
+      JOIN skillshub.profiles p ON p.id = m.profile_id
+      LEFT JOIN auth.users u ON lower(u.email) = lower(p.email)
+      WHERE COALESCE(p.user_id, u.id) IS NOT NULL
+        AND EXISTS (
+          SELECT 1 FROM engage.feed_events fe
+          WHERE fe.event_type IN ('milestone', 'certification')
+            AND fe.metadata->>'milestoneId' = m.id::text
+        )
+        AND NOT EXISTS (
+          SELECT 1 FROM engage.xp_events xe
+          WHERE xe.user_id = COALESCE(p.user_id, u.id)
+            AND xe.action = 'milestone_added' AND xe.source_app = 'skillshub'
+        )
+    `;
+
+    for (const row of milestonesMissingXP) {
+      try {
+        await awardXP(row.user_id, "skillshub", "milestone_added");
+        counts.milestones++;
+      } catch (err) {
+        skipped.push(`milestone-xp-backfill ${row.id}: ${String(err)}`);
       }
     }
 
