@@ -21,7 +21,7 @@ export async function GET() {
           LEFT JOIN auth.users u ON lower(u.email) = lower(p.email)
           WHERE p.status = 'approved' AND COALESCE(u.date_of_birth, p.date_of_birth) IS NOT NULL
           UNION ALL
-          SELECT u.name, u.avatar_url, u.id AS user_id,
+          SELECT u.name, u.email, u.avatar_url, u.id AS user_id,
                  u.date_of_birth
           FROM auth.users u
           WHERE u.date_of_birth IS NOT NULL

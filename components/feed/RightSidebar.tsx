@@ -30,9 +30,9 @@ export default function RightSidebar() {
   const [topIdeas, setTopIdeas] = useState<TopIdea[] | null>(null);
 
   useEffect(() => {
-    fetch("/api/dashboard/this-week").then((r) => r.json()).then(setWeek).catch(() => {});
-    fetch("/api/dashboard/my-milestones").then((r) => r.json()).then((d) => setMilestones(d.milestones)).catch(() => {});
-    fetch("/api/dashboard/top-ideas").then((r) => r.json()).then((d) => setTopIdeas(d.ideas)).catch(() => {});
+    fetch("/api/dashboard/this-week").then((r) => r.json()).then((d) => { if (d.birthdays) setWeek(d); }).catch(() => {});
+    fetch("/api/dashboard/my-milestones").then((r) => r.json()).then((d) => setMilestones(d.milestones ?? [])).catch(() => {});
+    fetch("/api/dashboard/top-ideas").then((r) => r.json()).then((d) => setTopIdeas(d.ideas ?? [])).catch(() => {});
   }, []);
 
   return (
