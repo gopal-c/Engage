@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { sql } from "@/lib/db";
 import { createFeedEvent, createGroupCard } from "@/lib/feed";
+import { awardXP } from "@/lib/xp";
 
 export async function GET() {
   try {
@@ -16,8 +17,9 @@ export async function GET() {
     }
 
     const counts = { ideas: 0, birthdays: 0, milestones: 0, joiners: 0 };
+    const skipped: string[] = [];
 
-    // --- a) Ideas -> idea_shared events ---
+    // --- a) Ideas -> idea_shared events + XP ---
     const ideas = await sql`
       SELECT i.id, i.title, i.description, i.author_id, i.is_anonymous, i.created_at
       FROM ideahub.ideas i
@@ -30,18 +32,27 @@ export async function GET() {
     `;
 
     for (const row of ideas) {
-      await createFeedEvent({
-        eventType: "idea_shared",
-        sourceApp: "ideahub",
-        userId: row.author_id,
-        title: row.title,
-        description: row.description?.slice(0, 200),
-        metadata: { ideaId: row.id, isAnonymous: row.is_anonymous },
-        eventDate: row.created_at?.toISOString?.()
-          ? row.created_at.toISOString().slice(0, 10)
-          : String(row.created_at).slice(0, 10),
-      });
-      counts.ideas++;
+      try {
+        if (!row.author_id || !row.title) {
+          skipped.push(`idea ${row.id}: missing author_id or title`);
+          continue;
+        }
+        await createFeedEvent({
+          eventType: "idea_shared",
+          sourceApp: "ideahub",
+          userId: row.author_id,
+          title: row.title,
+          description: row.description?.slice(0, 200),
+          metadata: { ideaId: row.id, isAnonymous: row.is_anonymous },
+          eventDate: row.created_at?.toISOString?.()
+            ? row.created_at.toISOString().slice(0, 10)
+            : String(row.created_at).slice(0, 10),
+        });
+        await awardXP(row.author_id, "ideahub", "idea_submitted");
+        counts.ideas++;
+      } catch (err) {
+        skipped.push(`idea ${row.id}: ${String(err)}`);
+      }
     }
 
     // --- b) Birthdays today + next 3 days ---
@@ -59,33 +70,41 @@ export async function GET() {
     `;
 
     for (const row of birthdays) {
-      const eventDate = `${currentYear}-${row.birthday_mmdd}`;
-      const eventType = row.birthday_mmdd === todayMmDd ? "birthday_today" : "birthday_upcoming";
+      try {
+        if (!row.id || !row.name) {
+          skipped.push(`birthday user ${row.id}: missing name`);
+          continue;
+        }
+        const eventDate = `${currentYear}-${row.birthday_mmdd}`;
+        const eventType = row.birthday_mmdd === todayMmDd ? "birthday_today" : "birthday_upcoming";
 
-      const existing = await sql`
-        SELECT 1 FROM engage.feed_events fe
-        WHERE fe.event_type IN ('birthday_today', 'birthday_upcoming')
-          AND fe.user_id = ${row.id}
-          AND fe.event_date = ${eventDate}
-      `;
+        const existing = await sql`
+          SELECT 1 FROM engage.feed_events fe
+          WHERE fe.event_type IN ('birthday_today', 'birthday_upcoming')
+            AND fe.user_id = ${row.id}
+            AND fe.event_date = ${eventDate}
+        `;
 
-      if (existing.length === 0) {
-        await createFeedEvent({
-          eventType,
-          sourceApp: "birthdayhub",
-          userId: row.id,
-          title: `${row.name}'s birthday`,
-          pinned: eventType === "birthday_today",
-          eventDate,
-        });
+        if (existing.length === 0) {
+          await createFeedEvent({
+            eventType,
+            sourceApp: "birthdayhub",
+            userId: row.id,
+            title: `${row.name}'s birthday`,
+            pinned: eventType === "birthday_today",
+            eventDate,
+          });
 
-        const closesAt = `${eventDate} 23:59:59`;
-        await createGroupCard(row.id, eventDate, closesAt);
-        counts.birthdays++;
+          const closesAt = `${eventDate} 23:59:59`;
+          await createGroupCard(row.id, eventDate, closesAt);
+          counts.birthdays++;
+        }
+      } catch (err) {
+        skipped.push(`birthday ${row.id}: ${String(err)}`);
       }
     }
 
-    // --- c) Milestones / certifications ---
+    // --- c) Milestones / certifications + XP ---
     const milestones = await sql`
       SELECT m.id, m.title, m.milestone_date, m.category, p.user_id
       FROM skillshub.milestones m
@@ -100,21 +119,30 @@ export async function GET() {
     `;
 
     for (const row of milestones) {
-      const eventType = row.category === "certification" ? "certification" : "milestone";
-      await createFeedEvent({
-        eventType,
-        sourceApp: "skillshub",
-        userId: row.user_id,
-        title: row.title,
-        metadata: { milestoneId: row.id, category: row.category },
-        eventDate: row.milestone_date?.toISOString?.()
-          ? row.milestone_date.toISOString().slice(0, 10)
-          : String(row.milestone_date).slice(0, 10),
-      });
-      counts.milestones++;
+      try {
+        if (!row.user_id || !row.title) {
+          skipped.push(`milestone ${row.id}: missing user_id or title`);
+          continue;
+        }
+        const eventType = row.category === "certification" ? "certification" : "milestone";
+        await createFeedEvent({
+          eventType,
+          sourceApp: "skillshub",
+          userId: row.user_id,
+          title: row.title,
+          metadata: { milestoneId: row.id, category: row.category },
+          eventDate: row.milestone_date?.toISOString?.()
+            ? row.milestone_date.toISOString().slice(0, 10)
+            : String(row.milestone_date).slice(0, 10),
+        });
+        await awardXP(row.user_id, "skillshub", "milestone_added");
+        counts.milestones++;
+      } catch (err) {
+        skipped.push(`milestone ${row.id}: ${String(err)}`);
+      }
     }
 
-    // --- d) New joiners (last 30 days) ---
+    // --- d) New joiners (last 30 days) + XP ---
     const joiners = await sql`
       SELECT u.id, u.name, u.created_at
       FROM auth.users u
@@ -126,21 +154,30 @@ export async function GET() {
     `;
 
     for (const row of joiners) {
-      await createFeedEvent({
-        eventType: "new_joiner",
-        sourceApp: "engage",
-        userId: row.id,
-        title: `${row.name} just joined Engage!`,
-        description: "Welcome them to the team",
-        metadata: { sayHello: "Drop a comment to say hi!" },
-        eventDate: row.created_at?.toISOString?.()
-          ? row.created_at.toISOString().slice(0, 10)
-          : String(row.created_at).slice(0, 10),
-      });
-      counts.joiners++;
+      try {
+        if (!row.id || !row.name) {
+          skipped.push(`joiner ${row.id}: missing name`);
+          continue;
+        }
+        await createFeedEvent({
+          eventType: "new_joiner",
+          sourceApp: "engage",
+          userId: row.id,
+          title: `${row.name} just joined Engage!`,
+          description: "Welcome them to the team",
+          metadata: { sayHello: "Drop a comment to say hi!" },
+          eventDate: row.created_at?.toISOString?.()
+            ? row.created_at.toISOString().slice(0, 10)
+            : String(row.created_at).slice(0, 10),
+        });
+        await awardXP(row.id, "engage", "onboarding_completed");
+        counts.joiners++;
+      } catch (err) {
+        skipped.push(`joiner ${row.id}: ${String(err)}`);
+      }
     }
 
-    return NextResponse.json({ ok: true, generated: counts });
+    return NextResponse.json({ ok: true, generated: counts, skipped: skipped.length, skippedDetails: skipped });
   } catch (err) {
     console.error("Feed generate error:", err);
     return NextResponse.json({ error: "Failed to generate feed events" }, { status: 500 });
