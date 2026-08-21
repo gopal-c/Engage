@@ -221,7 +221,7 @@ export default function FeedCard({
   const displayComments = showAllComments ? allComments : comments;
 
   return (
-    <div className="rounded-2xl border bg-card shadow-sm overflow-hidden">
+    <div className="rounded-2xl border bg-white shadow-sm overflow-hidden">
       {/* Header */}
       <div className="px-5 pt-4 pb-2">
         <div className="flex items-start gap-3">
@@ -447,7 +447,7 @@ function BirthdayCardSection({ event, signText, setSignText, signing, handleSign
           {gc.status === "open" && (
             <div className="flex items-center gap-2">
               <UserAvatar name="You" avatar={null} size={28} />
-              <div className="flex-1 flex items-center gap-2 rounded-full border bg-card px-3 py-1.5">
+              <div className="flex-1 flex items-center gap-2 rounded-full border bg-white px-3 py-1.5">
                 <input
                   type="text"
                   placeholder="Add your message to the card..."

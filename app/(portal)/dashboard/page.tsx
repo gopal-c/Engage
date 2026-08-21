@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { Loader2, Sparkles } from "lucide-react";
 import FeedCard, { type FeedEvent } from "@/components/feed/FeedCard";
-import LevelCard from "@/components/feed/LevelCard";
 import RightSidebar from "@/components/feed/RightSidebar";
 
 function getGreeting() {
@@ -20,7 +19,7 @@ function Skeleton({ className = "" }: { className?: string }) {
 
 function FeedSkeleton() {
   return (
-    <div className="rounded-2xl border bg-card p-5 shadow-sm space-y-3">
+    <div className="rounded-2xl bg-white p-5 shadow-sm space-y-3">
       <div className="flex items-center gap-3">
         <Skeleton className="size-11 rounded-full" />
         <div className="space-y-1.5 flex-1">
@@ -69,7 +68,6 @@ export default function DashboardPage() {
       .catch(() => {});
   }, [fetchFeed]);
 
-  // Infinite scroll
   useEffect(() => {
     if (!sentinelRef.current || !hasMore) return;
     const observer = new IntersectionObserver(
@@ -92,57 +90,21 @@ export default function DashboardPage() {
   }, [fetchFeed]);
 
   return (
-    <div className="mx-auto max-w-7xl">
+    <div className="mx-auto max-w-6xl">
       {/* Greeting */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-foreground">
-          {greetingText}{userName ? ", " : ""}<span className="serif-italic">{userName}</span>
+        <h1 className="text-2xl font-bold text-ink-800">
+          {greetingText}{userName ? ", " : ""}<span className="serif-italic text-indigo-deep">{userName}</span>
         </h1>
-        <p className="text-sm text-muted-foreground mt-0.5">
+        <p className="text-sm text-ink-500 mt-0.5">
           Here&apos;s what&apos;s happening in your team
         </p>
       </div>
 
-      {/* 3-column layout */}
+      {/* 2-column: feed + right sidebar */}
       <div className="flex gap-6">
-        {/* Left column: Level + Quick actions (hidden on mobile) */}
-        <div className="hidden xl:block w-64 shrink-0 space-y-4">
-          <LevelCard />
-
-          {/* Quick actions */}
-          <div className="rounded-2xl border bg-card p-4 shadow-sm space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Quick Actions</p>
-            <Link
-              href="/apps/ideahub/submit"
-              className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-foreground hover:bg-secondary/70 transition"
-            >
-              <Sparkles className="size-4 text-indigo-deep" />
-              Submit an Idea
-            </Link>
-            <Link
-              href="/apps/skillshub/milestones"
-              className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-foreground hover:bg-secondary/70 transition"
-            >
-              <span className="text-base">🏆</span>
-              Add a Milestone
-            </Link>
-            <Link
-              href="/apps/birthdayhub"
-              className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-foreground hover:bg-secondary/70 transition"
-            >
-              <span className="text-base">🎂</span>
-              BirthdayHub
-            </Link>
-          </div>
-        </div>
-
         {/* Center: Feed */}
         <div className="flex-1 min-w-0 space-y-4">
-          {/* Mobile-only level card */}
-          <div className="xl:hidden">
-            <LevelCard />
-          </div>
-
           {loading ? (
             <div className="space-y-4">
               <FeedSkeleton />
@@ -150,14 +112,14 @@ export default function DashboardPage() {
               <FeedSkeleton />
             </div>
           ) : events.length === 0 ? (
-            <div className="rounded-2xl border bg-card p-10 shadow-sm text-center">
-              <p className="text-lg font-semibold text-foreground mb-2">No feed events yet</p>
-              <p className="text-sm text-muted-foreground mb-4">
+            <div className="rounded-2xl bg-white p-10 shadow-sm text-center">
+              <p className="text-lg font-semibold text-ink-800 mb-2">No feed events yet</p>
+              <p className="text-sm text-ink-500 mb-4">
                 Be the first to contribute! Share an idea, add a milestone, or update your profile.
               </p>
               <Link
                 href="/apps/ideahub/submit"
-                className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-deep px-4 py-2 text-sm font-medium text-white hover:bg-indigo-press transition"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-deep px-5 py-2.5 text-sm font-medium text-white hover:bg-indigo-press transition shadow-sm"
               >
                 <Sparkles className="size-3.5" /> Submit an Idea
               </Link>
@@ -173,17 +135,16 @@ export default function DashboardPage() {
                 />
               ))}
 
-              {/* Infinite scroll sentinel */}
               <div ref={sentinelRef} className="h-4" />
 
               {loadingMore && (
                 <div className="flex justify-center py-4">
-                  <Loader2 className="size-5 animate-spin text-muted-foreground" />
+                  <Loader2 className="size-5 animate-spin text-ink-400" />
                 </div>
               )}
 
               {!hasMore && events.length > 0 && (
-                <p className="text-center text-xs text-muted-foreground py-4">
+                <p className="text-center text-xs text-ink-400 py-4">
                   You&apos;re all caught up!
                 </p>
               )}
@@ -191,7 +152,7 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* Right column: This week, milestones, top ideas (hidden on mobile) */}
+        {/* Right column (hidden on mobile) */}
         <div className="hidden lg:block w-72 shrink-0">
           <RightSidebar />
         </div>

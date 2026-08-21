@@ -9,6 +9,8 @@ import { buildEmailHTML, resolvePalette } from "@/lib/birthdayhub/email-template
 import { generateIllustrationUrl } from "@/lib/birthdayhub/generate-illustration";
 import { randomUUID } from "crypto";
 import { getGroqClient, GROQ_MODEL } from "@/lib/groq";
+import { createFeedEvent, createGroupCard } from "@/lib/feed";
+import { sql as dbSql } from "@/lib/db";
 
 export async function GET(req: NextRequest) {
   const secret = req.headers.get("authorization")?.replace("Bearer ", "");
@@ -136,6 +138,39 @@ Return ONLY a valid JSON object:
     }
   } catch (err) {
     console.error("Birthday send phase error:", err);
+  }
+
+  // 1b. Generate birthday feed events + group cards for today + next 3 days
+  try {
+    const todayMmDd = new Date().toISOString().slice(5, 10);
+    const currentYear = new Date().getFullYear();
+    const bdayUsers = await dbSql`
+      SELECT DISTINCT ON (u.id) u.id, u.name,
+        to_char(u.date_of_birth, 'MM-DD') AS birthday_mmdd
+      FROM auth.users u
+      LEFT JOIN birthdayhub.excluded_users ex ON ex.user_id = u.id
+      WHERE u.date_of_birth IS NOT NULL AND ex.user_id IS NULL
+        AND to_char(u.date_of_birth, 'MM-DD') >= to_char(NOW(), 'MM-DD')
+        AND to_char(u.date_of_birth, 'MM-DD') <= to_char(NOW() + INTERVAL '3 days', 'MM-DD')
+    `;
+    for (const u of bdayUsers) {
+      const eventDate = `${currentYear}-${u.birthday_mmdd}`;
+      const evType = u.birthday_mmdd === todayMmDd ? "birthday_today" : "birthday_upcoming";
+      const exists = await dbSql`
+        SELECT 1 FROM engage.feed_events fe
+        WHERE fe.event_type IN ('birthday_today','birthday_upcoming')
+          AND fe.user_id = ${u.id} AND fe.event_date = ${eventDate}
+      `;
+      if (exists.length === 0) {
+        await createFeedEvent({
+          eventType: evType, sourceApp: "birthdayhub", userId: u.id,
+          title: `${u.name}'s birthday`, pinned: evType === "birthday_today", eventDate,
+        });
+        await createGroupCard(u.id, eventDate, `${eventDate} 23:59:59`);
+      }
+    }
+  } catch (err) {
+    console.error("Birthday feed event generation error:", err);
   }
 
   // 2. Scheduled sends

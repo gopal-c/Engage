@@ -97,12 +97,10 @@
     --tracking-widest:  0.08em;
 
     /* ─────────── PAGE BACKGROUND OVERLAY ─────────── */
-    --t-bg-base: var(--ink-50);
+    --t-bg-base: #FAFAFC;
     --t-bg-overlay:
-      radial-gradient(900px 600px at 8% -10%,  rgba(139, 123, 232, 0.22), transparent 60%),
-      radial-gradient(800px 600px at 100% 20%, rgba(255, 154, 130, 0.18), transparent 60%),
-      radial-gradient(900px 700px at 50% 110%, rgba(124, 211, 197, 0.18), transparent 60%),
-      radial-gradient(700px 500px at -10% 70%, rgba(255, 203, 107, 0.16), transparent 60%);
+      radial-gradient(800px 800px at 0% 0%,     rgba(139, 123, 232, 0.15), transparent 60%),
+      radial-gradient(700px 700px at 100% 100%,  rgba(124, 211, 197, 0.12), transparent 60%);
 
     /* ─────────── BAR (topbar / sidebar) GLASS ─────────── */
     --t-bar-bg:     rgba(255, 255, 255, 0.55);
