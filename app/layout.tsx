@@ -10,10 +10,10 @@ export const metadata: Metadata = {
   title: "Engage",
   description: "Employee engagement platform",
   manifest: "/manifest.json",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "default",
-    title: "Engage",
+  other: {
+    "mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-status-bar-style": "default",
+    "apple-mobile-web-app-title": "Engage",
   },
 };
 
