@@ -14,7 +14,7 @@ interface HeaderProps {
 
 export function Header({ user }: HeaderProps) {
   return (
-    <header className="glass-surface sticky top-0 z-10 flex h-14 items-center justify-between px-4" style={{ borderBottom: "var(--t-bar-border)" }}>
+    <header className="sticky top-0 z-10 flex h-14 items-center justify-between px-4 bg-white" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
       <div className="flex items-center gap-2">
         <MobileSidebar role={user.role} />
         <span className="text-lg font-bold md:hidden">Engage</span>

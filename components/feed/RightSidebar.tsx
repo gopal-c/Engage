@@ -48,6 +48,8 @@ function SmallAvatar({ name, avatar }: { name: string; avatar: string | null }) 
   );
 }
 
+const CARD_STYLE: React.CSSProperties = { borderRadius: 20, boxShadow: "0 2px 12px rgba(0,0,0,0.06)" };
+
 export default function RightSidebar() {
   const [week, setWeek] = useState<ThisWeekData | null>(null);
   const [milestones, setMilestones] = useState<Milestone[] | null>(null);
@@ -60,9 +62,9 @@ export default function RightSidebar() {
   }, []);
 
   return (
-    <div className="space-y-4 sticky top-20">
+    <div className="space-y-5 sticky top-20">
       {/* This Week */}
-      <div className="rounded-2xl bg-white p-5 shadow-sm">
+      <div className="bg-white p-5" style={CARD_STYLE}>
         <h3 className="text-xs font-bold uppercase tracking-wider text-ink-500 flex items-center gap-1.5 mb-4">
           <CalendarDays className="size-3.5" /> This Week
         </h3>
@@ -81,11 +83,11 @@ export default function RightSidebar() {
                 <SmallAvatar name={b.name} avatar={b.avatar_url} />
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-semibold text-ink-700 truncate">{b.name}</p>
-                  <p className="text-[10px] text-ink-400">🎂 {timeLabel(b.birthday_mmdd)}</p>
+                  <p className="text-[10px] text-ink-400">{"\u{1F382}"} {timeLabel(b.birthday_mmdd)}</p>
                 </div>
                 <Link
                   href="/apps/birthdayhub"
-                  className="text-[10px] font-semibold text-amber-deep hover:text-coral-deep transition shrink-0"
+                  className="text-[10px] font-semibold text-[#E87760] hover:text-[#C75A45] transition shrink-0"
                 >
                   Wish
                 </Link>
@@ -96,9 +98,9 @@ export default function RightSidebar() {
                 <SmallAvatar name={a.name} avatar={a.avatar_url} />
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-semibold text-ink-700 truncate">{a.name}</p>
-                  <p className="text-[10px] text-ink-400">🎉 {a.years}yr anniversary</p>
+                  <p className="text-[10px] text-ink-400">{"\u{1F389}"} {a.years}yr anniversary</p>
                 </div>
-                <span className="text-[10px] font-semibold text-teal-deep shrink-0">
+                <span className="text-[10px] font-semibold text-[#5BBFB0] shrink-0">
                   Cheer
                 </span>
               </div>
@@ -108,12 +110,12 @@ export default function RightSidebar() {
       </div>
 
       {/* My Milestones */}
-      <div className="rounded-2xl bg-white p-5 shadow-sm">
+      <div className="bg-white p-5" style={CARD_STYLE}>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xs font-bold uppercase tracking-wider text-ink-500 flex items-center gap-1.5">
             <Trophy className="size-3.5" /> My Milestones
           </h3>
-          <Link href="/apps/skillshub/milestones" className="text-[10px] font-semibold text-indigo-deep hover:text-indigo-press transition">
+          <Link href="/apps/skillshub/milestones" className="text-[10px] font-semibold text-[#6B58D9] hover:text-[#5947C9] transition">
             All <ChevronRight className="inline size-2.5" />
           </Link>
         </div>
@@ -125,13 +127,13 @@ export default function RightSidebar() {
         ) : milestones.length === 0 ? (
           <p className="text-xs text-ink-400">
             No milestones yet.{" "}
-            <Link href="/apps/skillshub/milestones" className="text-indigo-deep hover:underline font-semibold">Add one</Link>
+            <Link href="/apps/skillshub/milestones" className="text-[#6B58D9] hover:underline font-semibold">Add one</Link>
           </p>
         ) : (
           <div className="space-y-2.5">
             {milestones.slice(0, 4).map((m) => (
               <div key={m.id} className="flex items-center gap-2.5">
-                <div className="flex size-7 items-center justify-center rounded-lg bg-amber-soft text-sm">🏆</div>
+                <div className="flex size-7 items-center justify-center rounded-lg bg-[#FFF4DE] text-sm">{"\u{1F3C6}"}</div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-medium text-ink-700 truncate">{m.title}</p>
                   <p className="text-[10px] text-ink-400">
@@ -145,12 +147,12 @@ export default function RightSidebar() {
       </div>
 
       {/* Top Ideas This Month */}
-      <div className="rounded-2xl bg-white p-5 shadow-sm">
+      <div className="bg-white p-5" style={CARD_STYLE}>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xs font-bold uppercase tracking-wider text-ink-500 flex items-center gap-1.5">
-            🔥 Top Ideas
+            {"\u{1F525}"} Top Ideas
           </h3>
-          <Link href="/apps/ideahub" className="text-[10px] font-semibold text-indigo-deep hover:text-indigo-press transition">
+          <Link href="/apps/ideahub" className="text-[10px] font-semibold text-[#6B58D9] hover:text-[#5947C9] transition">
             All <ChevronRight className="inline size-2.5" />
           </Link>
         </div>
@@ -165,10 +167,10 @@ export default function RightSidebar() {
           <div className="space-y-2.5">
             {topIdeas.map((idea, i) => (
               <Link key={idea.id} href={`/apps/ideahub/${idea.id}`} className="flex items-center gap-2.5 group">
-                <span className="flex size-5 items-center justify-center rounded-full bg-indigo-soft text-[10px] font-bold text-indigo-deep">
+                <span className="flex size-5 items-center justify-center rounded-full bg-[rgba(139,123,232,0.1)] text-[10px] font-bold text-[#6B58D9]">
                   {i + 1}
                 </span>
-                <p className="flex-1 text-xs font-medium text-ink-700 truncate group-hover:text-indigo-deep transition">{idea.title}</p>
+                <p className="flex-1 text-xs font-medium text-ink-700 truncate group-hover:text-[#6B58D9] transition">{idea.title}</p>
                 <span className="text-[10px] text-ink-400 flex items-center gap-0.5">
                   <ThumbsUp className="size-2.5" /> {idea.net_votes}
                 </span>

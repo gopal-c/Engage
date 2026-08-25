@@ -11,6 +11,14 @@ import {
 import { LogOut, Shield } from "lucide-react";
 import Link from "next/link";
 
+const AVATAR_COLORS = ["#8B7BE8", "#FF9A82", "#7CD3C5", "#FFCB6B", "#6B58D9", "#E87760", "#5BBFB0"];
+
+function nameToColor(name: string) {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+}
+
 interface UserMenuProps {
   name: string;
   email: string;
@@ -27,17 +35,19 @@ export function UserMenu({ name, email, image, role, signOutAction }: UserMenuPr
     .toUpperCase()
     .slice(0, 2);
 
+  const avatarBg = nameToColor(name);
+
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-accent outline-none">
+      <DropdownMenuTrigger className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-ink-100/50 outline-none">
         <Avatar className="h-8 w-8">
           <AvatarImage src={image ?? undefined} alt={name} />
-          <AvatarFallback className="text-xs">{initials}</AvatarFallback>
+          <AvatarFallback className="text-xs font-bold text-white" style={{ backgroundColor: avatarBg }}>{initials}</AvatarFallback>
         </Avatar>
         <div className="hidden sm:block text-left">
-          <span className="block text-sm font-medium leading-tight">{name}</span>
+          <span className="block text-sm font-medium leading-tight text-ink-800">{name}</span>
           {role && (
-            <span className="block text-[10px] capitalize leading-tight text-muted-foreground">{role}</span>
+            <span className="block text-[10px] capitalize leading-tight text-ink-400">{role}</span>
           )}
         </div>
       </DropdownMenuTrigger>
