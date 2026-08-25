@@ -208,8 +208,7 @@
 
   body {
     color: var(--fg-1);
-    background: var(--t-bg-overlay), var(--t-bg-base);
-    background-attachment: fixed;
+    background: var(--t-bg-base);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
