@@ -169,7 +169,7 @@ function SidebarLevelSection() {
 
       {/* Badges row with count */}
       {totalCount > 0 && (
-        <div className="flex items-center gap-1.5">
+        <div className="flex flex-wrap items-center gap-1.5">
           {data.allBadges.map((b) => {
             const earned = earnedKeys.has(b.key);
             return (
@@ -198,8 +198,8 @@ export function Sidebar({ role }: { role?: string }) {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden md:flex md:w-64 md:flex-col relative z-10 p-4">
-      <div className="flex h-12 items-center px-2 mb-3">
+    <aside className="hidden md:flex md:w-64 md:flex-col relative z-10 p-4 gap-3">
+      <div className="flex h-10 items-center px-2">
         <Link href="/dashboard" className="flex items-center gap-2">
           <span className="text-xl font-bold tracking-tight text-ink-800">Engage</span>
         </Link>
@@ -209,7 +209,11 @@ export function Sidebar({ role }: { role?: string }) {
         style={{ borderRadius: 20, boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}
       >
         <NavLinks role={role} pathname={pathname} />
-        <div className="mx-4 my-3 h-px bg-gray-200/40" />
+      </div>
+      <div
+        className="bg-white py-3"
+        style={{ borderRadius: 20, boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}
+      >
         <SidebarLevelSection />
       </div>
     </aside>
