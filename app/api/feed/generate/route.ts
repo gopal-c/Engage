@@ -249,6 +249,6 @@ export async function GET() {
     return NextResponse.json({ ok: true, generated: counts, skipped: skipped.length, skippedDetails: skipped });
   } catch (err) {
     console.error("Feed generate error:", err);
-    return NextResponse.json({ error: "Failed to generate feed events" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to generate feed events", detail: String(err) }, { status: 500 });
   }
 }
