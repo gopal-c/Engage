@@ -32,29 +32,29 @@ export default async function PortalLayout({
   }
 
   return (
-    <div className="relative flex h-screen overflow-hidden">
+    <div className="relative flex flex-col h-screen overflow-hidden">
       {/* Decorative gradient blobs */}
       <div
         className="pointer-events-none fixed inset-0 z-0"
         aria-hidden="true"
         style={{
           background: [
-            "radial-gradient(500px circle at -100px -100px, rgba(139,123,232,0.15), transparent 60%)",
-            "radial-gradient(500px circle at calc(100% + 100px) calc(100% + 100px), rgba(124,211,197,0.15), transparent 60%)",
+            "radial-gradient(600px circle at 0px 0px, rgba(139,123,232,0.18), transparent 55%)",
+            "radial-gradient(600px circle at 100% 100%, rgba(124,211,197,0.18), transparent 55%)",
           ].join(", "),
         }}
       />
 
-      <Sidebar role={session.user.role} />
-      <div className="relative z-10 flex flex-1 flex-col overflow-hidden">
-        <Header
-          user={{
-            name: session.user.name ?? "User",
-            email: session.user.email ?? "",
-            image: session.user.image,
-            role: session.user.role,
-          }}
-        />
+      <Header
+        user={{
+          name: session.user.name ?? "User",
+          email: session.user.email ?? "",
+          image: session.user.image,
+          role: session.user.role,
+        }}
+      />
+      <div className="relative z-10 flex flex-1 overflow-hidden">
+        <Sidebar role={session.user.role} />
         <main className="flex-1 overflow-y-auto p-4 sm:p-6">
           {children}
         </main>
