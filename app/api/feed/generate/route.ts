@@ -80,6 +80,18 @@ export async function GET() {
       }
     }
 
+    // --- b0) Clean up stale birthday events (user changed their birthdate) ---
+    await sql`
+      DELETE FROM engage.feed_events fe
+      WHERE fe.event_type IN ('birthday_today', 'birthday_upcoming')
+        AND EXISTS (
+          SELECT 1 FROM auth.users u
+          WHERE u.id = fe.user_id
+            AND u.date_of_birth IS NOT NULL
+            AND to_char(u.date_of_birth, 'MM-DD') != to_char(fe.event_date, 'MM-DD')
+        )
+    `;
+
     // --- b) Birthdays today + next 3 days ---
     const todayMmDd = new Date().toISOString().slice(5, 10);
     const currentYear = new Date().getFullYear();
