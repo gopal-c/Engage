@@ -33,19 +33,23 @@ export default async function PortalLayout({
 
   return (
     <div className="relative flex flex-col h-screen overflow-hidden">
-      {/* Decorative gradient blobs */}
+      {/* Decorative orb blobs matching design mock */}
       <div
-        className="pointer-events-none fixed inset-0 z-0"
+        className="pointer-events-none fixed inset-0 z-0 overflow-hidden"
         aria-hidden="true"
-        style={{
-          background: [
-            "#FAFAFC",
-            "radial-gradient(600px circle at 5% 10%, rgba(139,123,232,0.22), transparent 55%)",
-            "radial-gradient(550px circle at 95% 40%, rgba(124,211,197,0.18), transparent 55%)",
-            "radial-gradient(500px circle at 35% 95%, rgba(139,123,232,0.15), transparent 55%)",
-          ].join(", "),
-        }}
-      />
+        style={{ background: "#FAFAFC" }}
+      >
+        <svg className="absolute" width="0" height="0">
+          <defs>
+            <filter id="orb-blur">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="80" />
+            </filter>
+          </defs>
+        </svg>
+        <div className="absolute" style={{ width: 760, height: 760, left: -180, top: -300, opacity: 0.3, background: "#8B7BE8", borderRadius: "50%", filter: "blur(120px)" }} />
+        <div className="absolute" style={{ width: 680, height: 680, right: -200, top: 200, opacity: 0.24, background: "#7CD3C5", borderRadius: "50%", filter: "blur(120px)" }} />
+        <div className="absolute" style={{ width: 620, height: 620, left: "30%", bottom: -340, opacity: 0.2, background: "#8B7BE8", borderRadius: "50%", filter: "blur(120px)" }} />
+      </div>
 
       <Header
         user={{
