@@ -197,6 +197,18 @@ export async function GET() {
       }
     }
 
+    // --- d0) Fix existing new_joiner events: update event_date to profile joining_date ---
+    await sql`
+      UPDATE engage.feed_events fe
+      SET event_date = p.joining_date::text
+      FROM skillshub.profiles p
+      JOIN auth.users u ON u.id = p.user_id
+      WHERE fe.event_type = 'new_joiner'
+        AND fe.user_id = u.id
+        AND p.joining_date IS NOT NULL
+        AND fe.event_date != p.joining_date::text
+    `;
+
     // --- d) New joiners (by profile joining_date, last 30 days) + XP ---
     const joiners = await sql`
       SELECT u.id, COALESCE(p.name, u.name) AS name, p.joining_date
