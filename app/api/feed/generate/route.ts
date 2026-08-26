@@ -202,11 +202,10 @@ export async function GET() {
       UPDATE engage.feed_events fe
       SET event_date = p.joining_date::text
       FROM skillshub.profiles p
-      JOIN auth.users u ON u.id = p.user_id
       WHERE fe.event_type = 'new_joiner'
-        AND fe.user_id = u.id
+        AND p.user_id = fe.user_id
         AND p.joining_date IS NOT NULL
-        AND fe.event_date != p.joining_date::text
+        AND fe.event_date IS DISTINCT FROM p.joining_date::text
     `;
 
     // --- d) New joiners (by profile joining_date, last 30 days) + XP ---
