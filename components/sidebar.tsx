@@ -198,12 +198,7 @@ export function Sidebar({ role }: { role?: string }) {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden md:flex md:w-64 md:flex-col relative z-10 p-4 gap-3">
-      <div className="flex h-10 items-center px-2">
-        <Link href="/dashboard" className="flex items-center gap-2">
-          <span className="text-xl font-bold tracking-tight text-ink-800">Engage</span>
-        </Link>
-      </div>
+    <aside className="hidden md:flex md:w-64 md:flex-col relative z-10 p-4 gap-3 pt-4">
       <div
         className="bg-white overflow-y-auto py-3"
         style={{ borderRadius: 20, boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}
