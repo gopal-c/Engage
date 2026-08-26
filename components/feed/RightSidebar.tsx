@@ -48,7 +48,7 @@ function SmallAvatar({ name, avatar }: { name: string; avatar: string | null }) 
   );
 }
 
-const CARD_STYLE: React.CSSProperties = { borderRadius: 20, boxShadow: "0 2px 12px rgba(0,0,0,0.06)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)" };
+const CARD_STYLE: React.CSSProperties = { borderRadius: 18, border: "1px solid rgba(255,255,255,.85)", background: "linear-gradient(155deg, rgba(255,255,255,.8), rgba(255,255,255,.56))", backdropFilter: "blur(32px) saturate(180%)", WebkitBackdropFilter: "blur(32px) saturate(180%)" };
 
 export default function RightSidebar() {
   const [week, setWeek] = useState<ThisWeekData | null>(null);
@@ -64,7 +64,7 @@ export default function RightSidebar() {
   return (
     <div className="space-y-5 sticky top-4">
       {/* This Week */}
-      <div className="bg-white/70 p-5" style={CARD_STYLE}>
+      <div className="p-5" style={CARD_STYLE}>
         <h3 className="text-xs font-bold uppercase tracking-wider text-ink-500 flex items-center gap-1.5 mb-4">
           <CalendarDays className="size-3.5" /> This Week
         </h3>
@@ -110,7 +110,7 @@ export default function RightSidebar() {
       </div>
 
       {/* My Milestones */}
-      <div className="bg-white/70 p-5" style={CARD_STYLE}>
+      <div className="p-5" style={CARD_STYLE}>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xs font-bold uppercase tracking-wider text-ink-500 flex items-center gap-1.5">
             <Trophy className="size-3.5" /> My Milestones
@@ -147,7 +147,7 @@ export default function RightSidebar() {
       </div>
 
       {/* Top Ideas This Month */}
-      <div className="bg-white/70 p-5" style={CARD_STYLE}>
+      <div className="p-5" style={CARD_STYLE}>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xs font-bold uppercase tracking-wider text-ink-500 flex items-center gap-1.5">
             {"\u{1F525}"} Top Ideas

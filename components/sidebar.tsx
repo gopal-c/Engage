@@ -200,14 +200,14 @@ export function Sidebar({ role }: { role?: string }) {
   return (
     <aside className="hidden md:flex md:w-64 md:flex-col relative z-10 p-4 gap-3 pt-4">
       <div
-        className="bg-white/70 backdrop-blur-xl overflow-y-auto py-3"
-        style={{ borderRadius: 20, boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}
+        className="overflow-y-auto py-3"
+        style={{ borderRadius: 18, border: "1px solid rgba(255,255,255,.85)", background: "linear-gradient(155deg, rgba(255,255,255,.78), rgba(255,255,255,.54))", backdropFilter: "blur(30px) saturate(180%)", WebkitBackdropFilter: "blur(30px) saturate(180%)" }}
       >
         <NavLinks role={role} pathname={pathname} />
       </div>
       <div
-        className="bg-white/70 backdrop-blur-xl py-3"
-        style={{ borderRadius: 20, boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}
+        className="py-3"
+        style={{ borderRadius: 18, border: "1px solid rgba(255,255,255,.85)", background: "linear-gradient(155deg, rgba(255,255,255,.78), rgba(255,255,255,.54))", backdropFilter: "blur(30px) saturate(180%)", WebkitBackdropFilter: "blur(30px) saturate(180%)" }}
       >
         <SidebarLevelSection />
       </div>
