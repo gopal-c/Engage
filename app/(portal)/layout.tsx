@@ -40,9 +40,9 @@ export default async function PortalLayout({
         style={{
           background: [
             "#FAFAFC",
-            "radial-gradient(760px circle at -180px -300px, rgba(139,123,232,0.30), transparent 60%)",
-            "radial-gradient(680px circle at calc(100% + 200px) 200px, rgba(124,211,197,0.24), transparent 60%)",
-            "radial-gradient(620px circle at 30% calc(100% + 340px), rgba(139,123,232,0.20), transparent 60%)",
+            "radial-gradient(600px circle at 5% 10%, rgba(139,123,232,0.22), transparent 55%)",
+            "radial-gradient(550px circle at 95% 40%, rgba(124,211,197,0.18), transparent 55%)",
+            "radial-gradient(500px circle at 35% 95%, rgba(139,123,232,0.15), transparent 55%)",
           ].join(", "),
         }}
       />
