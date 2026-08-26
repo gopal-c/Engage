@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { sql } from "@/lib/db";
 import { roleLevel } from "@/lib/auth-guard";
 
-const ALL_ROLES = ["employee", "manager", "hr", "admin"] as const;
+const ALL_ROLES = ["group", "employee", "manager", "hr", "admin"] as const;
 
 export async function GET() {
   const session = await auth();
@@ -12,7 +12,7 @@ export async function GET() {
   }
 
   const rows = await sql`
-    SELECT id, email, name, avatar_url, role, created_at, updated_at, directory_hidden
+    SELECT id, email, name, avatar_url, role, created_at, updated_at
     FROM auth.users
     ORDER BY created_at DESC
   `;
@@ -31,27 +31,11 @@ export async function PATCH(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { userId, role, directoryHidden } = body;
+  const { userId, role } = body;
 
-  if (!userId) {
-    return NextResponse.json({ error: "userId is required" }, { status: 400 });
-  }
-
-  // Toggle directory visibility (no role-level checks needed beyond HR gate)
-  if (typeof directoryHidden === "boolean" && !role) {
-    await sql`
-      UPDATE auth.users SET directory_hidden = ${directoryHidden}, updated_at = NOW()
-      WHERE id = ${userId}
-    `;
-    const updated = await sql`
-      SELECT id, email, name, role, directory_hidden FROM auth.users WHERE id = ${userId}
-    `;
-    return NextResponse.json({ user: updated[0] });
-  }
-
-  if (!role) {
+  if (!userId || !role) {
     return NextResponse.json(
-      { error: "role or directoryHidden is required" },
+      { error: "userId and role are required" },
       { status: 400 },
     );
   }
@@ -93,7 +77,7 @@ export async function PATCH(request: NextRequest) {
     UPDATE auth.users
     SET role = ${role}, updated_at = NOW()
     WHERE id = ${userId}
-    RETURNING id, email, name, role, directory_hidden
+    RETURNING id, email, name, role
   `;
 
   return NextResponse.json({ user: rows[0] });

@@ -51,11 +51,16 @@ export async function getFeedEvents(opts: {
       ELSE '[]'::json END AS my_reactions
     FROM engage.feed_events fe
     JOIN auth.users u ON u.id = fe.user_id
+    WHERE u.role != 'group'
     ORDER BY fe.pinned DESC, fe.event_date DESC, fe.created_at DESC
     LIMIT ${limit} OFFSET ${offset}
   `;
 
-  const countRows = await sql`SELECT COUNT(*)::int AS total FROM engage.feed_events`;
+  const countRows = await sql`
+    SELECT COUNT(*)::int AS total FROM engage.feed_events fe
+    JOIN auth.users u ON u.id = fe.user_id
+    WHERE u.role != 'group'
+  `;
   const total = (countRows[0]?.total as number) ?? 0;
 
   const events = await Promise.all(

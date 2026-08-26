@@ -6,6 +6,7 @@ export const ROLE_HIERARCHY: Record<string, number> = {
   hr: 30,
   manager: 20,
   employee: 10,
+  group: 5,
 };
 
 export function roleLevel(role: string): number {

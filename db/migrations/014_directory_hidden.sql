@@ -1,1 +1,0 @@
-ALTER TABLE auth.users ADD COLUMN IF NOT EXISTS directory_hidden BOOLEAN NOT NULL DEFAULT false;
