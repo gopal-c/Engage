@@ -91,20 +91,21 @@ export default function DashboardPage() {
 
   return (
     <div className="mx-auto max-w-6xl">
-      {/* Greeting */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-ink-800">
-          {greetingText}{userName ? ", " : ""}<span className="serif-italic text-indigo-deep">{userName}</span>
-        </h1>
-        <p className="text-sm text-ink-500 mt-0.5">
-          Here&apos;s what&apos;s happening in your team
-        </p>
-      </div>
-
       {/* 2-column: feed + right sidebar */}
       <div className="flex gap-6">
-        {/* Center: Feed */}
-        <div className="flex-1 min-w-0 space-y-5">
+        {/* Center: Greeting + Feed */}
+        <div className="flex-1 min-w-0">
+          {/* Greeting */}
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-ink-800">
+              {greetingText}{userName ? ", " : ""}<span className="serif-italic text-indigo-deep">{userName}</span>
+            </h1>
+            <p className="text-sm text-ink-500 mt-0.5">
+              Here&apos;s what&apos;s happening in your team
+            </p>
+          </div>
+
+          <div className="space-y-5">
           {loading ? (
             <div className="space-y-5">
               <FeedSkeleton />
@@ -150,6 +151,7 @@ export default function DashboardPage() {
               )}
             </>
           )}
+          </div>
         </div>
 
         {/* Right column (hidden on mobile) */}

@@ -62,7 +62,7 @@ export default function RightSidebar() {
   }, []);
 
   return (
-    <div className="space-y-5 sticky top-20">
+    <div className="space-y-5 sticky top-4">
       {/* This Week */}
       <div className="bg-white p-5" style={CARD_STYLE}>
         <h3 className="text-xs font-bold uppercase tracking-wider text-ink-500 flex items-center gap-1.5 mb-4">

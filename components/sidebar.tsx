@@ -150,61 +150,45 @@ function SidebarLevelSection() {
 
   const earnedKeys = new Set(data.badges.map((b) => b.badge_key));
 
+  const xpToNext = data.nextLevelXP ? data.nextLevelXP - data.totalXP : 0;
+  const nextLevel = data.level + 1;
+  const earnedCount = data.badges.length;
+  const totalCount = data.allBadges.length;
+
   return (
-    <div className="px-4 space-y-4">
-      {/* Level label + XP */}
-      <div>
-        <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
-          Level {data.level} · {data.title}
-        </p>
-        <p className="text-xs text-gray-500 mt-0.5">{data.totalXP} XP</p>
-      </div>
+    <div className="px-4 space-y-3">
+      {/* Level label */}
+      <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+        Level {data.level} · {data.title}
+      </p>
 
-      {/* XP progress bar */}
-      <div>
-        <div className="h-2 rounded-full bg-gray-200/60 overflow-hidden">
-          <div
-            className="h-full rounded-full transition-all duration-500"
-            style={{
-              width: `${Math.min(progress, 100)}%`,
-              background: "linear-gradient(90deg, #8B7BE8, #7CD3C5)",
-            }}
-          />
+      {/* XP to next level */}
+      <p className="text-xs text-gray-500">
+        {xpToNext > 0 ? `${xpToNext} XP to Level ${nextLevel}` : `${data.totalXP} XP`}
+      </p>
+
+      {/* Badges row with count */}
+      {totalCount > 0 && (
+        <div className="flex items-center gap-1.5">
+          {data.allBadges.map((b) => {
+            const earned = earnedKeys.has(b.key);
+            return (
+              <span
+                key={b.key}
+                title={`${b.name}: ${b.description}`}
+                className={cn(
+                  "flex size-7 items-center justify-center rounded-full text-sm cursor-default transition-all",
+                  earned
+                    ? "bg-[rgba(139,123,232,0.1)]"
+                    : "bg-gray-100 opacity-30 grayscale"
+                )}
+              >
+                {b.icon}
+              </span>
+            );
+          })}
+          <span className="text-[10px] text-gray-400 ml-1">{earnedCount}/{totalCount}</span>
         </div>
-        <p className="text-[10px] text-gray-400 mt-1">
-          {data.totalXP - data.currentLevelXP} / {data.nextLevelXP - data.currentLevelXP} to next
-        </p>
-      </div>
-
-      {/* Badges */}
-      {data.allBadges.length > 0 && (
-        <>
-          <div className="h-px bg-gray-200/40" />
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2">
-              Badges
-            </p>
-            <div className="grid grid-cols-4 gap-2">
-              {data.allBadges.map((b) => {
-                const earned = earnedKeys.has(b.key);
-                return (
-                  <span
-                    key={b.key}
-                    title={`${b.name}: ${b.description}`}
-                    className={cn(
-                      "flex size-9 items-center justify-center rounded-full text-base cursor-default transition-all",
-                      earned
-                        ? "bg-[rgba(139,123,232,0.1)]"
-                        : "bg-gray-100 opacity-35 grayscale"
-                    )}
-                  >
-                    {b.icon}
-                  </span>
-                );
-              })}
-            </div>
-          </div>
-        </>
       )}
     </div>
   );
