@@ -246,7 +246,7 @@ export default function FeedCard({
               {!isAnonymous && (meta?.department as string) && (
                 <span className="text-xs text-ink-400">{meta.department as string}</span>
               )}
-              <span className="text-xs text-ink-400">· {event.event_type === "birthday_today" || event.event_type === "birthday_upcoming" ? dayLabel(event.event_date) : timeAgo(event.created_at)}</span>
+              <span className="text-xs text-ink-400">· {["birthday_today", "birthday_upcoming", "new_joiner"].includes(event.event_type) ? dayLabel(event.event_date) : timeAgo(event.created_at)}</span>
             </div>
             {event.event_type === "idea_shared" && (
               <span className="text-xs text-ink-400">Shared to IdeaHub · {timeAgo(event.created_at)}</span>

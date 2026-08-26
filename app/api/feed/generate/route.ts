@@ -197,11 +197,13 @@ export async function GET() {
       }
     }
 
-    // --- d) New joiners (last 30 days) + XP ---
+    // --- d) New joiners (by profile joining_date, last 30 days) + XP ---
     const joiners = await sql`
-      SELECT u.id, u.name, u.created_at
-      FROM auth.users u
-      WHERE u.created_at >= NOW() - INTERVAL '30 days'
+      SELECT u.id, COALESCE(p.name, u.name) AS name, p.joining_date
+      FROM skillshub.profiles p
+      JOIN auth.users u ON u.id = p.user_id
+      WHERE p.joining_date IS NOT NULL
+        AND p.joining_date >= NOW() - INTERVAL '30 days'
         AND NOT EXISTS (
           SELECT 1 FROM engage.feed_events fe
           WHERE fe.event_type = 'new_joiner' AND fe.user_id = u.id
@@ -214,6 +216,9 @@ export async function GET() {
           skipped.push(`joiner ${row.id}: missing name`);
           continue;
         }
+        const joinDate = row.joining_date?.toISOString?.()
+          ? row.joining_date.toISOString().slice(0, 10)
+          : String(row.joining_date).slice(0, 10);
         await createFeedEvent({
           eventType: "new_joiner",
           sourceApp: "engage",
@@ -221,9 +226,7 @@ export async function GET() {
           title: `${row.name} just joined Engage!`,
           description: "Welcome them to the team",
           metadata: { sayHello: "Drop a comment to say hi!" },
-          eventDate: row.created_at?.toISOString?.()
-            ? row.created_at.toISOString().slice(0, 10)
-            : String(row.created_at).slice(0, 10),
+          eventDate: joinDate,
         });
         await awardXP(row.id, "engage", "onboarding_completed");
         counts.joiners++;
