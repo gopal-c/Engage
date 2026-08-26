@@ -16,8 +16,42 @@ export async function GET() {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const counts = { ideas: 0, birthdays: 0, milestones: 0, joiners: 0 };
+    const counts = { ideas: 0, birthdays: 0, milestones: 0, joiners: 0, profilesCreated: 0 };
     const skipped: string[] = [];
+
+    // --- 0) Auto-create pending profiles for auth users without one ---
+    const usersWithoutProfile = await sql`
+      SELECT u.id, u.name, u.email
+      FROM auth.users u
+      WHERE NOT EXISTS (
+        SELECT 1 FROM skillshub.profiles p
+        WHERE p.user_id = u.id OR lower(p.email) = lower(u.email)
+      )
+    `;
+
+    for (const row of usersWithoutProfile) {
+      try {
+        await sql`
+          INSERT INTO skillshub.profiles (id, user_id, status, name, email)
+          VALUES (gen_random_uuid(), ${row.id}, 'pending', ${row.name}, ${row.email})
+          ON CONFLICT DO NOTHING
+        `;
+        counts.profilesCreated++;
+      } catch (err) {
+        skipped.push(`auto-profile ${row.id}: ${String(err)}`);
+      }
+    }
+
+    // --- 0b) Remove new_joiner feed events for users without a joining_date ---
+    await sql`
+      DELETE FROM engage.feed_events
+      WHERE event_type = 'new_joiner'
+        AND NOT EXISTS (
+          SELECT 1 FROM skillshub.profiles p
+          WHERE p.user_id = engage.feed_events.user_id
+            AND p.joining_date IS NOT NULL
+        )
+    `;
 
     // --- a) Ideas -> idea_shared events + XP ---
     const ideas = await sql`
