@@ -12,7 +12,7 @@ export async function GET() {
   }
 
   const rows = await sql`
-    SELECT id, email, name, avatar_url, role, created_at, updated_at
+    SELECT id, email, name, avatar_url, role, created_at, updated_at, directory_hidden
     FROM auth.users
     ORDER BY created_at DESC
   `;
@@ -31,11 +31,27 @@ export async function PATCH(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { userId, role } = body;
+  const { userId, role, directoryHidden } = body;
 
-  if (!userId || !role) {
+  if (!userId) {
+    return NextResponse.json({ error: "userId is required" }, { status: 400 });
+  }
+
+  // Toggle directory visibility (no role-level checks needed beyond HR gate)
+  if (typeof directoryHidden === "boolean" && !role) {
+    await sql`
+      UPDATE auth.users SET directory_hidden = ${directoryHidden}, updated_at = NOW()
+      WHERE id = ${userId}
+    `;
+    const updated = await sql`
+      SELECT id, email, name, role, directory_hidden FROM auth.users WHERE id = ${userId}
+    `;
+    return NextResponse.json({ user: updated[0] });
+  }
+
+  if (!role) {
     return NextResponse.json(
-      { error: "userId and role are required" },
+      { error: "role or directoryHidden is required" },
       { status: 400 },
     );
   }
@@ -77,7 +93,7 @@ export async function PATCH(request: NextRequest) {
     UPDATE auth.users
     SET role = ${role}, updated_at = NOW()
     WHERE id = ${userId}
-    RETURNING id, email, name, role
+    RETURNING id, email, name, role, directory_hidden
   `;
 
   return NextResponse.json({ user: rows[0] });

@@ -15,7 +15,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
-import { Trash2, Search } from "lucide-react";
+import { Trash2, Search, Eye, EyeOff } from "lucide-react";
 
 interface User {
   id: string;
@@ -25,6 +25,7 @@ interface User {
   role: string;
   created_at: string;
   updated_at: string;
+  directory_hidden: boolean;
 }
 
 const ROLES = ["employee", "manager", "hr", "admin"] as const;
@@ -92,6 +93,24 @@ export function UserManagement() {
     setUpdating(null);
   }
 
+  async function toggleDirectory(userId: string, hidden: boolean) {
+    setUpdating(userId);
+    const res = await fetch("/api/users", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId, directoryHidden: hidden }),
+    });
+    if (res.ok) {
+      setUsers((prev) =>
+        prev.map((u) => (u.id === userId ? { ...u, directory_hidden: hidden } : u)),
+      );
+      toast.success(hidden ? "Hidden from directory" : "Visible in directory");
+    } else {
+      toast.error("Failed to update directory visibility");
+    }
+    setUpdating(null);
+  }
+
   async function confirmDelete() {
     if (!deleteTarget || !deletePassword) return;
     setDeleting(true);
@@ -143,13 +162,14 @@ export function UserManagement() {
               <th className="px-4 py-3 text-left font-medium">Email</th>
               <th className="px-4 py-3 text-left font-medium">Role</th>
               <th className="px-4 py-3 text-left font-medium">Joined</th>
+              <th className="px-4 py-3 text-center font-medium">Directory</th>
               <th className="px-4 py-3 text-right font-medium">Actions</th>
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-ink-400">
+                <td colSpan={6} className="px-4 py-8 text-center text-ink-400">
                   {search ? "No users match your search." : "No users found."}
                 </td>
               </tr>
@@ -190,6 +210,24 @@ export function UserManagement() {
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">
                     {new Date(user.created_at).toLocaleDateString()}
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    {canManage ? (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        disabled={updating === user.id}
+                        onClick={() => toggleDirectory(user.id, !user.directory_hidden)}
+                        title={user.directory_hidden ? "Hidden from directory — click to show" : "Visible in directory — click to hide"}
+                        className={user.directory_hidden ? "text-ink-400" : "text-emerald-600"}
+                      >
+                        {user.directory_hidden ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                      </Button>
+                    ) : (
+                      <span className={user.directory_hidden ? "text-ink-400" : "text-emerald-600"}>
+                        {user.directory_hidden ? <EyeOff className="size-4 inline" /> : <Eye className="size-4 inline" />}
+                      </span>
+                    )}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-1">

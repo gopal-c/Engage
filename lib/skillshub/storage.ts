@@ -161,7 +161,9 @@ export async function getApprovedProfiles(): Promise<Profile[]> {
     FROM skillshub.profiles p
     LEFT JOIN auth.users u ON lower(u.email) = lower(p.email)
     LEFT JOIN birthdayhub.about_me am ON am.user_id = u.id
-    WHERE p.status = 'approved' ORDER BY p.created_at DESC
+    WHERE p.status = 'approved'
+      AND COALESCE(u.directory_hidden, false) = false
+    ORDER BY p.created_at DESC
   ` as Row[];
   return rows.map(rowToProfile);
 }
@@ -174,6 +176,7 @@ export async function getPendingProfiles(): Promise<Profile[]> {
     LEFT JOIN auth.users u ON lower(u.email) = lower(p.email)
     LEFT JOIN birthdayhub.about_me am ON am.user_id = u.id
     WHERE p.status = 'pending' AND (p.work_email IS NULL OR p.work_email_verified = TRUE)
+      AND COALESCE(u.directory_hidden, false) = false
     ORDER BY p.created_at DESC
   ` as Row[];
   return rows.map(rowToProfile);
@@ -187,6 +190,7 @@ export async function getDirectoryProfiles(): Promise<Profile[]> {
     LEFT JOIN auth.users u ON lower(u.email) = lower(p.email)
     LEFT JOIN birthdayhub.about_me am ON am.user_id = u.id
     WHERE p.status IN ('approved', 'pending')
+      AND COALESCE(u.directory_hidden, false) = false
     ORDER BY p.created_at DESC
   ` as Row[];
   return rows.map(rowToProfile);
