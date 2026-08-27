@@ -153,6 +153,8 @@ export default function FeedCard({
   const [signText, setSignText] = useState("");
   const [signing, setSigning] = useState(false);
   const [reactingType, setReactingType] = useState<string | null>(null);
+  const [ideaUpVotes, setIdeaUpVotes] = useState(event.ideaData?.up_votes ?? 0);
+  const [ideaDownVotes, setIdeaDownVotes] = useState(event.ideaData?.down_votes ?? 0);
 
   const badge = EVENT_BADGES[event.event_type];
   const emoji = EVENT_EMOJI[event.event_type];
@@ -293,7 +295,7 @@ export default function FeedCard({
         )}
 
         {event.event_type === "idea_shared" && event.ideaData && (
-          <IdeaSection event={event} currentUserId={currentUserId} />
+          <IdeaSection event={event} currentUserId={currentUserId} upVotes={ideaUpVotes} downVotes={ideaDownVotes} />
         )}
 
         {(event.event_type === "certification" || event.event_type === "milestone") && (meta?.xpAwarded as number) && (
@@ -317,7 +319,7 @@ export default function FeedCard({
       {/* Action buttons */}
       <div className="mx-5 border-t border-ink-100 py-1.5 flex items-center gap-1">
         {event.event_type === "idea_shared" && event.ideaData ? (
-          <IdeaActions event={event} currentUserId={currentUserId} />
+          <IdeaActions event={event} currentUserId={currentUserId} setUpVotes={setIdeaUpVotes} setDownVotes={setIdeaDownVotes} />
         ) : isBirthday ? (
           <>
             <ActionButton
@@ -511,10 +513,10 @@ function BirthdayCardSection({ event, signText, setSignText, signing, handleSign
   );
 }
 
-function IdeaSection({ event, currentUserId }: { event: FeedEvent; currentUserId: string }) {
+function IdeaSection({ event, upVotes, downVotes }: { event: FeedEvent; currentUserId: string; upVotes: number; downVotes: number }) {
   const idea = event.ideaData;
   if (!idea) return null;
-  const netVotes = idea.up_votes - idea.down_votes;
+  const netVotes = upVotes - downVotes;
 
   return (
     <div className="mt-3 space-y-2">
@@ -526,13 +528,15 @@ function IdeaSection({ event, currentUserId }: { event: FeedEvent; currentUserId
   );
 }
 
-function IdeaActions({ event }: { event: FeedEvent; currentUserId: string }) {
+function IdeaActions({ event, setUpVotes, setDownVotes }: {
+  event: FeedEvent; currentUserId: string;
+  setUpVotes: React.Dispatch<React.SetStateAction<number>>;
+  setDownVotes: React.Dispatch<React.SetStateAction<number>>;
+}) {
   const idea = event.ideaData;
   if (!idea) return null;
 
   const [myVote, setMyVote] = useState<"up" | "down" | null>(idea.my_vote);
-  const [upVotes, setUpVotes] = useState(idea.up_votes);
-  const [downVotes, setDownVotes] = useState(idea.down_votes);
   const [votingType, setVotingType] = useState<string | null>(null);
 
   async function vote(type: "up" | "down") {
