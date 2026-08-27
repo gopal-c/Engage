@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { ThumbsUp, ThumbsDown, MessageCircle, PartyPopper, Send } from "lucide-react";
+import { ThumbsUp, ThumbsDown, MessageCircle, PartyPopper, Send, PenLine } from "lucide-react";
 
 /* --- Types --- */
 
@@ -156,6 +156,7 @@ export default function FeedCard({
   const emoji = EVENT_EMOJI[event.event_type];
   const meta = event.metadata;
   const isAnonymous = event.ideaData?.is_anonymous && event.user_id !== currentUserId;
+  const isBirthday = event.event_type === "birthday_today" || event.event_type === "birthday_upcoming";
 
   async function handleReaction(type: "like" | "celebrate") {
     try {
@@ -313,6 +314,25 @@ export default function FeedCard({
       <div className="mx-5 border-t border-ink-100 py-1.5 flex items-center gap-1">
         {event.event_type === "idea_shared" && event.ideaData ? (
           <IdeaActions event={event} currentUserId={currentUserId} />
+        ) : isBirthday ? (
+          <>
+            <ActionButton
+              icon={<PartyPopper className="size-4" />}
+              label="Celebrate"
+              active={myReactions.has("celebrate")}
+              onClick={() => handleReaction("celebrate")}
+            />
+            {event.groupCard?.status === "open" && (
+              <ActionButton
+                icon={<PenLine className="size-4" />}
+                label="Sign the card"
+                onClick={() => {
+                  const el = document.getElementById(`sign-input-${event.id}`);
+                  el?.focus();
+                }}
+              />
+            )}
+          </>
         ) : (
           <>
             <ActionButton
@@ -458,6 +478,7 @@ function BirthdayCardSection({ event, signText, setSignText, signing, handleSign
               <UserAvatar name="You" avatar={null} size={28} />
               <div className="flex-1 flex items-center gap-2 rounded-full bg-white px-3 py-1.5" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
                 <input
+                  id={`sign-input-${event.id}`}
                   type="text"
                   placeholder="Add your message to the card..."
                   value={signText}
