@@ -294,10 +294,6 @@ export default function FeedCard({
           />
         )}
 
-        {event.event_type === "idea_shared" && event.ideaData && (
-          <IdeaSection event={event} currentUserId={currentUserId} upVotes={ideaUpVotes} downVotes={ideaDownVotes} />
-        )}
-
         {(event.event_type === "certification" || event.event_type === "milestone") && (meta?.xpAwarded as number) && (
           <div className="mt-3 rounded-xl bg-[rgba(139,123,232,0.06)] px-4 py-3">
             <p className="text-xs font-medium text-[#6B58D9]">
@@ -309,8 +305,14 @@ export default function FeedCard({
 
       {/* Reaction counts */}
       <div className="px-5 pb-2 flex items-center gap-4 text-xs text-ink-400">
-        {likeCount > 0 && <span className="flex items-center gap-1">{"\u{1F44D}"} {likeCount}</span>}
-        {celebrateCount > 0 && <span className="flex items-center gap-1">{"\u{1F389}"} {celebrateCount}</span>}
+        {event.event_type === "idea_shared" ? (
+          <span className="flex items-center gap-1"><ThumbsUp className="size-3 text-[#8B7BE8]" /> {ideaUpVotes - ideaDownVotes} net votes</span>
+        ) : (
+          <>
+            {likeCount > 0 && <span className="flex items-center gap-1">{"\u{1F44D}"} {likeCount}</span>}
+            {celebrateCount > 0 && <span className="flex items-center gap-1">{"\u{1F389}"} {celebrateCount}</span>}
+          </>
+        )}
         <span className="ml-auto">{commentCount} comment{commentCount !== 1 ? "s" : ""}</span>
       </div>
 
@@ -511,19 +513,6 @@ function BirthdayCardSection({ event, signText, setSignText, signing, handleSign
   );
 }
 
-function IdeaSection({ event, upVotes, downVotes }: { event: FeedEvent; currentUserId: string; upVotes: number; downVotes: number }) {
-  const idea = event.ideaData;
-  if (!idea) return null;
-  const netVotes = upVotes - downVotes;
-
-  return (
-    <div className="mt-3 space-y-2">
-      <div className="text-xs text-ink-400 flex items-center gap-3">
-        <span className="flex items-center gap-1"><ThumbsUp className="size-3" /> {netVotes} net votes</span>
-      </div>
-    </div>
-  );
-}
 
 function IdeaActions({ event, setUpVotes, setDownVotes }: {
   event: FeedEvent; currentUserId: string;
