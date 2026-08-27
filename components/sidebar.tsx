@@ -189,7 +189,7 @@ function SidebarLevelSection() {
                   width: 30, height: 30, borderRadius: 999, fontSize: 14, cursor: "default",
                   ...(earned
                     ? { background: BADGE_GRADIENTS[i % BADGE_GRADIENTS.length], color: "#fff" }
-                    : { background: "rgba(21,22,52,0.05)", color: "rgb(169,170,188)" }
+                    : { background: "rgba(21,22,52,0.05)", color: "rgb(169,170,188)", filter: "grayscale(1)", opacity: 0.4 }
                   ),
                 }}
               >
