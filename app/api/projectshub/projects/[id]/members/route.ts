@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getProjectMembers, addProjectMember, removeProjectMember } from "@/lib/projectshub/storage";
+import { isManagerRole, forbiddenResponse } from "@/lib/projectshub/auth";
 import { createFeedEvent } from "@/lib/feed";
 import { awardXP } from "@/lib/xp";
 
@@ -19,6 +20,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const role_ = (session.user as { role?: string }).role;
+  if (!isManagerRole(role_)) {
+    return forbiddenResponse("Only managers, HR, and admins can add members");
   }
 
   const { id } = await params;
@@ -52,6 +58,11 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const delRole = (session.user as { role?: string }).role;
+  if (!isManagerRole(delRole)) {
+    return forbiddenResponse("Only managers, HR, and admins can remove members");
   }
 
   const { id } = await params;

@@ -72,6 +72,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
   const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [channels, setChannels] = useState<Channel[]>([]);
   const [loading, setLoading] = useState(true);
+  const [canManage, setCanManage] = useState(false);
 
   // Team tab
   const [skillMatches, setSkillMatches] = useState<SkillMatch[]>([]);
@@ -101,6 +102,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
         setMembers(data.members ?? []);
         setMilestones(data.milestones ?? []);
         setChannels(data.channels ?? []);
+        if (data.canManage !== undefined) setCanManage(data.canManage);
         if (data.channels?.length > 0 && !activeChannel) {
           setActiveChannel(data.channels[0].id);
         }
@@ -299,7 +301,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
       {/* Tabs */}
       <div className="flex gap-1 mb-4 bg-white p-1" style={{ borderRadius: 14, boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
-        {TABS.map((t) => {
+        {TABS.filter((t) => t.key !== "skills" || canManage).map((t) => {
           const Icon = t.icon;
           return (
             <button
@@ -320,12 +322,14 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
           <div>
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold text-ink-800">Milestones</h2>
-              <button onClick={() => setShowMilestoneForm(!showMilestoneForm)} className="text-sm text-indigo-deep hover:underline flex items-center gap-1">
-                <Plus className="size-3.5" /> Add milestone
-              </button>
+              {canManage && (
+                <button onClick={() => setShowMilestoneForm(!showMilestoneForm)} className="text-sm text-indigo-deep hover:underline flex items-center gap-1">
+                  <Plus className="size-3.5" /> Add milestone
+                </button>
+              )}
             </div>
 
-            {showMilestoneForm && (
+            {showMilestoneForm && canManage && (
               <form onSubmit={addMilestone} className="flex gap-2 mb-4">
                 <input type="text" value={msTitle} onChange={(e) => setMsTitle(e.target.value)} placeholder="Milestone title" className="flex-1 rounded-xl border border-ink-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-deep/20" required />
                 <input type="date" value={msDate} onChange={(e) => setMsDate(e.target.value)} className="rounded-xl border border-ink-200 px-3 py-2 text-sm" />
@@ -348,7 +352,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                         <p className={`text-sm font-medium ${ms.status === "completed" ? "line-through text-ink-400" : "text-ink-800"}`}>{ms.title}</p>
                         {ms.targetDate && <p className="text-xs text-ink-400">{new Date(ms.targetDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</p>}
                       </div>
-                      {ms.status !== "completed" && (
+                      {ms.status !== "completed" && canManage && (
                         <button onClick={() => completeMilestone(ms)} className="text-xs text-emerald-600 hover:underline">Complete</button>
                       )}
                     </div>
@@ -377,7 +381,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                     <span className={`text-xs px-2 py-0.5 rounded-full ${m.role === "lead" ? "bg-indigo-50 text-indigo-deep" : "bg-ink-100 text-ink-600"}`}>
                       {m.role}
                     </span>
-                    {m.role !== "lead" && (
+                    {m.role !== "lead" && canManage && (
                       <button onClick={() => removeMember(m.userId)} className="text-ink-400 hover:text-red-500 transition" title="Remove">
                         <Trash2 className="size-4" />
                       </button>

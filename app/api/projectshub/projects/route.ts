@@ -17,11 +17,14 @@ export async function GET(request: NextRequest) {
     search: params.get("search") || undefined,
   };
 
+  const role = (session.user as { role?: string }).role;
+  const canManage = ["admin", "hr", "manager"].includes(role ?? "");
+
   try {
     const projects = await getProjects(opts);
-    return NextResponse.json({ projects });
+    return NextResponse.json({ projects, canManage });
   } catch {
-    return NextResponse.json({ projects: [] });
+    return NextResponse.json({ projects: [], canManage });
   }
 }
 

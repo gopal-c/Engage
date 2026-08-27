@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getProject, updateProject, deleteProject, getProjectMembers, getProjectMilestones, getProjectChannels } from "@/lib/projectshub/storage";
+import { isManagerRole, forbiddenResponse } from "@/lib/projectshub/auth";
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
@@ -22,7 +23,10 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
       getProjectChannels(id),
     ]);
 
-    return NextResponse.json({ project, members, milestones, channels });
+    const role = (session.user as { role?: string }).role;
+    const canManage = ["admin", "hr", "manager"].includes(role ?? "");
+
+    return NextResponse.json({ project, members, milestones, channels, canManage });
   } catch {
     return NextResponse.json({ error: "Failed to load project" }, { status: 500 });
   }
@@ -32,6 +36,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const role = (session.user as { role?: string }).role;
+  if (!isManagerRole(role)) {
+    return forbiddenResponse("Only managers, HR, and admins can update projects");
   }
 
   const { id } = await params;
@@ -54,8 +63,8 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   }
 
   const role = (session.user as { role?: string }).role;
-  if (!["admin", "hr"].includes(role ?? "")) {
-    return NextResponse.json({ error: "Only admins and HR can delete projects" }, { status: 403 });
+  if (!isManagerRole(role)) {
+    return forbiddenResponse("Only managers, HR, and admins can delete projects");
   }
 
   const { id } = await params;

@@ -43,6 +43,7 @@ export default function ProjectsHubPage() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
+  const [canManage, setCanManage] = useState(false);
 
   const fetchProjects = useCallback(async () => {
     setLoading(true);
@@ -54,6 +55,7 @@ export default function ProjectsHubPage() {
       const res = await fetch(`/api/projectshub/projects?${params}`);
       const data = await res.json();
       setProjects(data.projects ?? []);
+      if (data.canManage !== undefined) setCanManage(data.canManage);
     } catch { /* */ }
     setLoading(false);
   }, [status, search]);
@@ -70,12 +72,14 @@ export default function ProjectsHubPage() {
           </h1>
           <p className="text-sm text-ink-500 mt-0.5">Browse and join projects across the organization</p>
         </div>
-        <Link
-          href="/apps/projectshub/create"
-          className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-deep px-5 py-2.5 text-sm font-medium text-white hover:bg-indigo-press transition shadow-sm"
-        >
-          <Plus className="size-4" /> New Project
-        </Link>
+        {canManage && (
+          <Link
+            href="/apps/projectshub/create"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-deep px-5 py-2.5 text-sm font-medium text-white hover:bg-indigo-press transition shadow-sm"
+          >
+            <Plus className="size-4" /> New Project
+          </Link>
+        )}
       </div>
 
       {/* Filters */}
@@ -125,13 +129,15 @@ export default function ProjectsHubPage() {
         <div className="bg-white p-10 text-center" style={{ borderRadius: 20, boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
           <FolderKanban className="size-10 text-ink-300 mx-auto mb-3" />
           <p className="text-lg font-semibold text-ink-800 mb-1">No projects yet</p>
-          <p className="text-sm text-ink-500 mb-4">Create the first project to get started</p>
-          <Link
-            href="/apps/projectshub/create"
-            className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-deep px-5 py-2.5 text-sm font-medium text-white hover:bg-indigo-press transition shadow-sm"
-          >
-            <Plus className="size-4" /> New Project
-          </Link>
+          <p className="text-sm text-ink-500 mb-4">{canManage ? "Create the first project to get started" : "No projects available yet"}</p>
+          {canManage && (
+            <Link
+              href="/apps/projectshub/create"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-deep px-5 py-2.5 text-sm font-medium text-white hover:bg-indigo-press transition shadow-sm"
+            >
+              <Plus className="size-4" /> New Project
+            </Link>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

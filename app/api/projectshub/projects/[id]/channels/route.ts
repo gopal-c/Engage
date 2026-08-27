@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getProjectChannels, createChannel } from "@/lib/projectshub/storage";
+import { isManagerRole, forbiddenResponse } from "@/lib/projectshub/auth";
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
@@ -17,6 +18,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const role = (session.user as { role?: string }).role;
+  if (!isManagerRole(role)) {
+    return forbiddenResponse("Only managers, HR, and admins can create channels");
   }
 
   const { id } = await params;
