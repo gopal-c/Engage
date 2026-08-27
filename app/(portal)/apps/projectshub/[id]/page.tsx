@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft, Users, Target, MessageSquare, Sparkles, Plus, X,
-  Calendar, CheckCircle2, Clock, Loader2, Pin, Send, Reply, UserPlus, Trash2,
+  Calendar, CheckCircle2, Clock, Loader2, Pin, Send, Reply, UserPlus, Trash2, Pencil,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -99,6 +99,21 @@ export default function ProjectDetailPage() {
   const [sendingMsg, setSendingMsg] = useState(false);
   const [replyTo, setReplyTo] = useState<Message | null>(null);
 
+  // Remove member confirmation
+  const [removeMemberTarget, setRemoveMemberTarget] = useState<Member | null>(null);
+
+  // Edit project
+  const [editing, setEditing] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editDepartment, setEditDepartment] = useState("");
+  const [editStartDate, setEditStartDate] = useState("");
+  const [editEndDate, setEditEndDate] = useState("");
+  const [editSkillInput, setEditSkillInput] = useState("");
+  const [editSkills, setEditSkills] = useState<string[]>([]);
+  const [editStatus, setEditStatus] = useState("");
+  const [editSubmitting, setEditSubmitting] = useState(false);
+
   // Delete project
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deletingProject, setDeletingProject] = useState(false);
@@ -175,16 +190,66 @@ export default function ProjectDetailPage() {
     setAddingMember(null);
   }
 
-  async function removeMember(userId: string) {
+  async function confirmRemoveMember() {
+    if (!removeMemberTarget) return;
     try {
       await fetch(`/api/projectshub/projects/${id}/members`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId }),
+        body: JSON.stringify({ userId: removeMemberTarget.userId }),
       });
       toast.success("Member removed");
       fetchProject();
     } catch { toast.error("Failed"); }
+    setRemoveMemberTarget(null);
+  }
+
+  function startEditing() {
+    if (!project) return;
+    setEditName(project.name);
+    setEditDescription(project.description ?? "");
+    setEditDepartment(project.department ?? "");
+    setEditStartDate(project.startDate?.split("T")[0] ?? "");
+    setEditEndDate(project.endDate?.split("T")[0] ?? "");
+    setEditSkills([...project.requiredSkills]);
+    setEditStatus(project.status);
+    setEditing(true);
+  }
+
+  function addEditSkill() {
+    const s = editSkillInput.trim();
+    if (s && !editSkills.includes(s)) setEditSkills([...editSkills, s]);
+    setEditSkillInput("");
+  }
+
+  async function updateProject(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editName.trim()) return;
+    setEditSubmitting(true);
+    try {
+      const res = await fetch(`/api/projectshub/projects/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: editName.trim(),
+          description: editDescription.trim() || undefined,
+          department: editDepartment.trim() || undefined,
+          startDate: editStartDate || undefined,
+          endDate: editEndDate || undefined,
+          requiredSkills: editSkills,
+          status: editStatus,
+        }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        toast.success("Project updated!");
+        setEditing(false);
+        fetchProject();
+      } else {
+        toast.error(data.error || "Failed to update");
+      }
+    } catch { toast.error("Failed to update project"); }
+    setEditSubmitting(false);
   }
 
   async function addMilestone(e: React.FormEvent) {
@@ -307,13 +372,22 @@ export default function ProjectDetailPage() {
               {STATUS_LABELS[project.status]}
             </span>
             {canManage && (
-              <button
-                onClick={() => setShowDeleteConfirm(true)}
-                className="p-1.5 rounded-lg text-ink-400 hover:text-red-500 hover:bg-red-50 transition"
-                title="Delete project"
-              >
-                <Trash2 className="size-4" />
-              </button>
+              <>
+                <button
+                  onClick={startEditing}
+                  className="p-1.5 rounded-lg text-ink-400 hover:text-indigo-deep hover:bg-indigo-50 transition"
+                  title="Edit project"
+                >
+                  <Pencil className="size-4" />
+                </button>
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="p-1.5 rounded-lg text-ink-400 hover:text-red-500 hover:bg-red-50 transition"
+                  title="Delete project"
+                >
+                  <Trash2 className="size-4" />
+                </button>
+              </>
             )}
           </div>
         </div>
@@ -337,6 +411,74 @@ export default function ProjectDetailPage() {
           </div>
         )}
       </div>
+
+      {/* Edit form */}
+      {editing && (
+        <div className="bg-white p-6 mb-4" style={{ borderRadius: 20, boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-semibold text-ink-800">Edit Project</h2>
+            <button onClick={() => setEditing(false)} className="text-ink-400 hover:text-ink-600 transition"><X className="size-5" /></button>
+          </div>
+          <form onSubmit={updateProject} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-ink-700 mb-1.5">Project Name *</label>
+              <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="Project name" className="w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-deep/20 focus:border-indigo-deep transition" required />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-ink-700 mb-1.5">Description</label>
+              <textarea value={editDescription} onChange={(e) => setEditDescription(e.target.value)} placeholder="What is this project about?" rows={3} className="w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-deep/20 focus:border-indigo-deep transition resize-none" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">Department</label>
+                <input type="text" value={editDepartment} onChange={(e) => setEditDepartment(e.target.value)} placeholder="e.g., Engineering" className="w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-deep/20 focus:border-indigo-deep transition" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">Status</label>
+                <select value={editStatus} onChange={(e) => setEditStatus(e.target.value)} className="w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-deep/20 focus:border-indigo-deep transition">
+                  {Object.entries(STATUS_LABELS).map(([val, label]) => (
+                    <option key={val} value={val}>{label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">Start Date</label>
+                <input type="date" value={editStartDate} onChange={(e) => setEditStartDate(e.target.value)} className="w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-deep/20 focus:border-indigo-deep transition" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">End Date</label>
+                <input type="date" value={editEndDate} onChange={(e) => setEditEndDate(e.target.value)} className="w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-deep/20 focus:border-indigo-deep transition" />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-ink-700 mb-1.5">Required Skills</label>
+              <div className="flex gap-2">
+                <input type="text" value={editSkillInput} onChange={(e) => setEditSkillInput(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addEditSkill(); } }} placeholder="Type a skill and press Enter" className="flex-1 rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-deep/20 focus:border-indigo-deep transition" />
+                <button type="button" onClick={addEditSkill} className="rounded-xl bg-ink-100 px-3 py-2.5 text-sm hover:bg-ink-200 transition"><Plus className="size-4" /></button>
+              </div>
+              {editSkills.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {editSkills.map((skill) => (
+                    <span key={skill} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-deep border border-indigo-100">
+                      {skill}
+                      <button type="button" onClick={() => setEditSkills(editSkills.filter((s) => s !== skill))} className="hover:text-red-500 transition"><X className="size-3" /></button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="flex gap-2 pt-2">
+              <button type="button" onClick={() => setEditing(false)} className="flex-1 rounded-xl border border-ink-200 py-2.5 text-sm font-medium text-ink-600 hover:bg-ink-50 transition">Cancel</button>
+              <button type="submit" disabled={!editName.trim() || editSubmitting} className="flex-1 rounded-xl bg-indigo-deep py-2.5 text-sm font-medium text-white hover:bg-indigo-press transition disabled:opacity-50 flex items-center justify-center gap-2">
+                {editSubmitting ? <Loader2 className="size-4 animate-spin" /> : <Pencil className="size-4" />}
+                {editSubmitting ? "Saving..." : "Save Changes"}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="flex gap-1 mb-4 bg-white p-1" style={{ borderRadius: 14, boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
@@ -421,7 +563,7 @@ export default function ProjectDetailPage() {
                       {m.role}
                     </span>
                     {canManage && (
-                      <button onClick={() => removeMember(m.userId)} className="text-ink-400 hover:text-red-500 transition" title="Remove member">
+                      <button onClick={() => setRemoveMemberTarget(m)} className="text-ink-400 hover:text-red-500 transition" title="Remove member">
                         <Trash2 className="size-4" />
                       </button>
                     )}
@@ -557,6 +699,27 @@ export default function ProjectDetailPage() {
           </div>
         )}
       </div>
+
+      {/* Remove member confirmation */}
+      <AlertDialog open={!!removeMemberTarget} onOpenChange={(open) => { if (!open) setRemoveMemberTarget(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove team member?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove <strong>{removeMemberTarget?.userName ?? "this member"}</strong> from the project?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmRemoveMember}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            >
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Delete confirmation */}
       <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>

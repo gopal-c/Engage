@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
-import { Search, Trash2, Users, Calendar, FolderKanban } from "lucide-react";
+import { Search, Trash2, Users, Calendar, FolderKanban, Pencil, Plus, X, Loader2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -52,6 +52,18 @@ export function ProjectManagement() {
   const [deleteTarget, setDeleteTarget] = useState<Project | null>(null);
   const [deleting, setDeleting] = useState(false);
 
+  // Edit
+  const [editTarget, setEditTarget] = useState<Project | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editDepartment, setEditDepartment] = useState("");
+  const [editStartDate, setEditStartDate] = useState("");
+  const [editEndDate, setEditEndDate] = useState("");
+  const [editSkillInput, setEditSkillInput] = useState("");
+  const [editSkills, setEditSkills] = useState<string[]>([]);
+  const [editStatus, setEditStatus] = useState("");
+  const [editSubmitting, setEditSubmitting] = useState(false);
+
   function fetchProjects() {
     setLoading(true);
     fetch("/api/projectshub/projects")
@@ -93,6 +105,55 @@ export function ProjectManagement() {
     }
     setDeleting(false);
     setDeleteTarget(null);
+  }
+
+  function startEditing(p: Project) {
+    setEditTarget(p);
+    setEditName(p.name);
+    setEditDescription(p.description ?? "");
+    setEditDepartment(p.department ?? "");
+    setEditStartDate(p.startDate?.split("T")[0] ?? "");
+    setEditEndDate(p.endDate?.split("T")[0] ?? "");
+    setEditSkills([...p.requiredSkills]);
+    setEditStatus(p.status);
+  }
+
+  function addEditSkill() {
+    const s = editSkillInput.trim();
+    if (s && !editSkills.includes(s)) setEditSkills([...editSkills, s]);
+    setEditSkillInput("");
+  }
+
+  async function handleEdit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editTarget || !editName.trim()) return;
+    setEditSubmitting(true);
+    try {
+      const res = await fetch(`/api/projectshub/projects/${editTarget.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: editName.trim(),
+          description: editDescription.trim() || undefined,
+          department: editDepartment.trim() || undefined,
+          startDate: editStartDate || undefined,
+          endDate: editEndDate || undefined,
+          requiredSkills: editSkills,
+          status: editStatus,
+        }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        toast.success(`"${editName.trim()}" updated`);
+        setEditTarget(null);
+        fetchProjects();
+      } else {
+        toast.error(data.error || "Failed to update");
+      }
+    } catch {
+      toast.error("Failed to update project");
+    }
+    setEditSubmitting(false);
   }
 
   return (
@@ -175,13 +236,22 @@ export function ProjectManagement() {
                       {new Date(p.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                     </td>
                     <td className="px-4 py-3">
-                      <button
-                        onClick={() => setDeleteTarget(p)}
-                        className="p-1.5 rounded-lg text-ink-400 hover:text-red-500 hover:bg-red-50 transition"
-                        title="Delete project"
-                      >
-                        <Trash2 className="size-4" />
-                      </button>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => startEditing(p)}
+                          className="p-1.5 rounded-lg text-ink-400 hover:text-indigo-deep hover:bg-indigo-50 transition"
+                          title="Edit project"
+                        >
+                          <Pencil className="size-4" />
+                        </button>
+                        <button
+                          onClick={() => setDeleteTarget(p)}
+                          className="p-1.5 rounded-lg text-ink-400 hover:text-red-500 hover:bg-red-50 transition"
+                          title="Delete project"
+                        >
+                          <Trash2 className="size-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -210,6 +280,73 @@ export function ProjectManagement() {
               {deleting ? "Deleting..." : "Delete"}
             </AlertDialogAction>
           </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Edit dialog */}
+      <AlertDialog open={!!editTarget} onOpenChange={(open) => { if (!open) setEditTarget(null); }}>
+        <AlertDialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Edit Project</AlertDialogTitle>
+          </AlertDialogHeader>
+          <form onSubmit={handleEdit} className="space-y-4 mt-2">
+            <div>
+              <label className="block text-sm font-medium text-ink-700 mb-1.5">Project Name *</label>
+              <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="Project name" className="w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-deep/20 focus:border-indigo-deep transition" required />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-ink-700 mb-1.5">Description</label>
+              <textarea value={editDescription} onChange={(e) => setEditDescription(e.target.value)} placeholder="What is this project about?" rows={3} className="w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-deep/20 focus:border-indigo-deep transition resize-none" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">Department</label>
+                <input type="text" value={editDepartment} onChange={(e) => setEditDepartment(e.target.value)} placeholder="e.g., Engineering" className="w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-deep/20 focus:border-indigo-deep transition" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">Status</label>
+                <select value={editStatus} onChange={(e) => setEditStatus(e.target.value)} className="w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-deep/20 focus:border-indigo-deep transition">
+                  {Object.entries(STATUS_LABELS).map(([val, label]) => (
+                    <option key={val} value={val}>{label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">Start Date</label>
+                <input type="date" value={editStartDate} onChange={(e) => setEditStartDate(e.target.value)} className="w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-deep/20 focus:border-indigo-deep transition" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-ink-700 mb-1.5">End Date</label>
+                <input type="date" value={editEndDate} onChange={(e) => setEditEndDate(e.target.value)} className="w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-deep/20 focus:border-indigo-deep transition" />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-ink-700 mb-1.5">Required Skills</label>
+              <div className="flex gap-2">
+                <input type="text" value={editSkillInput} onChange={(e) => setEditSkillInput(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addEditSkill(); } }} placeholder="Type a skill and press Enter" className="flex-1 rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-deep/20 focus:border-indigo-deep transition" />
+                <button type="button" onClick={addEditSkill} className="rounded-xl bg-ink-100 px-3 py-2.5 text-sm hover:bg-ink-200 transition"><Plus className="size-4" /></button>
+              </div>
+              {editSkills.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {editSkills.map((skill) => (
+                    <span key={skill} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-deep border border-indigo-100">
+                      {skill}
+                      <button type="button" onClick={() => setEditSkills(editSkills.filter((s) => s !== skill))} className="hover:text-red-500 transition"><X className="size-3" /></button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+            <AlertDialogFooter>
+              <AlertDialogCancel type="button" disabled={editSubmitting}>Cancel</AlertDialogCancel>
+              <button type="submit" disabled={!editName.trim() || editSubmitting} className="inline-flex items-center justify-center gap-2 rounded-md bg-indigo-deep px-4 py-2 text-sm font-medium text-white hover:bg-indigo-press transition disabled:opacity-50">
+                {editSubmitting ? <Loader2 className="size-4 animate-spin" /> : <Pencil className="size-4" />}
+                {editSubmitting ? "Saving..." : "Save Changes"}
+              </button>
+            </AlertDialogFooter>
+          </form>
         </AlertDialogContent>
       </AlertDialog>
     </div>
