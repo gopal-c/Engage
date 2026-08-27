@@ -382,8 +382,8 @@ export default function ProjectDetailPage() {
                     <span className={`text-xs px-2 py-0.5 rounded-full ${m.role === "lead" ? "bg-indigo-50 text-indigo-deep" : "bg-ink-100 text-ink-600"}`}>
                       {m.role}
                     </span>
-                    {m.role !== "lead" && canManage && (
-                      <button onClick={() => removeMember(m.userId)} className="text-ink-400 hover:text-red-500 transition" title="Remove">
+                    {canManage && (
+                      <button onClick={() => removeMember(m.userId)} className="text-ink-400 hover:text-red-500 transition" title="Remove member">
                         <Trash2 className="size-4" />
                       </button>
                     )}
