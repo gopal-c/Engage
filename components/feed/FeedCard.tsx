@@ -295,7 +295,7 @@ export default function FeedCard({
         )}
 
         {event.event_type === "idea_shared" && event.ideaData && (
-          <IdeaSection event={event} currentUserId={currentUserId} upVotes={ideaUpVotes} downVotes={ideaDownVotes} commentCount={commentCount} />
+          <IdeaSection event={event} currentUserId={currentUserId} upVotes={ideaUpVotes} downVotes={ideaDownVotes} />
         )}
 
         {(event.event_type === "certification" || event.event_type === "milestone") && (meta?.xpAwarded as number) && (
@@ -511,7 +511,7 @@ function BirthdayCardSection({ event, signText, setSignText, signing, handleSign
   );
 }
 
-function IdeaSection({ event, upVotes, downVotes, commentCount }: { event: FeedEvent; currentUserId: string; upVotes: number; downVotes: number; commentCount: number }) {
+function IdeaSection({ event, upVotes, downVotes }: { event: FeedEvent; currentUserId: string; upVotes: number; downVotes: number }) {
   const idea = event.ideaData;
   if (!idea) return null;
   const netVotes = upVotes - downVotes;
@@ -520,7 +520,6 @@ function IdeaSection({ event, upVotes, downVotes, commentCount }: { event: FeedE
     <div className="mt-3 space-y-2">
       <div className="text-xs text-ink-400 flex items-center gap-3">
         <span className="flex items-center gap-1"><ThumbsUp className="size-3" /> {netVotes} net votes</span>
-        <span>· {commentCount} comment{commentCount !== 1 ? "s" : ""}</span>
       </div>
     </div>
   );
