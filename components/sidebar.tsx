@@ -125,6 +125,12 @@ function NavLinks({
   );
 }
 
+const BADGE_GRADIENTS = [
+  "linear-gradient(150deg, #8B7BE8, #6B5BD6)",
+  "linear-gradient(150deg, #7CD3C5, #4FA79A)",
+  "linear-gradient(150deg, #FFCB6B, #E3A93F)",
+];
+
 function SidebarLevelSection() {
   const [data, setData] = useState<LevelData | null>(null);
 
@@ -137,9 +143,10 @@ function SidebarLevelSection() {
 
   if (!data) {
     return (
-      <div className="px-4 space-y-2 animate-pulse">
+      <div className="px-[18px] space-y-3 animate-pulse">
         <div className="h-3 w-24 rounded bg-gray-200" />
-        <div className="h-2 w-full rounded bg-gray-200" />
+        <div className="h-[7px] w-full rounded-full bg-gray-200" />
+        <div className="h-3 w-20 rounded bg-gray-200" />
       </div>
     );
   }
@@ -156,38 +163,41 @@ function SidebarLevelSection() {
   const totalCount = data.allBadges.length;
 
   return (
-    <div className="px-4 space-y-3">
-      {/* Level label */}
-      <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+    <div style={{ padding: 18 }}>
+      <p style={{ fontSize: 11, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.9px", color: "rgb(110,111,140)", lineHeight: 1 }}>
         Level {data.level} · {data.title}
       </p>
 
-      {/* XP to next level */}
-      <p className="text-xs text-gray-500">
-        {xpToNext > 0 ? `${xpToNext} XP to Level ${nextLevel}` : `${data.totalXP} XP`}
+      <div style={{ marginTop: 12, marginBottom: 8, height: 7, borderRadius: 999, background: "rgba(21,22,52,0.08)" }}>
+        <div style={{ height: 7, borderRadius: 999, width: `${Math.min(progress, 100)}%`, background: "linear-gradient(90deg, #8B7BE8, #7CD3C5)", transition: "width 0.5s ease" }} />
+      </div>
+
+      <p style={{ fontSize: 12.5, color: "rgb(85,86,111)", lineHeight: 1 }}>
+        {xpToNext > 0 ? <>{xpToNext} XP to <strong style={{ fontWeight: 600 }}>Level {nextLevel}</strong></> : `${data.totalXP} XP`}
       </p>
 
-      {/* Badges row with count */}
       {totalCount > 0 && (
-        <div className="flex flex-wrap items-center gap-1.5">
-          {data.allBadges.map((b) => {
+        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8, marginTop: 14 }}>
+          {data.allBadges.map((b, i) => {
             const earned = earnedKeys.has(b.key);
             return (
               <span
                 key={b.key}
-                title={`${b.name}: ${b.description}`}
-                className={cn(
-                  "flex size-7 items-center justify-center rounded-full text-sm cursor-default transition-all",
-                  earned
-                    ? "bg-[rgba(139,123,232,0.1)]"
-                    : "bg-gray-100 opacity-30 grayscale"
-                )}
+                title={earned ? b.name : `${b.name} — locked`}
+                style={{
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  width: 30, height: 30, borderRadius: 999, fontSize: 14, cursor: "default",
+                  ...(earned
+                    ? { background: BADGE_GRADIENTS[i % BADGE_GRADIENTS.length], color: "#fff" }
+                    : { background: "rgba(21,22,52,0.05)", color: "rgb(169,170,188)" }
+                  ),
+                }}
               >
                 {b.icon}
               </span>
             );
           })}
-          <span className="text-[10px] text-gray-400 ml-1">{earnedCount}/{totalCount}</span>
+          <span style={{ fontSize: 12, color: "rgb(110,111,140)" }}>{earnedCount}/{totalCount}</span>
         </div>
       )}
     </div>
