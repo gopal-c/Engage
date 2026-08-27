@@ -59,11 +59,13 @@ export default async function PortalLayout({
           role: session.user.role,
         }}
       />
-      <div className="relative z-10 flex flex-1 overflow-hidden">
-        <Sidebar role={session.user.role} />
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6">
-          {children}
-        </main>
+      <div className="relative z-10 flex-1 overflow-y-auto">
+        <div className="mx-auto flex max-w-[1440px] px-6">
+          <Sidebar role={session.user.role} />
+          <main className="flex-1 min-w-0 py-4 sm:py-6 md:pl-2">
+            {children}
+          </main>
+        </div>
       </div>
       {!profileCompleted && <OnboardingModal canSkip={userExcluded} />}
     </div>

@@ -198,7 +198,7 @@ export function Sidebar({ role }: { role?: string }) {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden md:flex md:w-64 md:flex-col relative z-10 p-4 gap-3 pt-4">
+    <aside className="hidden md:flex md:w-60 md:flex-col shrink-0 sticky top-0 self-start gap-3 py-4">
       <div
         className="overflow-y-auto py-3"
         style={{ borderRadius: 18, border: "1px solid rgba(255,255,255,.85)", background: "linear-gradient(155deg, rgba(255,255,255,.78), rgba(255,255,255,.54))", backdropFilter: "blur(30px) saturate(180%)", WebkitBackdropFilter: "blur(30px) saturate(180%)" }}
