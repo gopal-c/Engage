@@ -1,13 +1,17 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft, Users, Target, MessageSquare, Sparkles, Plus, X,
   Calendar, CheckCircle2, Clock, Loader2, Pin, Send, Reply, UserPlus, Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 type Project = {
   id: string; name: string; description: string | null; status: string;
@@ -67,6 +71,7 @@ function Avatar({ name, avatar, size = 32 }: { name?: string; avatar?: string | 
 
 export default function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const router = useRouter();
   const [tab, setTab] = useState<string>("overview");
   const [project, setProject] = useState<Project | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
@@ -93,6 +98,10 @@ export default function ProjectDetailPage() {
   const [msgLoading, setMsgLoading] = useState(false);
   const [sendingMsg, setSendingMsg] = useState(false);
   const [replyTo, setReplyTo] = useState<Message | null>(null);
+
+  // Delete project
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deletingProject, setDeletingProject] = useState(false);
 
   const fetchProject = useCallback(async () => {
     try {
@@ -245,6 +254,24 @@ export default function ProjectDetailPage() {
     } catch { /* */ }
   }
 
+  async function deleteProject() {
+    setDeletingProject(true);
+    try {
+      const res = await fetch(`/api/projectshub/projects/${id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (data.ok) {
+        toast.success("Project deleted");
+        router.push("/apps/projectshub");
+      } else {
+        toast.error(data.error || "Failed to delete");
+      }
+    } catch {
+      toast.error("Failed to delete project");
+    }
+    setDeletingProject(false);
+    setShowDeleteConfirm(false);
+  }
+
   if (loading) {
     return (
       <div className="mx-auto max-w-4xl">
@@ -275,9 +302,20 @@ export default function ProjectDetailPage() {
       <div className="bg-white p-6 mb-4" style={{ borderRadius: 20, boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
         <div className="flex items-start justify-between mb-2">
           <h1 className="text-xl font-bold text-ink-800">{project.name}</h1>
-          <span className={`text-xs px-2.5 py-1 rounded-full border ${STATUS_COLORS[project.status]}`}>
-            {STATUS_LABELS[project.status]}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className={`text-xs px-2.5 py-1 rounded-full border ${STATUS_COLORS[project.status]}`}>
+              {STATUS_LABELS[project.status]}
+            </span>
+            {canManage && (
+              <button
+                onClick={() => setShowDeleteConfirm(true)}
+                className="p-1.5 rounded-lg text-ink-400 hover:text-red-500 hover:bg-red-50 transition"
+                title="Delete project"
+              >
+                <Trash2 className="size-4" />
+              </button>
+            )}
+          </div>
         </div>
         {project.description && <p className="text-sm text-ink-500 mb-3">{project.description}</p>}
         <div className="flex items-center gap-4 text-xs text-ink-400">
@@ -519,6 +557,28 @@ export default function ProjectDetailPage() {
           </div>
         )}
       </div>
+
+      {/* Delete confirmation */}
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete project?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete <strong>{project.name}</strong> and all its members, milestones, channels, and messages. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deletingProject}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={deleteProject}
+              disabled={deletingProject}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            >
+              {deletingProject ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
