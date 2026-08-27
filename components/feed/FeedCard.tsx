@@ -528,7 +528,7 @@ function IdeaActions({ event }: { event: FeedEvent; currentUserId: string }) {
 
   async function vote(type: "up" | "down") {
     try {
-      const res = await fetch(`/api/ideahub/ideas/${idea.id}/vote`, {
+      const res = await fetch(`/api/ideahub/ideas/${idea!.id}/vote`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ voteType: type }),
