@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const result = await getFeedEvents({ page, limit, userId: session.user.id });
-    return NextResponse.json({ ...result, currentUserId: session.user.id });
+    return NextResponse.json({ ...result, currentUserId: session.user.id, currentUserName: session.user.name ?? "You", currentUserAvatar: session.user.image ?? null });
   } catch (err) {
     console.error("Feed API error:", err);
     return NextResponse.json({ error: "Failed to load feed" }, { status: 500 });

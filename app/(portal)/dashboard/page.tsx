@@ -41,6 +41,8 @@ export default function DashboardPage() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [currentUserId, setCurrentUserId] = useState("");
+  const [currentUserName, setCurrentUserName] = useState("You");
+  const [currentUserAvatar, setCurrentUserAvatar] = useState<string | null>(null);
   const [userName, setUserName] = useState("");
   const [greetingText, setGreetingText] = useState("");
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -54,6 +56,8 @@ export default function DashboardPage() {
       setEvents((prev) => append ? [...prev, ...newEvents] : newEvents);
       setHasMore(p * (data.limit ?? 15) < (data.total ?? 0));
       if (data.currentUserId) setCurrentUserId(data.currentUserId);
+      if (data.currentUserName) setCurrentUserName(data.currentUserName);
+      if (data.currentUserAvatar !== undefined) setCurrentUserAvatar(data.currentUserAvatar);
     } catch { /* */ }
     setLoading(false);
     setLoadingMore(false);
@@ -132,6 +136,8 @@ export default function DashboardPage() {
                   key={event.id}
                   event={event}
                   currentUserId={currentUserId}
+                  currentUserName={currentUserName}
+                  currentUserAvatar={currentUserAvatar}
                   onRefresh={refreshFeed}
                 />
               ))}

@@ -135,10 +135,14 @@ const CARD_STYLE = { borderRadius: 20, boxShadow: "0 2px 12px rgba(0,0,0,0.06)" 
 export default function FeedCard({
   event,
   currentUserId,
+  currentUserName = "You",
+  currentUserAvatar = null,
   onRefresh,
 }: {
   event: FeedEvent;
   currentUserId: string;
+  currentUserName?: string;
+  currentUserAvatar?: string | null;
   onRefresh?: () => void;
 }) {
   const [likeCount, setLikeCount] = useState(event.like_count);
@@ -371,94 +375,100 @@ export default function FeedCard({
         />
       </div>
 
-      {/* Sign card section (collapsible) */}
-      {showSignCard && isBirthday && event.groupCard?.status === "open" && (
-        <div className="mx-5 border-t border-ink-100 py-4 space-y-3">
-          {event.groupCard.signature_count > 0 && event.groupCard.signatures && (
-            <div className="space-y-2">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-ink-400">
-                {event.groupCard.signature_count} signature{event.groupCard.signature_count !== 1 ? "s" : ""} on the card
-              </p>
-              {event.groupCard.signatures.map((sig, i) => (
-                <div key={i} className="flex items-start gap-2">
-                  <UserAvatar name={sig.user_name} avatar={sig.user_avatar} size={24} />
-                  <div>
-                    <span className="text-xs font-semibold text-ink-700">{sig.user_name}</span>
-                    <p className="text-xs italic text-ink-500" style={{ fontFamily: "'Instrument Serif', serif" }}>
-                      {sig.message}
-                    </p>
-                  </div>
+      {/* Sign card section (collapsible with slide) */}
+      {isBirthday && event.groupCard?.status === "open" && (
+        <div className="grid transition-[grid-template-rows] duration-300 ease-in-out" style={{ gridTemplateRows: showSignCard ? "1fr" : "0fr" }}>
+          <div className="overflow-hidden">
+            <div className="mx-5 border-t border-ink-100 py-4 space-y-3">
+              {event.groupCard.signature_count > 0 && event.groupCard.signatures && (
+                <div className="space-y-2">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-ink-400">
+                    {event.groupCard.signature_count} signature{event.groupCard.signature_count !== 1 ? "s" : ""} on the card
+                  </p>
+                  {event.groupCard.signatures.map((sig, i) => (
+                    <div key={i} className="flex items-start gap-2">
+                      <UserAvatar name={sig.user_name} avatar={sig.user_avatar} size={24} />
+                      <div>
+                        <span className="text-xs font-semibold text-ink-700">{sig.user_name}</span>
+                        <p className="text-xs italic text-ink-500" style={{ fontFamily: "'Instrument Serif', serif" }}>
+                          {sig.message}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          )}
-          <div className="flex items-center gap-2">
-            <UserAvatar name="You" avatar={null} size={28} />
-            <div className="flex-1 flex items-center gap-2 rounded-full bg-ink-100/70 px-3 py-1.5">
-              <input
-                id={`sign-input-${event.id}`}
-                type="text"
-                placeholder="Add your message to the card..."
-                value={signText}
-                onChange={(e) => setSignText(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleSign(); } }}
-                className="flex-1 bg-transparent text-xs outline-none placeholder:text-ink-400"
-              />
-              <button
-                onClick={handleSign}
-                disabled={signing || !signText.trim()}
-                className="flex items-center gap-1 rounded-full bg-[#5BBFB0] px-3 py-1 text-[10px] font-bold text-white hover:bg-[#7CD3C5] transition disabled:opacity-40"
-              >
-                {signing && <Loader2 className="size-3 animate-spin" />}
-                Sign
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Comments section (collapsible) */}
-      {showComments && (
-        <div className="mx-5 border-t border-ink-100 py-4 space-y-3">
-          {commentCount > 2 && !showAllComments && (
-            <button onClick={loadAllComments} className="text-xs font-medium text-ink-400 hover:text-ink-700 transition">
-              View all {commentCount} comments
-            </button>
-          )}
-
-          {displayComments.map((c) => (
-            <div key={c.id} className="flex items-start gap-2.5">
-              <UserAvatar name={c.user_name} avatar={c.user_avatar} size={28} />
-              <div className="flex-1 min-w-0">
-                <span className="text-xs font-semibold text-ink-700">{c.user_name}</span>
-                <p className="text-xs text-ink-600 mt-0.5">{c.body}</p>
+              )}
+              <div className="flex items-center gap-2">
+                <UserAvatar name={currentUserName} avatar={currentUserAvatar} size={28} />
+                <div className="flex-1 flex items-center gap-2 rounded-full bg-ink-100/70 px-3 py-1.5">
+                  <input
+                    id={`sign-input-${event.id}`}
+                    type="text"
+                    placeholder="Add your message to the card..."
+                    value={signText}
+                    onChange={(e) => setSignText(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleSign(); } }}
+                    className="flex-1 bg-transparent text-xs outline-none placeholder:text-ink-400"
+                  />
+                  <button
+                    onClick={handleSign}
+                    disabled={signing || !signText.trim()}
+                    className="flex items-center gap-1 rounded-full bg-[#5BBFB0] px-3 py-1 text-[10px] font-bold text-white hover:bg-[#7CD3C5] transition disabled:opacity-40"
+                  >
+                    {signing && <Loader2 className="size-3 animate-spin" />}
+                    Sign
+                  </button>
+                </div>
               </div>
             </div>
-          ))}
-
-          <div className="flex items-center gap-2">
-            <UserAvatar name="You" avatar={null} size={28} />
-            <div className="flex-1 flex items-center gap-2 rounded-full bg-ink-100/70 px-3 py-1.5">
-              <input
-                id={`comment-input-${event.id}`}
-                type="text"
-                placeholder="Write a comment..."
-                value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleComment(); } }}
-                className="flex-1 bg-transparent text-xs outline-none placeholder:text-ink-400"
-              />
-              <button
-                onClick={handleComment}
-                disabled={submittingComment || !commentText.trim()}
-                className="text-[#6B58D9] disabled:opacity-30 hover:text-[#5947C9] transition"
-              >
-                {submittingComment ? <Loader2 className="size-3.5 animate-spin" /> : <Send className="size-3.5" />}
-              </button>
-            </div>
           </div>
         </div>
       )}
+
+      {/* Comments section (collapsible with slide) */}
+      <div className="grid transition-[grid-template-rows] duration-300 ease-in-out" style={{ gridTemplateRows: showComments ? "1fr" : "0fr" }}>
+        <div className="overflow-hidden">
+          <div className="mx-5 border-t border-ink-100 py-4 space-y-3">
+            {commentCount > 2 && !showAllComments && (
+              <button onClick={loadAllComments} className="text-xs font-medium text-ink-400 hover:text-ink-700 transition">
+                View all {commentCount} comments
+              </button>
+            )}
+
+            {displayComments.map((c) => (
+              <div key={c.id} className="flex items-start gap-2.5">
+                <UserAvatar name={c.user_name} avatar={c.user_avatar} size={28} />
+                <div className="flex-1 min-w-0">
+                  <span className="text-xs font-semibold text-ink-700">{c.user_name}</span>
+                  <p className="text-xs text-ink-600 mt-0.5">{c.body}</p>
+                </div>
+              </div>
+            ))}
+
+            <div className="flex items-center gap-2">
+              <UserAvatar name={currentUserName} avatar={currentUserAvatar} size={28} />
+              <div className="flex-1 flex items-center gap-2 rounded-full bg-ink-100/70 px-3 py-1.5">
+                <input
+                  id={`comment-input-${event.id}`}
+                  type="text"
+                  placeholder="Write a comment..."
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleComment(); } }}
+                  className="flex-1 bg-transparent text-xs outline-none placeholder:text-ink-400"
+                />
+                <button
+                  onClick={handleComment}
+                  disabled={submittingComment || !commentText.trim()}
+                  className="text-[#6B58D9] disabled:opacity-30 hover:text-[#5947C9] transition"
+                >
+                  {submittingComment ? <Loader2 className="size-3.5 animate-spin" /> : <Send className="size-3.5" />}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
