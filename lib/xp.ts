@@ -8,7 +8,8 @@ const LEVEL_TITLES = [
 
 export type XPAction =
   | "idea_submitted" | "idea_upvoted" | "comment_posted" | "card_signed"
-  | "milestone_added" | "onboarding_completed" | "reaction_added";
+  | "milestone_added" | "onboarding_completed" | "reaction_added"
+  | "project_created" | "project_joined" | "project_completed" | "project_milestone_done" | "project_message_sent";
 
 const XP_AMOUNTS: Record<XPAction, number> = {
   idea_submitted: 20,
@@ -18,6 +19,11 @@ const XP_AMOUNTS: Record<XPAction, number> = {
   milestone_added: 15,
   onboarding_completed: 25,
   reaction_added: 2,
+  project_created: 25,
+  project_joined: 10,
+  project_completed: 30,
+  project_milestone_done: 15,
+  project_message_sent: 2,
 };
 
 export function getLevelForXP(xp: number): number {

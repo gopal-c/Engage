@@ -3,9 +3,10 @@ import { sql } from "./db";
 export type FeedEventType =
   | "new_joiner" | "birthday_today" | "birthday_upcoming"
   | "idea_shared" | "certification" | "work_anniversary"
-  | "milestone" | "achievement";
+  | "milestone" | "achievement"
+  | "project_launched" | "project_assigned" | "project_completed" | "project_milestone_completed";
 
-export type SourceApp = "ideahub" | "skillshub" | "birthdayhub" | "engage";
+export type SourceApp = "ideahub" | "skillshub" | "birthdayhub" | "engage" | "projectshub";
 
 export async function createFeedEvent(opts: {
   eventType: FeedEventType;

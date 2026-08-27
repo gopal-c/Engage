@@ -7,6 +7,7 @@ import {
   Lightbulb,
   GraduationCap,
   Cake,
+  FolderKanban,
   Shield,
   Menu,
 } from "lucide-react";
@@ -20,6 +21,7 @@ const navItems = [
   { href: "/apps/ideahub", label: "IdeaHub", icon: Lightbulb },
   { href: "/apps/skillshub", label: "SkillsHub", icon: GraduationCap },
   { href: "/apps/birthdayhub", label: "BirthdayHub", icon: Cake },
+  { href: "/apps/projectshub", label: "ProjectsHub", icon: FolderKanban },
 ];
 
 const hrItems = [
