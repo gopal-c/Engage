@@ -306,7 +306,7 @@ export default function FeedCard({
       {/* Reaction counts */}
       <div className="px-5 pb-2 flex items-center gap-4 text-xs text-ink-400">
         {event.event_type === "idea_shared" ? (
-          <span className="flex items-center gap-1"><ThumbsUp className="size-3 text-[#8B7BE8]" /> {ideaUpVotes - ideaDownVotes} net votes</span>
+          <span className="flex items-center gap-1"><ThumbsUp className="size-3 text-[#8B7BE8]" fill="#8B7BE8" /> {ideaUpVotes - ideaDownVotes} net votes</span>
         ) : (
           <>
             {likeCount > 0 && <span className="flex items-center gap-1">{"\u{1F44D}"} {likeCount}</span>}
@@ -324,6 +324,7 @@ export default function FeedCard({
           <>
             <ActionButton
               icon={<PartyPopper className="size-4" />}
+              activeIcon={<PartyPopper className="size-4" fill="currentColor" />}
               label="Celebrate"
               active={myReactions.has("celebrate")}
               loading={reactingType === "celebrate"}
@@ -344,6 +345,7 @@ export default function FeedCard({
           <>
             <ActionButton
               icon={<ThumbsUp className="size-4" />}
+              activeIcon={<ThumbsUp className="size-4" fill="currentColor" />}
               label="Like"
               active={myReactions.has("like")}
               loading={reactingType === "like"}
@@ -351,6 +353,7 @@ export default function FeedCard({
             />
             <ActionButton
               icon={<PartyPopper className="size-4" />}
+              activeIcon={<PartyPopper className="size-4" fill="currentColor" />}
               label="Celebrate"
               active={myReactions.has("celebrate")}
               loading={reactingType === "celebrate"}
@@ -414,8 +417,8 @@ export default function FeedCard({
 
 /* --- Sub-components --- */
 
-function ActionButton({ icon, label, active, count, loading, onClick }: {
-  icon: React.ReactNode; label: string; active?: boolean; count?: number; loading?: boolean; onClick?: () => void;
+function ActionButton({ icon, activeIcon, label, active, count, loading, onClick }: {
+  icon: React.ReactNode; activeIcon?: React.ReactNode; label: string; active?: boolean; count?: number; loading?: boolean; onClick?: () => void;
 }) {
   return (
     <button
@@ -427,7 +430,7 @@ function ActionButton({ icon, label, active, count, loading, onClick }: {
           : "text-ink-500 hover:bg-ink-100/60"
       } ${loading ? "opacity-60 pointer-events-none" : ""}`}
     >
-      {loading ? <Loader2 className="size-4 animate-spin" /> : icon}
+      {loading ? <Loader2 className="size-4 animate-spin" /> : (active && activeIcon) ? activeIcon : icon}
       {label}{count != null ? ` ${count}` : ""}
     </button>
   );
@@ -565,6 +568,7 @@ function IdeaActions({ event, setUpVotes, setDownVotes }: {
     <>
       <ActionButton
         icon={<ThumbsUp className="size-4" />}
+        activeIcon={<ThumbsUp className="size-4" fill="currentColor" />}
         label="Upvote"
         active={myVote === "up"}
         loading={votingType === "up"}
@@ -572,6 +576,7 @@ function IdeaActions({ event, setUpVotes, setDownVotes }: {
       />
       <ActionButton
         icon={<ThumbsDown className="size-4" />}
+        activeIcon={<ThumbsDown className="size-4" fill="currentColor" />}
         label="Downvote"
         active={myVote === "down"}
         loading={votingType === "down"}
