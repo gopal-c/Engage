@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { ThumbsUp, ThumbsDown, MessageCircle, PartyPopper, Send, PenLine } from "lucide-react";
+import { ThumbsUp, ThumbsDown, MessageCircle, PartyPopper, Send, PenLine, Loader2 } from "lucide-react";
 
 /* --- Types --- */
 
@@ -152,6 +152,7 @@ export default function FeedCard({
   const [submittingComment, setSubmittingComment] = useState(false);
   const [signText, setSignText] = useState("");
   const [signing, setSigning] = useState(false);
+  const [reactingType, setReactingType] = useState<string | null>(null);
 
   const badge = EVENT_BADGES[event.event_type];
   const emoji = EVENT_EMOJI[event.event_type];
@@ -160,6 +161,7 @@ export default function FeedCard({
   const isBirthday = event.event_type === "birthday_today" || event.event_type === "birthday_upcoming";
 
   async function handleReaction(type: "like" | "celebrate") {
+    setReactingType(type);
     try {
       const res = await fetch(`/api/feed/${event.id}/reactions`, {
         method: "POST",
@@ -181,6 +183,7 @@ export default function FeedCard({
         setMyReactions(newReactions);
       }
     } catch { toast.error("Failed to react"); }
+    setReactingType(null);
   }
 
   async function handleComment() {
@@ -321,6 +324,7 @@ export default function FeedCard({
               icon={<PartyPopper className="size-4" />}
               label="Celebrate"
               active={myReactions.has("celebrate")}
+              loading={reactingType === "celebrate"}
               onClick={() => handleReaction("celebrate")}
             />
             {event.groupCard?.status === "open" && (
@@ -340,12 +344,14 @@ export default function FeedCard({
               icon={<ThumbsUp className="size-4" />}
               label="Like"
               active={myReactions.has("like")}
+              loading={reactingType === "like"}
               onClick={() => handleReaction("like")}
             />
             <ActionButton
               icon={<PartyPopper className="size-4" />}
               label="Celebrate"
               active={myReactions.has("celebrate")}
+              loading={reactingType === "celebrate"}
               onClick={() => handleReaction("celebrate")}
             />
           </>
@@ -395,7 +401,7 @@ export default function FeedCard({
               disabled={submittingComment || !commentText.trim()}
               className="text-[#6B58D9] disabled:opacity-30 hover:text-[#5947C9] transition"
             >
-              <Send className="size-3.5" />
+              {submittingComment ? <Loader2 className="size-3.5 animate-spin" /> : <Send className="size-3.5" />}
             </button>
           </div>
         </div>
@@ -406,19 +412,20 @@ export default function FeedCard({
 
 /* --- Sub-components --- */
 
-function ActionButton({ icon, label, active, count, onClick }: {
-  icon: React.ReactNode; label: string; active?: boolean; count?: number; onClick?: () => void;
+function ActionButton({ icon, label, active, count, loading, onClick }: {
+  icon: React.ReactNode; label: string; active?: boolean; count?: number; loading?: boolean; onClick?: () => void;
 }) {
   return (
     <button
       onClick={onClick}
+      disabled={loading}
       className={`flex-1 flex items-center justify-center gap-1.5 rounded-full px-3 py-2 text-xs font-medium transition ${
         active
           ? "text-[#6B58D9] bg-[rgba(139,123,232,0.08)]"
           : "text-ink-500 hover:bg-ink-100/60"
-      }`}
+      } ${loading ? "opacity-60 pointer-events-none" : ""}`}
     >
-      {icon}
+      {loading ? <Loader2 className="size-4 animate-spin" /> : icon}
       {label}{count != null ? ` ${count}` : ""}
     </button>
   );
@@ -490,8 +497,9 @@ function BirthdayCardSection({ event, signText, setSignText, signing, handleSign
                 <button
                   onClick={handleSign}
                   disabled={signing || !signText.trim()}
-                  className="rounded-full bg-[#5BBFB0] px-3 py-1 text-[10px] font-bold text-white hover:bg-[#7CD3C5] transition disabled:opacity-40"
+                  className="flex items-center gap-1 rounded-full bg-[#5BBFB0] px-3 py-1 text-[10px] font-bold text-white hover:bg-[#7CD3C5] transition disabled:opacity-40"
                 >
+                  {signing && <Loader2 className="size-3 animate-spin" />}
                   Sign
                 </button>
               </div>
@@ -525,8 +533,10 @@ function IdeaActions({ event }: { event: FeedEvent; currentUserId: string }) {
   const [myVote, setMyVote] = useState<"up" | "down" | null>(idea.my_vote);
   const [upVotes, setUpVotes] = useState(idea.up_votes);
   const [downVotes, setDownVotes] = useState(idea.down_votes);
+  const [votingType, setVotingType] = useState<string | null>(null);
 
   async function vote(type: "up" | "down") {
+    setVotingType(type);
     try {
       const res = await fetch(`/api/ideahub/ideas/${idea!.id}/vote`, {
         method: "POST",
@@ -558,6 +568,7 @@ function IdeaActions({ event }: { event: FeedEvent; currentUserId: string }) {
         }
       }
     } catch { toast.error("Failed to vote"); }
+    setVotingType(null);
   }
 
   return (
@@ -566,12 +577,14 @@ function IdeaActions({ event }: { event: FeedEvent; currentUserId: string }) {
         icon={<ThumbsUp className="size-4" />}
         label="Upvote"
         active={myVote === "up"}
+        loading={votingType === "up"}
         onClick={() => vote("up")}
       />
       <ActionButton
         icon={<ThumbsDown className="size-4" />}
         label="Downvote"
         active={myVote === "down"}
+        loading={votingType === "down"}
         onClick={() => vote("down")}
       />
     </>
