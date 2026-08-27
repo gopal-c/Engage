@@ -313,7 +313,17 @@ export default function FeedCard({
             {celebrateCount > 0 && <span className="flex items-center gap-1">{"\u{1F389}"} {celebrateCount}</span>}
           </>
         )}
-        <span className="ml-auto">{commentCount} comment{commentCount !== 1 ? "s" : ""}</span>
+        <button
+          className="ml-auto hover:text-ink-600 transition cursor-pointer"
+          onClick={() => {
+            setShowComments((v) => !v);
+            if (!showComments) {
+              setTimeout(() => document.getElementById(`comment-input-${event.id}`)?.focus(), 50);
+            }
+          }}
+        >
+          {commentCount} comment{commentCount !== 1 ? "s" : ""}
+        </button>
       </div>
 
       {/* Action buttons */}
