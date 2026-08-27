@@ -295,7 +295,7 @@ export default function FeedCard({
         )}
 
         {event.event_type === "idea_shared" && event.ideaData && (
-          <IdeaSection event={event} currentUserId={currentUserId} upVotes={ideaUpVotes} downVotes={ideaDownVotes} />
+          <IdeaSection event={event} currentUserId={currentUserId} upVotes={ideaUpVotes} downVotes={ideaDownVotes} commentCount={commentCount} />
         )}
 
         {(event.event_type === "certification" || event.event_type === "milestone") && (meta?.xpAwarded as number) && (
@@ -308,13 +308,11 @@ export default function FeedCard({
       </div>
 
       {/* Reaction counts */}
-      {(likeCount > 0 || celebrateCount > 0 || commentCount > 0) && (
-        <div className="px-5 pb-2 flex items-center gap-4 text-xs text-ink-400">
-          {likeCount > 0 && <span className="flex items-center gap-1">{"\u{1F44D}"} {likeCount}</span>}
-          {celebrateCount > 0 && <span className="flex items-center gap-1">{"\u{1F389}"} {celebrateCount}</span>}
-          {commentCount > 0 && <span className="ml-auto">{commentCount} comment{commentCount !== 1 ? "s" : ""}</span>}
-        </div>
-      )}
+      <div className="px-5 pb-2 flex items-center gap-4 text-xs text-ink-400">
+        {likeCount > 0 && <span className="flex items-center gap-1">{"\u{1F44D}"} {likeCount}</span>}
+        {celebrateCount > 0 && <span className="flex items-center gap-1">{"\u{1F389}"} {celebrateCount}</span>}
+        <span className="ml-auto">{commentCount} comment{commentCount !== 1 ? "s" : ""}</span>
+      </div>
 
       {/* Action buttons */}
       <div className="mx-5 border-t border-ink-100 py-1.5 flex items-center gap-1">
@@ -513,7 +511,7 @@ function BirthdayCardSection({ event, signText, setSignText, signing, handleSign
   );
 }
 
-function IdeaSection({ event, upVotes, downVotes }: { event: FeedEvent; currentUserId: string; upVotes: number; downVotes: number }) {
+function IdeaSection({ event, upVotes, downVotes, commentCount }: { event: FeedEvent; currentUserId: string; upVotes: number; downVotes: number; commentCount: number }) {
   const idea = event.ideaData;
   if (!idea) return null;
   const netVotes = upVotes - downVotes;
@@ -522,7 +520,7 @@ function IdeaSection({ event, upVotes, downVotes }: { event: FeedEvent; currentU
     <div className="mt-3 space-y-2">
       <div className="text-xs text-ink-400 flex items-center gap-3">
         <span className="flex items-center gap-1"><ThumbsUp className="size-3" /> {netVotes} net votes</span>
-        <span>· {idea.idea_comment_count} comment{idea.idea_comment_count !== 1 ? "s" : ""}</span>
+        <span>· {commentCount} comment{commentCount !== 1 ? "s" : ""}</span>
       </div>
     </div>
   );
