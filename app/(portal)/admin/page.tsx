@@ -1,5 +1,6 @@
 import { sql } from "@/lib/db";
 import { UserManagement } from "@/components/user-management";
+import { ProjectManagement } from "@/components/project-management";
 
 interface Stats {
   total_users: number;
@@ -56,6 +57,8 @@ export default async function AdminPage() {
       </div>
 
       <UserManagement />
+
+      <ProjectManagement />
     </div>
   );
 }

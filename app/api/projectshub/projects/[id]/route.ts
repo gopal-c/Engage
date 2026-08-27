@@ -63,8 +63,8 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   }
 
   const role = (session.user as { role?: string }).role;
-  if (!isManagerRole(role)) {
-    return forbiddenResponse("Only managers, HR, and admins can delete projects");
+  if (!["admin", "hr"].includes(role ?? "")) {
+    return forbiddenResponse("Only HR and admins can delete projects");
   }
 
   const { id } = await params;
