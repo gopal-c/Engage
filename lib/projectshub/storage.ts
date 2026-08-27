@@ -1,4 +1,4 @@
-import { sql, sqlRaw } from "../db";
+import { sql } from "../db";
 
 export type Project = {
   id: string;
@@ -134,34 +134,16 @@ function mapMessage(r: Record<string, unknown>): Message {
 // --- Projects ---
 
 export async function getProjects(opts: { status?: string; department?: string; search?: string } = {}) {
-  let query = `
+  const rows = await sql`
     SELECT p.*,
       (SELECT COUNT(*)::int FROM projectshub.project_members pm WHERE pm.project_id = p.id) AS member_count
     FROM projectshub.projects p
-    WHERE 1=1
+    WHERE
+      (${opts.status ?? null}::text IS NULL OR p.status = ${opts.status ?? null})
+      AND (${opts.department ?? null}::text IS NULL OR p.department = ${opts.department ?? null})
+      AND (${opts.search ? `%${opts.search}%` : null}::text IS NULL OR p.name ILIKE ${opts.search ? `%${opts.search}%` : null})
+    ORDER BY p.created_at DESC
   `;
-  const params: unknown[] = [];
-  let idx = 0;
-
-  if (opts.status) {
-    idx++;
-    query += ` AND p.status = $${idx}`;
-    params.push(opts.status);
-  }
-  if (opts.department) {
-    idx++;
-    query += ` AND p.department = $${idx}`;
-    params.push(opts.department);
-  }
-  if (opts.search) {
-    idx++;
-    query += ` AND p.name ILIKE $${idx}`;
-    params.push(`%${opts.search}%`);
-  }
-
-  query += ` ORDER BY p.created_at DESC`;
-
-  const rows = await sqlRaw(query, params);
   return (rows as Record<string, unknown>[]).map(mapProject);
 }
 

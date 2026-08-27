@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback, use } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft, Users, Target, MessageSquare, Sparkles, Plus, X,
@@ -64,8 +65,8 @@ function Avatar({ name, avatar, size = 32 }: { name?: string; avatar?: string | 
   );
 }
 
-export default function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+export default function ProjectDetailPage() {
+  const { id } = useParams<{ id: string }>();
   const [tab, setTab] = useState<string>("overview");
   const [project, setProject] = useState<Project | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
