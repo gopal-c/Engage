@@ -107,7 +107,8 @@ export async function getFeedEvents(opts: {
             SELECT i.id, i.is_anonymous,
               (SELECT COUNT(*)::int FROM ideahub.votes v WHERE v.idea_id = i.id AND v.vote_type = 'up') AS up_votes,
               (SELECT COUNT(*)::int FROM ideahub.votes v WHERE v.idea_id = i.id AND v.vote_type = 'down') AS down_votes,
-              (SELECT COUNT(*)::int FROM ideahub.comments c WHERE c.idea_id = i.id) AS idea_comment_count
+              (SELECT COUNT(*)::int FROM ideahub.comments c WHERE c.idea_id = i.id) AS idea_comment_count,
+              (SELECT v.vote_type FROM ideahub.votes v WHERE v.idea_id = i.id AND v.user_id = ${opts.userId ?? null}) AS my_vote
             FROM ideahub.ideas i WHERE i.id = ${ideaId}
           `;
           if ((ideaRows as unknown[]).length > 0) ideaData = ideaRows[0];

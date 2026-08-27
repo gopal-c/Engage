@@ -51,6 +51,7 @@ type IdeaData = {
   up_votes: number;
   down_votes: number;
   idea_comment_count: number;
+  my_vote: "up" | "down" | null;
 };
 
 /* --- Badge configs --- */
@@ -517,19 +518,45 @@ function IdeaSection({ event, currentUserId }: { event: FeedEvent; currentUserId
   );
 }
 
-function IdeaActions({ event, currentUserId }: { event: FeedEvent; currentUserId: string }) {
+function IdeaActions({ event }: { event: FeedEvent; currentUserId: string }) {
   const idea = event.ideaData;
   if (!idea) return null;
 
-  const ideaId = idea.id;
+  const [myVote, setMyVote] = useState<"up" | "down" | null>(idea.my_vote);
+  const [upVotes, setUpVotes] = useState(idea.up_votes);
+  const [downVotes, setDownVotes] = useState(idea.down_votes);
+
   async function vote(type: "up" | "down") {
     try {
-      await fetch(`/api/ideahub/ideas/${ideaId}/vote`, {
+      const res = await fetch(`/api/ideahub/ideas/${idea.id}/vote`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ voteType: type }),
       });
-      toast.success(type === "up" ? "Upvoted!" : "Downvoted");
+      const data = await res.json();
+      if (data.ok) {
+        const wasActive = myVote === type;
+        setMyVote(data.userVote);
+        if (type === "up") {
+          if (wasActive) {
+            setUpVotes((c) => c - 1);
+            toast.success("Upvote removed");
+          } else {
+            setUpVotes((c) => c + 1);
+            if (myVote === "down") setDownVotes((c) => c - 1);
+            toast.success("Upvoted!");
+          }
+        } else {
+          if (wasActive) {
+            setDownVotes((c) => c - 1);
+            toast.success("Downvote removed");
+          } else {
+            setDownVotes((c) => c + 1);
+            if (myVote === "up") setUpVotes((c) => c - 1);
+            toast.success("Downvoted");
+          }
+        }
+      }
     } catch { toast.error("Failed to vote"); }
   }
 
@@ -538,13 +565,13 @@ function IdeaActions({ event, currentUserId }: { event: FeedEvent; currentUserId
       <ActionButton
         icon={<ThumbsUp className="size-4" />}
         label="Upvote"
-        count={idea.up_votes}
+        active={myVote === "up"}
         onClick={() => vote("up")}
       />
       <ActionButton
         icon={<ThumbsDown className="size-4" />}
         label="Downvote"
-        count={idea.down_votes}
+        active={myVote === "down"}
         onClick={() => vote("down")}
       />
     </>
