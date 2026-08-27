@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { getProjects, createProject, addProjectMember } from "@/lib/projectshub/storage";
+import { getProjects, createProject } from "@/lib/projectshub/storage";
 import { createFeedEvent } from "@/lib/feed";
 import { awardXP } from "@/lib/xp";
 
@@ -57,8 +57,6 @@ export async function POST(request: Request) {
       endDate: endDate || undefined,
       createdBy: session.user.id,
     });
-
-    await addProjectMember(projectId, session.user.id, "lead", session.user.id);
 
     createFeedEvent({
       eventType: "project_launched",
