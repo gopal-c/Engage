@@ -64,7 +64,7 @@ export default function CreateProjectPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div>
       <Link href="/apps/projectshub" className="inline-flex items-center gap-1.5 text-sm text-ink-500 hover:text-ink-800 mb-5 transition">
         <ArrowLeft className="size-4" /> Back to projects
       </Link>
