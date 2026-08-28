@@ -110,6 +110,13 @@ export default function ProjectDetailPage() {
   const [channelName, setChannelName] = useState("");
   const [creatingChannel, setCreatingChannel] = useState(false);
 
+  // Rename / delete channel
+  const [renameTarget, setRenameTarget] = useState<Channel | null>(null);
+  const [renameValue, setRenameValue] = useState("");
+  const [renamingChannel, setRenamingChannel] = useState(false);
+  const [deleteChannelTarget, setDeleteChannelTarget] = useState<Channel | null>(null);
+  const [deletingChannel, setDeletingChannel] = useState(false);
+
   // Remove member confirmation
   const [removeMemberTarget, setRemoveMemberTarget] = useState<Member | null>(null);
 
@@ -365,6 +372,52 @@ export default function ProjectDetailPage() {
       }
     } catch { toast.error("Failed to create channel"); }
     setCreatingChannel(false);
+  }
+
+  async function handleRenameChannel(e: React.FormEvent) {
+    e.preventDefault();
+    if (!renameTarget || !renameValue.trim()) return;
+    setRenamingChannel(true);
+    try {
+      const res = await fetch(`/api/projectshub/projects/${id}/channels`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ channelId: renameTarget.id, name: renameValue.trim() }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        toast.success("Channel renamed!");
+        setRenameTarget(null);
+        fetchProject();
+      } else {
+        toast.error(data.error || "Failed to rename");
+      }
+    } catch { toast.error("Failed to rename channel"); }
+    setRenamingChannel(false);
+  }
+
+  async function handleDeleteChannel() {
+    if (!deleteChannelTarget) return;
+    setDeletingChannel(true);
+    try {
+      const res = await fetch(`/api/projectshub/projects/${id}/channels`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ channelId: deleteChannelTarget.id }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        toast.success("Channel deleted");
+        if (activeChannel === deleteChannelTarget.id) {
+          setActiveChannel(channels.find((ch) => ch.id !== deleteChannelTarget.id)?.id ?? null);
+        }
+        fetchProject();
+      } else {
+        toast.error(data.error || "Failed to delete");
+      }
+    } catch { toast.error("Failed to delete channel"); }
+    setDeletingChannel(false);
+    setDeleteChannelTarget(null);
   }
 
   async function deleteProject() {
@@ -737,13 +790,32 @@ export default function ProjectDetailPage() {
             {/* Channel list */}
             <div className="flex items-center gap-2 mb-4 overflow-x-auto pb-1">
               {channels.map((ch) => (
-                <button
-                  key={ch.id}
-                  onClick={() => setActiveChannel(ch.id)}
-                  className={`shrink-0 px-3 py-1.5 rounded-lg text-sm transition ${activeChannel === ch.id ? "bg-indigo-deep text-white" : "bg-ink-50 text-ink-600 hover:bg-ink-100"}`}
-                >
-                  # {ch.name}
-                </button>
+                <div key={ch.id} className="flex items-center gap-0.5 shrink-0">
+                  <button
+                    onClick={() => setActiveChannel(ch.id)}
+                    className={`px-3 py-1.5 rounded-lg text-sm transition ${activeChannel === ch.id ? "bg-indigo-deep text-white" : "bg-ink-50 text-ink-600 hover:bg-ink-100"}`}
+                  >
+                    # {ch.name}
+                  </button>
+                  {canManage && activeChannel === ch.id && ch.name !== "General" && (
+                    <div className="flex items-center">
+                      <button
+                        onClick={() => { setRenameTarget(ch); setRenameValue(ch.name); }}
+                        className="p-1 rounded text-ink-300 hover:text-indigo-deep hover:bg-indigo-50 transition"
+                        title="Rename channel"
+                      >
+                        <Pencil className="size-3" />
+                      </button>
+                      <button
+                        onClick={() => setDeleteChannelTarget(ch)}
+                        className="p-1 rounded text-ink-300 hover:text-red-500 hover:bg-red-50 transition"
+                        title="Delete channel"
+                      >
+                        <Trash2 className="size-3" />
+                      </button>
+                    </div>
+                  )}
+                </div>
               ))}
               {canManage && (
                 <button
@@ -755,6 +827,25 @@ export default function ProjectDetailPage() {
                 </button>
               )}
             </div>
+
+            {/* Rename channel form */}
+            {renameTarget && (
+              <form onSubmit={handleRenameChannel} className="flex gap-2 mb-4">
+                <input
+                  type="text"
+                  value={renameValue}
+                  onChange={(e) => setRenameValue(e.target.value)}
+                  className="flex-1 rounded-xl border border-ink-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-deep/20"
+                  required
+                />
+                <button type="submit" disabled={renamingChannel || !renameValue.trim()} className="rounded-xl bg-indigo-deep px-4 py-2 text-sm text-white hover:bg-indigo-press transition disabled:opacity-50">
+                  {renamingChannel ? <Loader2 className="size-4 animate-spin" /> : "Rename"}
+                </button>
+                <button type="button" onClick={() => setRenameTarget(null)} className="rounded-xl border border-ink-200 px-3 py-2 text-sm text-ink-500 hover:bg-ink-50 transition">
+                  Cancel
+                </button>
+              </form>
+            )}
 
             {showChannelForm && canManage && (
               <form onSubmit={createNewChannel} className="flex gap-2 mb-4">
@@ -836,6 +927,28 @@ export default function ProjectDetailPage() {
           </div>
         )}
       </div>
+
+      {/* Delete channel confirmation */}
+      <AlertDialog open={!!deleteChannelTarget} onOpenChange={(open) => { if (!open) setDeleteChannelTarget(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete channel?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete <strong>#{deleteChannelTarget?.name}</strong> and all its messages. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deletingChannel}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteChannel}
+              disabled={deletingChannel}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            >
+              {deletingChannel ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Remove member confirmation */}
       <AlertDialog open={!!removeMemberTarget} onOpenChange={(open) => { if (!open) setRemoveMemberTarget(null); }}>

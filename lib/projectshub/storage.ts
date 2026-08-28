@@ -309,6 +309,24 @@ export async function createChannel(projectId: string, name: string) {
   return rows[0].id as string;
 }
 
+export async function renameChannel(channelId: string, name: string) {
+  const rows = await sql`
+    UPDATE projectshub.channels SET name = ${name}
+    WHERE id = ${channelId} AND name != 'General'
+    RETURNING id
+  `;
+  return rows.length > 0;
+}
+
+export async function deleteChannel(channelId: string) {
+  const rows = await sql`
+    DELETE FROM projectshub.channels
+    WHERE id = ${channelId} AND name != 'General'
+    RETURNING id
+  `;
+  return rows.length > 0;
+}
+
 // --- Messages ---
 
 export async function getChannelMessages(channelId: string, opts: { page?: number; limit?: number } = {}) {
