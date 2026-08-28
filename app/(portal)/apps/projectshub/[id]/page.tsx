@@ -105,6 +105,11 @@ export default function ProjectDetailPage() {
   const [sendingMsg, setSendingMsg] = useState(false);
   const [replyTo, setReplyTo] = useState<Message | null>(null);
 
+  // Create channel
+  const [showChannelForm, setShowChannelForm] = useState(false);
+  const [channelName, setChannelName] = useState("");
+  const [creatingChannel, setCreatingChannel] = useState(false);
+
   // Remove member confirmation
   const [removeMemberTarget, setRemoveMemberTarget] = useState<Member | null>(null);
 
@@ -336,6 +341,30 @@ export default function ProjectDetailPage() {
       });
       if (activeChannel) fetchMessages(activeChannel);
     } catch { /* */ }
+  }
+
+  async function createNewChannel(e: React.FormEvent) {
+    e.preventDefault();
+    if (!channelName.trim()) return;
+    setCreatingChannel(true);
+    try {
+      const res = await fetch(`/api/projectshub/projects/${id}/channels`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: channelName.trim() }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        toast.success("Channel created!");
+        setChannelName("");
+        setShowChannelForm(false);
+        fetchProject();
+        setActiveChannel(data.channelId);
+      } else {
+        toast.error(data.error || "Failed to create channel");
+      }
+    } catch { toast.error("Failed to create channel"); }
+    setCreatingChannel(false);
   }
 
   async function deleteProject() {
@@ -706,7 +735,7 @@ export default function ProjectDetailPage() {
         {tab === "channels" && (
           <div>
             {/* Channel list */}
-            <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
+            <div className="flex items-center gap-2 mb-4 overflow-x-auto pb-1">
               {channels.map((ch) => (
                 <button
                   key={ch.id}
@@ -716,7 +745,35 @@ export default function ProjectDetailPage() {
                   # {ch.name}
                 </button>
               ))}
+              {canManage && (
+                <button
+                  onClick={() => setShowChannelForm(!showChannelForm)}
+                  className="shrink-0 p-1.5 rounded-lg text-ink-400 hover:text-indigo-deep hover:bg-indigo-50 transition"
+                  title="Create channel"
+                >
+                  <Plus className="size-4" />
+                </button>
+              )}
             </div>
+
+            {showChannelForm && canManage && (
+              <form onSubmit={createNewChannel} className="flex gap-2 mb-4">
+                <input
+                  type="text"
+                  value={channelName}
+                  onChange={(e) => setChannelName(e.target.value)}
+                  placeholder="Channel name"
+                  className="flex-1 rounded-xl border border-ink-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-deep/20"
+                  required
+                />
+                <button type="submit" disabled={creatingChannel} className="rounded-xl bg-indigo-deep px-4 py-2 text-sm text-white hover:bg-indigo-press transition disabled:opacity-50">
+                  {creatingChannel ? <Loader2 className="size-4 animate-spin" /> : "Create"}
+                </button>
+                <button type="button" onClick={() => { setShowChannelForm(false); setChannelName(""); }} className="rounded-xl border border-ink-200 px-3 py-2 text-sm text-ink-500 hover:bg-ink-50 transition">
+                  Cancel
+                </button>
+              </form>
+            )}
 
             {activeChannel && (
               <>
