@@ -516,7 +516,14 @@ export default function ProjectDetailPage() {
       </div>
 
       {/* Tab Content */}
-      <div className="bg-white p-6" style={{ borderRadius: 20, boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+      <div className={`relative overflow-hidden p-6 ${tab === "skills" ? "bg-gradient-to-br from-indigo-50/80 via-purple-50/50 to-teal-50/60" : "bg-white"}`} style={{ borderRadius: 20, boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+        {tab === "skills" && (
+          <>
+            <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-indigo-400/15 to-transparent rounded-full blur-2xl pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-teal-400/15 to-transparent rounded-full blur-2xl pointer-events-none" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-gradient-to-r from-purple-400/10 to-indigo-400/10 rounded-full blur-3xl pointer-events-none" />
+          </>
+        )}
         {/* Overview */}
         {tab === "overview" && (
           <div>
@@ -643,34 +650,30 @@ export default function ProjectDetailPage() {
 
         {/* Skill Match */}
         {tab === "skills" && (
-          <div className="relative overflow-hidden">
-            <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-indigo-500/5 via-purple-500/5 to-teal-500/5 pointer-events-none" />
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-indigo-400/10 to-transparent rounded-full blur-2xl pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-teal-400/10 to-transparent rounded-full blur-2xl pointer-events-none" />
-            <div className="relative">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="font-semibold text-ink-800 flex items-center gap-2">
-                  <span className="bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent">AI</span>
-                  Skill-Based Suggestions
-                </h2>
-                <button onClick={runSkillMatch} disabled={matchLoading} className="text-sm text-indigo-deep hover:underline flex items-center gap-1">
-                  {matchLoading ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5" />} Refresh
-                </button>
-              </div>
-              <p className="text-xs text-ink-400 mb-4 flex items-center gap-1">
-                <Sparkles className="size-3 text-purple-400" /> Matched against project&apos;s required skills using employee skill profiles
-              </p>
+          <div className="relative">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-semibold text-ink-800 flex items-center gap-2">
+                <span className="bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent">AI</span>
+                Skill-Based Suggestions
+              </h2>
+              <button onClick={runSkillMatch} disabled={matchLoading} className="text-sm text-indigo-deep hover:underline flex items-center gap-1">
+                {matchLoading ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5" />} Refresh
+              </button>
+            </div>
+            <p className="text-xs text-ink-400 mb-4 flex items-center gap-1">
+              <Sparkles className="size-3 text-purple-400" /> Matched against project&apos;s required skills using employee skill profiles
+            </p>
 
-              {project.requiredSkills.length === 0 ? (
-                <p className="text-sm text-ink-400 text-center py-6">Add required skills to the project to see matches</p>
-              ) : matchLoading ? (
-                <div className="flex justify-center py-8"><Loader2 className="size-6 animate-spin text-purple-400" /></div>
-              ) : skillMatches.length === 0 ? (
-                <p className="text-sm text-ink-400 text-center py-6">No matching employees found</p>
-              ) : (
-                <div className="space-y-2">
-                  {skillMatches.map((m) => (
-                    <div key={m.userId} className="flex items-center gap-3 p-3 rounded-xl bg-white/60 backdrop-blur-sm border border-white/80">
+            {project.requiredSkills.length === 0 ? (
+              <p className="text-sm text-ink-400 text-center py-6">Add required skills to the project to see matches</p>
+            ) : matchLoading ? (
+              <div className="flex justify-center py-8"><Loader2 className="size-6 animate-spin text-purple-400" /></div>
+            ) : skillMatches.length === 0 ? (
+              <p className="text-sm text-ink-400 text-center py-6">No matching employees found</p>
+            ) : (
+              <div className="space-y-2">
+                {skillMatches.map((m) => (
+                  <div key={m.userId} className="flex items-center gap-3 p-3 rounded-xl bg-white/60 backdrop-blur-sm border border-white/80">
                     <Avatar name={m.name} avatar={m.avatarUrl} size={36} />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-ink-800">{m.name}</p>
@@ -694,9 +697,8 @@ export default function ProjectDetailPage() {
                     </button>
                   </div>
                 ))}
-              </div>
-            )}
             </div>
+            )}
           </div>
         )}
 

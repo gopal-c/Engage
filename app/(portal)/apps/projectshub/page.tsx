@@ -63,7 +63,7 @@ export default function ProjectsHubPage() {
   useEffect(() => { fetchProjects(); }, [fetchProjects]);
 
   return (
-    <div className="mx-auto max-w-5xl">
+    <div>
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-ink-800 flex items-center gap-2">
@@ -116,7 +116,7 @@ export default function ProjectsHubPage() {
 
       {/* Project Grid */}
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="bg-white p-5 space-y-3" style={{ borderRadius: 18, boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
               <Skeleton className="h-5 w-3/4" />
@@ -140,7 +140,7 @@ export default function ProjectsHubPage() {
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {projects.map((project) => (
             <Link
               key={project.id}
