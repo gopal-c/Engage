@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Plus, X, Loader2 } from "lucide-react";
+import { ArrowLeft, Plus, X, Loader2, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 
@@ -11,6 +11,7 @@ export default function CreateProjectPage() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [department, setDepartment] = useState("");
+  const [status, setStatus] = useState("planning");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [skillInput, setSkillInput] = useState("");
@@ -42,6 +43,7 @@ export default function CreateProjectPage() {
           name: name.trim(),
           description: description.trim() || undefined,
           department: department.trim() || undefined,
+          status,
           requiredSkills: skills,
           startDate: startDate || undefined,
           endDate: endDate || undefined,
@@ -94,6 +96,46 @@ export default function CreateProjectPage() {
             />
           </div>
 
+          {/* Required Skills — prominent position for AI matching */}
+          <div className="relative rounded-2xl p-[1px] bg-gradient-to-r from-indigo-400 via-purple-400 to-teal-400">
+            <div className="rounded-2xl bg-white p-4">
+              <label className="flex items-center gap-1.5 text-sm font-medium text-ink-700 mb-2">
+                <Sparkles className="size-3.5 text-purple-500" />
+                Required Skills
+                <span className="text-xs font-normal text-ink-400 ml-1">Used for AI skill matching</span>
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={skillInput}
+                  onChange={(e) => setSkillInput(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addSkill(); } }}
+                  placeholder="Type a skill and press Enter"
+                  className="flex-1 rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-deep/20 focus:border-indigo-deep transition"
+                />
+                <button
+                  type="button"
+                  onClick={addSkill}
+                  className="rounded-xl bg-indigo-deep px-4 py-2.5 text-sm text-white hover:bg-indigo-press transition flex items-center gap-1"
+                >
+                  <Plus className="size-4" /> Add
+                </button>
+              </div>
+              {skills.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-3">
+                  {skills.map((skill) => (
+                    <span key={skill} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-deep border border-indigo-100/60">
+                      {skill}
+                      <button type="button" onClick={() => removeSkill(skill)} className="hover:text-red-500 transition">
+                        <X className="size-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-ink-700 mb-1.5">Department</label>
@@ -106,6 +148,23 @@ export default function CreateProjectPage() {
               />
             </div>
             <div>
+              <label className="block text-sm font-medium text-ink-700 mb-1.5">Status</label>
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+                className="w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-deep/20 focus:border-indigo-deep transition"
+              >
+                <option value="planning">Planning</option>
+                <option value="active">Active</option>
+                <option value="on_hold">On Hold</option>
+                <option value="completed">Completed</option>
+                <option value="archived">Archived</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
               <label className="block text-sm font-medium text-ink-700 mb-1.5">Start Date</label>
               <input
                 type="date"
@@ -114,49 +173,15 @@ export default function CreateProjectPage() {
                 className="w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-deep/20 focus:border-indigo-deep transition"
               />
             </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-ink-700 mb-1.5">End Date</label>
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-deep/20 focus:border-indigo-deep transition"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-ink-700 mb-1.5">Required Skills</label>
-            <div className="flex gap-2">
+            <div>
+              <label className="block text-sm font-medium text-ink-700 mb-1.5">End Date</label>
               <input
-                type="text"
-                value={skillInput}
-                onChange={(e) => setSkillInput(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addSkill(); } }}
-                placeholder="Type a skill and press Enter"
-                className="flex-1 rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-deep/20 focus:border-indigo-deep transition"
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="w-full rounded-xl border border-ink-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-deep/20 focus:border-indigo-deep transition"
               />
-              <button
-                type="button"
-                onClick={addSkill}
-                className="rounded-xl bg-ink-100 px-3 py-2.5 text-sm hover:bg-ink-200 transition"
-              >
-                <Plus className="size-4" />
-              </button>
             </div>
-            {skills.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mt-2">
-                {skills.map((skill) => (
-                  <span key={skill} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-deep border border-indigo-100">
-                    {skill}
-                    <button type="button" onClick={() => removeSkill(skill)} className="hover:text-red-500 transition">
-                      <X className="size-3" />
-                    </button>
-                  </span>
-                ))}
-              </div>
-            )}
           </div>
 
           <button
