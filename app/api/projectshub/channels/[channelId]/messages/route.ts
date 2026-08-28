@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { getChannelMessages, sendMessage, getChannelProjectId, isProjectMember } from "@/lib/projectshub/storage";
+import { getChannelMessages, sendMessage, getChannelProjectId, isProjectMember, getProjectMembers, getProject } from "@/lib/projectshub/storage";
 import { awardXP } from "@/lib/xp";
+import { sql } from "@/lib/db";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ channelId: string }> }) {
   const session = await auth();
@@ -47,6 +48,19 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ cha
   try {
     const messageId = await sendMessage(channelId, session.user.id, body.trim(), parentId);
     awardXP(session.user.id, "projectshub", "project_message_sent").catch(() => {});
+
+    // Notify other project members
+    Promise.all([getProjectMembers(projectId), getProject(projectId)]).then(([members, project]) => {
+      const senderName = session.user?.name ?? "Someone";
+      const projectName = project?.name ?? "a project";
+      const otherMembers = members.filter((m) => m.userId !== session.user!.id);
+      const preview = body.trim().length > 80 ? body.trim().slice(0, 80) + "..." : body.trim();
+      return Promise.all(otherMembers.map((m) =>
+        sql`INSERT INTO engage.notifications (user_id, source_app, title, body, link)
+            VALUES (${m.userId}, 'projectshub', ${`${senderName} sent a message in ${projectName}`}, ${preview}, ${`/apps/projectshub/${projectId}`})`
+      ));
+    }).catch(() => {});
+
     return NextResponse.json({ ok: true, messageId });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Failed";
