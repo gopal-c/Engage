@@ -358,7 +358,7 @@ export default function ProjectDetailPage() {
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-4xl">
+      <div className="mx-auto">
         <div className="animate-pulse space-y-4">
           <div className="h-6 w-48 rounded bg-muted" />
           <div className="h-40 rounded-2xl bg-muted" />
@@ -369,7 +369,7 @@ export default function ProjectDetailPage() {
 
   if (!project) {
     return (
-      <div className="mx-auto max-w-4xl text-center py-20">
+      <div className="mx-auto text-center py-20">
         <p className="text-lg font-semibold text-ink-800">Project not found</p>
         <Link href="/apps/projectshub" className="text-sm text-indigo-deep mt-2 inline-block">Back to projects</Link>
       </div>
@@ -377,7 +377,7 @@ export default function ProjectDetailPage() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="mx-auto">
       <Link href="/apps/projectshub" className="inline-flex items-center gap-1.5 text-sm text-ink-500 hover:text-ink-800 mb-4 transition">
         <ArrowLeft className="size-4" /> All Projects
       </Link>
