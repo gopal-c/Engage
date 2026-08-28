@@ -605,7 +605,7 @@ export default function ProjectDetailPage() {
                           <p className="text-xs text-ink-400">{u.email}</p>
                         </div>
                         <button
-                          onClick={() => { addMember(u.id); setMemberResults((prev) => prev.filter((r) => r.id !== u.id)); }}
+                          onClick={() => { addMember(u.id); setMemberSearch(""); setMemberResults([]); }}
                           disabled={addingMember === u.id}
                           className="rounded-lg bg-indigo-deep px-3 py-1.5 text-xs text-white hover:bg-indigo-press transition disabled:opacity-50 flex items-center gap-1"
                         >
