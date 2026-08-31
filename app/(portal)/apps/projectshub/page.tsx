@@ -564,22 +564,23 @@ export default function ProjectsHubPage() {
     <div className="flex flex-col h-full">
       {/* Search & filter */}
       <div className="p-3 border-b border-ink-100">
-        <div className="relative mb-2">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-ink-400" />
-          <input
-            type="text"
-            placeholder="Search projects..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 rounded-xl border border-ink-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-deep/20 focus:border-indigo-deep transition"
-          />
-        </div>
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-ink-400" />
+            <input
+              type="text"
+              placeholder="Search..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-9 pr-3 py-2 rounded-xl border border-ink-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-deep/20 focus:border-indigo-deep transition"
+            />
+          </div>
 
-        <div className="relative">
-          <button
-            onClick={() => setShowStatusDropdown(!showStatusDropdown)}
-            className="flex items-center gap-1.5 text-xs text-ink-500 hover:text-ink-700 transition"
-          >
+          <div className="relative shrink-0">
+            <button
+              onClick={() => setShowStatusDropdown(!showStatusDropdown)}
+              className="flex items-center gap-1 rounded-xl border border-ink-200 bg-white px-2.5 py-2 text-xs text-ink-500 hover:text-ink-700 transition"
+            >
             {statusFilter ? STATUS_LABELS[statusFilter] : "All Statuses"}
             <ChevronDown className="size-3" />
           </button>
@@ -593,6 +594,7 @@ export default function ProjectsHubPage() {
               ))}
             </div>
           )}
+          </div>
         </div>
       </div>
 
