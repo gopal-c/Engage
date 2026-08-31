@@ -252,15 +252,15 @@ export default function ProjectsHubPage() {
     }
   }, [selectedProjectId, fetchProject, fetchJoinStatus]);
 
-  // Fetch messages
-  const fetchMessages = useCallback(async (channelId: string) => {
-    setMsgLoading(true);
+  // Fetch messages — silent=true skips the loader (used for polling)
+  const fetchMessages = useCallback(async (channelId: string, silent = false) => {
+    if (!silent) setMsgLoading(true);
     try {
       const res = await fetch(`/api/projectshub/channels/${channelId}/messages`);
       const data = await res.json();
       setMessages(data.messages ?? []);
     } catch { /* */ }
-    setMsgLoading(false);
+    if (!silent) setMsgLoading(false);
   }, []);
 
   useEffect(() => {
@@ -275,10 +275,10 @@ export default function ProjectsHubPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Polling for new messages
+  // Polling for new messages (silent — no loader)
   useEffect(() => {
     if (!activeChannel) return;
-    const iv = setInterval(() => fetchMessages(activeChannel), 10000);
+    const iv = setInterval(() => fetchMessages(activeChannel, true), 10000);
     return () => clearInterval(iv);
   }, [activeChannel, fetchMessages]);
 
