@@ -837,15 +837,15 @@ export default function ProjectsHubPage() {
   const rightPanel = project ? (
     <div className="flex flex-col h-full">
       {/* Mobile back button */}
-      <div className="lg:hidden px-4 py-2 border-b border-ink-100">
+      <div className="lg:hidden px-3 py-2">
         <button onClick={() => setMobileView("chat")} className="flex items-center gap-1 text-sm text-ink-500 hover:text-ink-700 transition">
           <ChevronLeft className="size-4" /> Back to chat
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-3 space-y-3">
+      <div className="flex-1 overflow-y-auto space-y-3">
         {/* Project Info Card */}
-        <div className="bg-white rounded-2xl border border-ink-100 p-4" style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
+        <div className="bg-white p-4" style={{ borderRadius: 20, boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
           <div className="flex items-center gap-1.5 mb-3">
             <Target className="size-3.5 text-indigo-deep" />
             <h4 className="text-xs font-semibold text-ink-600 uppercase tracking-wide">Project Info</h4>
@@ -963,7 +963,7 @@ export default function ProjectsHubPage() {
 
         {/* AI Skill Match Card */}
         {canManage && (
-          <div className="relative rounded-2xl border border-ink-100 overflow-hidden" style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
+          <div className="relative overflow-hidden" style={{ borderRadius: 20, boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
             <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/80 via-purple-50/50 to-teal-50/60 pointer-events-none" />
             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-indigo-400/15 to-transparent rounded-full blur-2xl pointer-events-none" />
             <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-teal-400/15 to-transparent rounded-full blur-2xl pointer-events-none" />
@@ -1021,7 +1021,7 @@ export default function ProjectsHubPage() {
         )}
 
         {/* Team Card */}
-        <div className="bg-white rounded-2xl border border-ink-100 p-4" style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
+        <div className="bg-white p-4" style={{ borderRadius: 20, boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
           <div className="flex items-center justify-between mb-3">
             <h4 className="text-xs font-semibold text-ink-600 uppercase tracking-wide flex items-center gap-1.5">
               <Users className="size-3.5 text-indigo-deep" />
@@ -1096,7 +1096,7 @@ export default function ProjectsHubPage() {
 
         {/* Join Requests Card (for managers) */}
         {canManage && pendingCount > 0 && (
-          <div className="bg-white rounded-2xl border border-amber-100 p-4" style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
+          <div className="bg-white p-4" style={{ borderRadius: 20, boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
             <h4 className="text-xs font-semibold text-ink-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
               <Bell className="size-3.5 text-amber-500" /> Join Requests ({pendingCount})
             </h4>
@@ -1157,23 +1157,26 @@ export default function ProjectsHubPage() {
         )}
       </div>
 
-      <div className="flex flex-1 min-h-0 bg-white overflow-hidden" style={{ borderRadius: 20, boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-        {/* Left Panel */}
-        <div className={`w-full lg:w-[280px] xl:w-[300px] lg:shrink-0 border-r border-ink-100 ${
-          mobileView === "list" ? "block" : "hidden lg:block"
-        }`}>
-          {leftPanel}
+      <div className="flex flex-1 min-h-0 gap-4">
+        {/* Left + Center wrapper */}
+        <div className="flex flex-1 min-w-0 bg-white overflow-hidden" style={{ borderRadius: 20, boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+          {/* Left Panel */}
+          <div className={`w-full lg:w-[280px] xl:w-[300px] lg:shrink-0 border-r border-ink-100 ${
+            mobileView === "list" ? "block" : "hidden lg:block"
+          }`}>
+            {leftPanel}
+          </div>
+
+          {/* Center Panel */}
+          <div className={`flex-1 min-w-0 ${
+            mobileView === "chat" ? "block" : "hidden lg:block"
+          }`}>
+            {centerPanel}
+          </div>
         </div>
 
-        {/* Center Panel */}
-        <div className={`flex-1 min-w-0 ${
-          mobileView === "chat" ? "block" : "hidden lg:block"
-        }`}>
-          {centerPanel}
-        </div>
-
-        {/* Right Panel */}
-        <div className={`w-full lg:w-[280px] xl:w-[300px] lg:shrink-0 border-l border-ink-100 bg-ink-50/30 ${
+        {/* Right Panel — separate from the main card */}
+        <div className={`w-full lg:w-[280px] xl:w-[300px] lg:shrink-0 ${
           mobileView === "info" ? "block" : "hidden lg:block"
         }`}>
           {rightPanel}
