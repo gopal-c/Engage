@@ -384,6 +384,119 @@ export async function getChannelProjectId(channelId: string): Promise<string | n
   return (rows[0]?.project_id as string) ?? null;
 }
 
+// --- Channel Reads ---
+
+export async function markChannelRead(channelId: string, userId: string) {
+  await sql`
+    INSERT INTO projectshub.channel_reads (channel_id, user_id, last_read_at)
+    VALUES (${channelId}, ${userId}, now())
+    ON CONFLICT (channel_id, user_id) DO UPDATE SET last_read_at = now()
+  `;
+}
+
+export async function getUnreadCounts(userId: string) {
+  const rows = await sql`
+    SELECT p.id AS project_id,
+      COALESCE(SUM(
+        CASE WHEN m.created_at > COALESCE(cr.last_read_at, '1970-01-01') THEN 1 ELSE 0 END
+      ), 0)::int AS unread_count
+    FROM projectshub.projects p
+    JOIN projectshub.project_members pm ON pm.project_id = p.id AND pm.user_id = ${userId}
+    JOIN projectshub.channels ch ON ch.project_id = p.id
+    LEFT JOIN projectshub.messages m ON m.channel_id = ch.id AND m.user_id != ${userId}
+    LEFT JOIN projectshub.channel_reads cr ON cr.channel_id = ch.id AND cr.user_id = ${userId}
+    GROUP BY p.id
+  `;
+  const map: Record<string, number> = {};
+  for (const r of rows) map[r.project_id as string] = r.unread_count as number;
+  return map;
+}
+
+// --- Join Requests ---
+
+export type JoinRequest = {
+  id: string;
+  projectId: string;
+  userId: string;
+  message: string | null;
+  status: string;
+  reviewedBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+  userName?: string;
+  userAvatar?: string | null;
+  userEmail?: string;
+};
+
+function mapJoinRequest(r: Record<string, unknown>): JoinRequest {
+  return {
+    id: r.id as string,
+    projectId: r.project_id as string,
+    userId: r.user_id as string,
+    message: r.message as string | null,
+    status: r.status as string,
+    reviewedBy: r.reviewed_by as string | null,
+    createdAt: String(r.created_at),
+    updatedAt: String(r.updated_at),
+    userName: r.user_name as string | undefined,
+    userAvatar: r.user_avatar as string | null | undefined,
+    userEmail: r.user_email as string | undefined,
+  };
+}
+
+export async function createJoinRequest(projectId: string, userId: string, message?: string) {
+  const rows = await sql`
+    INSERT INTO projectshub.join_requests (project_id, user_id, message)
+    VALUES (${projectId}, ${userId}, ${message ?? null})
+    ON CONFLICT (project_id, user_id) DO UPDATE SET
+      status = 'pending', message = COALESCE(${message ?? null}, projectshub.join_requests.message), updated_at = now()
+    WHERE projectshub.join_requests.status = 'rejected'
+    RETURNING id
+  `;
+  return rows[0]?.id as string | undefined;
+}
+
+export async function getJoinRequests(projectId: string, status = "pending") {
+  const rows = await sql`
+    SELECT jr.*, u.name AS user_name, u.avatar_url AS user_avatar, u.email AS user_email
+    FROM projectshub.join_requests jr
+    JOIN auth.users u ON u.id = jr.user_id
+    WHERE jr.project_id = ${projectId} AND jr.status = ${status}
+    ORDER BY jr.created_at ASC
+  `;
+  return (rows as Record<string, unknown>[]).map(mapJoinRequest);
+}
+
+export async function getUserJoinRequest(projectId: string, userId: string) {
+  const rows = await sql`
+    SELECT * FROM projectshub.join_requests
+    WHERE project_id = ${projectId} AND user_id = ${userId}
+    ORDER BY created_at DESC LIMIT 1
+  `;
+  if (rows.length === 0) return null;
+  return mapJoinRequest(rows[0] as Record<string, unknown>);
+}
+
+export async function reviewJoinRequest(requestId: string, status: "approved" | "rejected", reviewedBy: string) {
+  const rows = await sql`
+    UPDATE projectshub.join_requests
+    SET status = ${status}, reviewed_by = ${reviewedBy}, updated_at = now()
+    WHERE id = ${requestId} AND status = 'pending'
+    RETURNING project_id, user_id
+  `;
+  return rows[0] as { project_id: string; user_id: string } | undefined;
+}
+
+export async function getPendingRequestCount(projectId: string) {
+  const rows = await sql`
+    SELECT COUNT(*)::int AS count FROM projectshub.join_requests
+    WHERE project_id = ${projectId} AND status = 'pending'
+  `;
+  return (rows[0]?.count as number) ?? 0;
+}
+
+// --- Helpers ---
+
 export async function getProjectMemberAvatars(projectId: string, limit = 5) {
   const rows = await sql`
     SELECT u.name, u.avatar_url

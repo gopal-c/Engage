@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { getProject, updateProject, deleteProject, getProjectMembers, getProjectMilestones, getProjectChannels } from "@/lib/projectshub/storage";
+import { getProject, updateProject, deleteProject, getProjectMembers, getProjectMilestones, getProjectChannels, isProjectMember } from "@/lib/projectshub/storage";
 import { isManagerRole, forbiddenResponse } from "@/lib/projectshub/auth";
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -25,8 +25,9 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 
     const role = (session.user as { role?: string }).role;
     const canManage = ["admin", "hr", "manager"].includes(role ?? "");
+    const memberCheck = await isProjectMember(id, session.user.id);
 
-    return NextResponse.json({ project, members, milestones, channels, canManage });
+    return NextResponse.json({ project, members, milestones, channels, canManage, isMember: memberCheck || canManage });
   } catch {
     return NextResponse.json({ error: "Failed to load project" }, { status: 500 });
   }
