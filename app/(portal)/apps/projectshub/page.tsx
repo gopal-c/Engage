@@ -197,6 +197,13 @@ export default function ProjectsHubPage() {
     }
   }, [initialProjectId, initialHandled]);
 
+  // Auto-select first project when list loads
+  useEffect(() => {
+    if (!loading && projects.length > 0 && !selectedProjectId && !initialProjectId) {
+      setSelectedProjectId(projects[0].id);
+    }
+  }, [loading, projects, selectedProjectId, initialProjectId]);
+
   // Fetch selected project
   const fetchProject = useCallback(async (pid: string) => {
     setProjectLoading(true);
