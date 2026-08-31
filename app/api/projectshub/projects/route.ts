@@ -15,6 +15,7 @@ export async function GET(request: NextRequest) {
     status: params.get("status") || undefined,
     department: params.get("department") || undefined,
     search: params.get("search") || undefined,
+    userId: session.user.id,
   };
 
   const role = (session.user as { role?: string }).role;

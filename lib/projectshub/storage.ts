@@ -133,16 +133,29 @@ function mapMessage(r: Record<string, unknown>): Message {
 
 // --- Projects ---
 
-export async function getProjects(opts: { status?: string; department?: string; search?: string } = {}) {
+export async function getProjects(opts: { status?: string; department?: string; search?: string; userId?: string } = {}) {
   const rows = await sql`
     SELECT p.*,
-      (SELECT COUNT(*)::int FROM projectshub.project_members pm WHERE pm.project_id = p.id) AS member_count
+      (SELECT COUNT(*)::int FROM projectshub.project_members pm WHERE pm.project_id = p.id) AS member_count,
+      CASE WHEN ${opts.userId ?? null}::uuid IS NOT NULL
+           AND EXISTS(SELECT 1 FROM projectshub.project_members pm2 WHERE pm2.project_id = p.id AND pm2.user_id = ${opts.userId ?? null})
+           THEN 1 ELSE 0 END AS is_my_project
     FROM projectshub.projects p
     WHERE
       (${opts.status ?? null}::text IS NULL OR p.status = ${opts.status ?? null})
       AND (${opts.department ?? null}::text IS NULL OR p.department = ${opts.department ?? null})
       AND (${opts.search ? `%${opts.search}%` : null}::text IS NULL OR p.name ILIKE ${opts.search ? `%${opts.search}%` : null})
-    ORDER BY p.created_at DESC
+    ORDER BY
+      is_my_project DESC,
+      CASE p.status
+        WHEN 'active' THEN 1
+        WHEN 'planning' THEN 2
+        WHEN 'on_hold' THEN 3
+        WHEN 'completed' THEN 4
+        WHEN 'archived' THEN 5
+        ELSE 6
+      END,
+      p.created_at DESC
   `;
   return (rows as Record<string, unknown>[]).map(mapProject);
 }
