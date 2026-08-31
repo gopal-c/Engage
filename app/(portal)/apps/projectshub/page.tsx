@@ -89,8 +89,7 @@ export default function ProjectsHubPage() {
   const [projectLoading, setProjectLoading] = useState(false);
   const [isMember, setIsMember] = useState(false);
 
-  // Right panel tab
-  const [rightTab, setRightTab] = useState<"info" | "skills" | "team">("info");
+  // Right panel - no tabs, all sections shown as stacked cards
 
   // Channel messaging
   const [activeChannel, setActiveChannel] = useState<string | null>(null);
@@ -240,7 +239,6 @@ export default function ProjectsHubPage() {
     if (selectedProjectId) {
       fetchProject(selectedProjectId);
       fetchJoinStatus(selectedProjectId);
-      setRightTab("info");
       setEditing(false);
       setSkillMatches([]);
       setShowAddMember(false);
@@ -557,25 +555,8 @@ export default function ProjectsHubPage() {
   // LEFT PANEL: Project list
   const leftPanel = (
     <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="p-4 border-b border-ink-100">
-        <div className="flex items-center justify-between mb-3">
-          <h1 className="text-lg font-bold text-ink-800 flex items-center gap-2">
-            <FolderKanban className="size-5 text-indigo-deep" />
-            Projects
-          </h1>
-          {canManage && (
-            <Link
-              href="/apps/projectshub/create"
-              className="p-1.5 rounded-lg bg-indigo-deep text-white hover:bg-indigo-press transition"
-              title="New Project"
-            >
-              <Plus className="size-4" />
-            </Link>
-          )}
-        </div>
-
-        {/* Search */}
+      {/* Search & filter */}
+      <div className="p-3 border-b border-ink-100">
         <div className="relative mb-2">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-ink-400" />
           <input
@@ -587,7 +568,6 @@ export default function ProjectsHubPage() {
           />
         </div>
 
-        {/* Status filter */}
         <div className="relative">
           <button
             onClick={() => setShowStatusDropdown(!showStatusDropdown)}
@@ -846,7 +826,7 @@ export default function ProjectsHubPage() {
     </div>
   );
 
-  // RIGHT PANEL: Project info / Skill match / Team
+  // RIGHT PANEL: Stacked cards — project info, AI match, team
   const rightPanel = project ? (
     <div className="flex flex-col h-full">
       {/* Mobile back button */}
@@ -856,212 +836,152 @@ export default function ProjectsHubPage() {
         </button>
       </div>
 
-      {/* Tab selector */}
-      <div className="flex border-b border-ink-100">
-        {([
-          { key: "info" as const, label: "Info", icon: Target },
-          { key: "skills" as const, label: "AI Match", icon: Sparkles },
-          { key: "team" as const, label: "Team", icon: Users },
-        ] as const).filter((t) => t.key !== "skills" || canManage).map((t) => (
-          <button
-            key={t.key}
-            onClick={() => { setRightTab(t.key); if (t.key === "skills" && skillMatches.length === 0) runSkillMatch(); }}
-            className={`flex-1 flex items-center justify-center gap-1 py-2.5 text-xs font-medium transition border-b-2 ${
-              rightTab === t.key ? "border-indigo-deep text-indigo-deep" : "border-transparent text-ink-400 hover:text-ink-600"
-            }`}
-          >
-            <t.icon className="size-3.5" /> {t.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto">
-        {/* Info tab */}
-        {rightTab === "info" && (
-          <div className="p-4 space-y-4">
-            {/* Project card */}
-            <div>
-              <div className="flex items-start justify-between mb-2">
-                <h3 className="font-semibold text-ink-800 text-sm">{project.name}</h3>
-                <span className={`text-[10px] px-2 py-0.5 rounded-full border ${STATUS_COLORS[project.status]}`}>
-                  {STATUS_LABELS[project.status]}
-                </span>
-              </div>
-              {project.description && <p className="text-xs text-ink-500 mb-3">{project.description}</p>}
-              <div className="space-y-1.5 text-xs text-ink-400">
-                <div className="flex items-center gap-1.5"><Users className="size-3" /> {project.memberCount} members</div>
-                {project.department && <div className="flex items-center gap-1.5"><FolderKanban className="size-3" /> {project.department}</div>}
-                {project.startDate && (
-                  <div className="flex items-center gap-1.5">
-                    <Calendar className="size-3" />
-                    {new Date(project.startDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                    {project.endDate && ` – ${new Date(project.endDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`}
-                  </div>
-                )}
-              </div>
-              {project.requiredSkills.length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-3">
-                  {project.requiredSkills.map((s) => (
-                    <span key={s} className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-deep border border-indigo-100">{s}</span>
-                  ))}
-                </div>
-              )}
-
-              {canManage && (
-                <div className="flex gap-2 mt-3">
-                  <button onClick={startEditing} className="flex items-center gap-1 text-xs text-indigo-deep hover:underline"><Pencil className="size-3" /> Edit</button>
-                  <button onClick={() => setShowDeleteConfirm(true)} className="flex items-center gap-1 text-xs text-red-500 hover:underline"><Trash2 className="size-3" /> Delete</button>
-                </div>
-              )}
-            </div>
-
-            {/* Edit form */}
-            {editing && (
-              <div className="p-3 rounded-xl border border-ink-200 bg-ink-50/30">
-                <form onSubmit={updateProject} className="space-y-3">
-                  <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="Project name" className="w-full rounded-lg border border-ink-200 px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-deep/20" required />
-                  <textarea value={editDescription} onChange={(e) => setEditDescription(e.target.value)} placeholder="Description" rows={2} className="w-full rounded-lg border border-ink-200 px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-deep/20 resize-none" />
-                  <div className="grid grid-cols-2 gap-2">
-                    <input type="text" value={editDepartment} onChange={(e) => setEditDepartment(e.target.value)} placeholder="Department" className="rounded-lg border border-ink-200 px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-deep/20" />
-                    <select value={editStatus} onChange={(e) => setEditStatus(e.target.value)} className="rounded-lg border border-ink-200 px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-deep/20">
-                      {Object.entries(STATUS_LABELS).map(([val, label]) => <option key={val} value={val}>{label}</option>)}
-                    </select>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <input type="date" value={editStartDate} onChange={(e) => setEditStartDate(e.target.value)} className="rounded-lg border border-ink-200 px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-deep/20" />
-                    <input type="date" value={editEndDate} onChange={(e) => setEditEndDate(e.target.value)} className="rounded-lg border border-ink-200 px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-deep/20" />
-                  </div>
-                  <div>
-                    <div className="flex gap-1.5">
-                      <input type="text" value={editSkillInput} onChange={(e) => setEditSkillInput(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addEditSkill(); } }} placeholder="Add skill" className="flex-1 rounded-lg border border-ink-200 px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-deep/20" />
-                      <button type="button" onClick={addEditSkill} className="rounded-lg bg-ink-100 px-2 py-2 text-xs hover:bg-ink-200 transition"><Plus className="size-3" /></button>
-                    </div>
-                    {editSkills.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {editSkills.map((s) => (
-                          <span key={s} className="inline-flex items-center gap-0.5 text-[10px] px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-deep border border-indigo-100">
-                            {s} <button type="button" onClick={() => setEditSkills(editSkills.filter((sk) => sk !== s))} className="hover:text-red-500"><X className="size-2.5" /></button>
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex gap-2">
-                    <button type="button" onClick={() => setEditing(false)} className="flex-1 rounded-lg border border-ink-200 py-2 text-xs text-ink-500 hover:bg-ink-50 transition">Cancel</button>
-                    <button type="submit" disabled={!editName.trim() || editSubmitting} className="flex-1 rounded-lg bg-indigo-deep py-2 text-xs text-white hover:bg-indigo-press transition disabled:opacity-50 flex items-center justify-center gap-1">
-                      {editSubmitting ? <Loader2 className="size-3 animate-spin" /> : "Save"}
-                    </button>
-                  </div>
-                </form>
-              </div>
-            )}
-
-            {/* Milestones */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="text-xs font-semibold text-ink-600 uppercase tracking-wide">Milestones</h4>
-                {canManage && (
-                  <button onClick={() => setShowMilestoneForm(!showMilestoneForm)} className="text-[10px] text-indigo-deep hover:underline flex items-center gap-0.5"><Plus className="size-3" /> Add</button>
-                )}
-              </div>
-              {showMilestoneForm && canManage && (
-                <form onSubmit={addMilestone} className="flex gap-1.5 mb-3">
-                  <input type="text" value={msTitle} onChange={(e) => setMsTitle(e.target.value)} placeholder="Title" className="flex-1 rounded-lg border border-ink-200 px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-deep/20" required />
-                  <input type="date" value={msDate} onChange={(e) => setMsDate(e.target.value)} className="rounded-lg border border-ink-200 px-2 py-1.5 text-xs w-28" />
-                  <button type="submit" disabled={msSubmitting} className="rounded-lg bg-indigo-deep px-2 py-1.5 text-xs text-white hover:bg-indigo-press transition disabled:opacity-50">
-                    {msSubmitting ? <Loader2 className="size-3 animate-spin" /> : "Add"}
-                  </button>
-                </form>
-              )}
-              {milestones.length === 0 ? (
-                <p className="text-xs text-ink-400 text-center py-3">No milestones</p>
-              ) : (
-                <div className="space-y-1.5">
-                  {milestones.map((ms) => (
-                    <div key={ms.id} className="flex items-center gap-2 p-2 rounded-lg bg-ink-50/50">
-                      {ms.status === "completed" ? <CheckCircle2 className="size-3.5 text-emerald-500 shrink-0" /> : <Clock className="size-3.5 text-ink-400 shrink-0" />}
-                      <div className="flex-1 min-w-0">
-                        <p className={`text-xs font-medium ${ms.status === "completed" ? "line-through text-ink-400" : "text-ink-800"}`}>{ms.title}</p>
-                        {ms.targetDate && <p className="text-[10px] text-ink-400">{new Date(ms.targetDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</p>}
-                      </div>
-                      {ms.status !== "completed" && canManage && (
-                        <button onClick={() => completeMilestone(ms)} className="text-[10px] text-emerald-600 hover:underline">Done</button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Pending join requests (for managers) */}
-            {canManage && pendingCount > 0 && (
-              <div>
-                <h4 className="text-xs font-semibold text-ink-600 uppercase tracking-wide mb-2 flex items-center gap-1">
-                  <Bell className="size-3" /> Join Requests ({pendingCount})
-                </h4>
-                <div className="space-y-1.5">
-                  {joinRequests.map((jr) => (
-                    <div key={jr.id} className="p-2.5 rounded-lg bg-amber-50/60 border border-amber-100">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Avatar name={jr.userName} avatar={jr.userAvatar} size={24} />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium text-ink-800">{jr.userName}</p>
-                          <p className="text-[10px] text-ink-400">{jr.userEmail}</p>
-                        </div>
-                      </div>
-                      {jr.message && <p className="text-[11px] text-ink-500 mb-1.5 ml-8">&ldquo;{jr.message}&rdquo;</p>}
-                      <div className="flex gap-1.5 ml-8">
-                        <button
-                          onClick={() => reviewRequest(jr.id, "approved")}
-                          disabled={reviewingRequest === jr.id}
-                          className="rounded-lg bg-emerald-500 px-2.5 py-1 text-[10px] text-white hover:bg-emerald-600 transition disabled:opacity-50"
-                        >
-                          {reviewingRequest === jr.id ? <Loader2 className="size-3 animate-spin" /> : "Approve"}
-                        </button>
-                        <button
-                          onClick={() => reviewRequest(jr.id, "rejected")}
-                          disabled={reviewingRequest === jr.id}
-                          className="rounded-lg bg-ink-100 px-2.5 py-1 text-[10px] text-ink-600 hover:bg-ink-200 transition disabled:opacity-50"
-                        >
-                          Reject
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+      <div className="flex-1 overflow-y-auto p-3 space-y-3">
+        {/* Project Info Card */}
+        <div className="bg-white rounded-2xl border border-ink-100 p-4" style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
+          <div className="flex items-center gap-1.5 mb-3">
+            <Target className="size-3.5 text-indigo-deep" />
+            <h4 className="text-xs font-semibold text-ink-600 uppercase tracking-wide">Project Info</h4>
+          </div>
+          <div className="flex items-start justify-between mb-2">
+            <h3 className="font-semibold text-ink-800 text-sm">{project.name}</h3>
+            <span className={`text-[10px] px-2 py-0.5 rounded-full border ${STATUS_COLORS[project.status]}`}>
+              {STATUS_LABELS[project.status]}
+            </span>
+          </div>
+          {project.description && <p className="text-xs text-ink-500 mb-3">{project.description}</p>}
+          <div className="space-y-1.5 text-xs text-ink-400">
+            <div className="flex items-center gap-1.5"><Users className="size-3" /> {project.memberCount} members</div>
+            {project.department && <div className="flex items-center gap-1.5"><FolderKanban className="size-3" /> {project.department}</div>}
+            {project.startDate && (
+              <div className="flex items-center gap-1.5">
+                <Calendar className="size-3" />
+                {new Date(project.startDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                {project.endDate && ` – ${new Date(project.endDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`}
               </div>
             )}
           </div>
-        )}
+          {project.requiredSkills.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-3">
+              {project.requiredSkills.map((s) => (
+                <span key={s} className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-deep border border-indigo-100">{s}</span>
+              ))}
+            </div>
+          )}
+          {canManage && (
+            <div className="flex gap-2 mt-3 pt-3 border-t border-ink-100">
+              <button onClick={startEditing} className="flex items-center gap-1 text-xs text-indigo-deep hover:underline"><Pencil className="size-3" /> Edit</button>
+              <button onClick={() => setShowDeleteConfirm(true)} className="flex items-center gap-1 text-xs text-red-500 hover:underline"><Trash2 className="size-3" /> Delete</button>
+            </div>
+          )}
 
-        {/* Skill Match tab */}
-        {rightTab === "skills" && (
-          <div className="p-4 relative">
+          {/* Edit form inline */}
+          {editing && (
+            <div className="mt-3 pt-3 border-t border-ink-100">
+              <form onSubmit={updateProject} className="space-y-3">
+                <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="Project name" className="w-full rounded-lg border border-ink-200 px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-deep/20" required />
+                <textarea value={editDescription} onChange={(e) => setEditDescription(e.target.value)} placeholder="Description" rows={2} className="w-full rounded-lg border border-ink-200 px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-deep/20 resize-none" />
+                <div className="grid grid-cols-2 gap-2">
+                  <input type="text" value={editDepartment} onChange={(e) => setEditDepartment(e.target.value)} placeholder="Department" className="rounded-lg border border-ink-200 px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-deep/20" />
+                  <select value={editStatus} onChange={(e) => setEditStatus(e.target.value)} className="rounded-lg border border-ink-200 px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-deep/20">
+                    {Object.entries(STATUS_LABELS).map(([val, label]) => <option key={val} value={val}>{label}</option>)}
+                  </select>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <input type="date" value={editStartDate} onChange={(e) => setEditStartDate(e.target.value)} className="rounded-lg border border-ink-200 px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-deep/20" />
+                  <input type="date" value={editEndDate} onChange={(e) => setEditEndDate(e.target.value)} className="rounded-lg border border-ink-200 px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-deep/20" />
+                </div>
+                <div>
+                  <div className="flex gap-1.5">
+                    <input type="text" value={editSkillInput} onChange={(e) => setEditSkillInput(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addEditSkill(); } }} placeholder="Add skill" className="flex-1 rounded-lg border border-ink-200 px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-deep/20" />
+                    <button type="button" onClick={addEditSkill} className="rounded-lg bg-ink-100 px-2 py-2 text-xs hover:bg-ink-200 transition"><Plus className="size-3" /></button>
+                  </div>
+                  {editSkills.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {editSkills.map((s) => (
+                        <span key={s} className="inline-flex items-center gap-0.5 text-[10px] px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-deep border border-indigo-100">
+                          {s} <button type="button" onClick={() => setEditSkills(editSkills.filter((sk) => sk !== s))} className="hover:text-red-500"><X className="size-2.5" /></button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <button type="button" onClick={() => setEditing(false)} className="flex-1 rounded-lg border border-ink-200 py-2 text-xs text-ink-500 hover:bg-ink-50 transition">Cancel</button>
+                  <button type="submit" disabled={!editName.trim() || editSubmitting} className="flex-1 rounded-lg bg-indigo-deep py-2 text-xs text-white hover:bg-indigo-press transition disabled:opacity-50 flex items-center justify-center gap-1">
+                    {editSubmitting ? <Loader2 className="size-3 animate-spin" /> : "Save"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
+
+          {/* Milestones section */}
+          <div className="mt-3 pt-3 border-t border-ink-100">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-ink-600 uppercase tracking-wide">Milestones</span>
+              {canManage && (
+                <button onClick={() => setShowMilestoneForm(!showMilestoneForm)} className="text-[10px] text-indigo-deep hover:underline flex items-center gap-0.5"><Plus className="size-3" /> Add</button>
+              )}
+            </div>
+            {showMilestoneForm && canManage && (
+              <form onSubmit={addMilestone} className="flex gap-1.5 mb-3">
+                <input type="text" value={msTitle} onChange={(e) => setMsTitle(e.target.value)} placeholder="Title" className="flex-1 rounded-lg border border-ink-200 px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-deep/20" required />
+                <input type="date" value={msDate} onChange={(e) => setMsDate(e.target.value)} className="rounded-lg border border-ink-200 px-2 py-1.5 text-xs w-28" />
+                <button type="submit" disabled={msSubmitting} className="rounded-lg bg-indigo-deep px-2 py-1.5 text-xs text-white hover:bg-indigo-press transition disabled:opacity-50">
+                  {msSubmitting ? <Loader2 className="size-3 animate-spin" /> : "Add"}
+                </button>
+              </form>
+            )}
+            {milestones.length === 0 ? (
+              <p className="text-xs text-ink-400 text-center py-2">No milestones</p>
+            ) : (
+              <div className="space-y-1.5">
+                {milestones.map((ms) => (
+                  <div key={ms.id} className="flex items-center gap-2 p-2 rounded-lg bg-ink-50/50">
+                    {ms.status === "completed" ? <CheckCircle2 className="size-3.5 text-emerald-500 shrink-0" /> : <Clock className="size-3.5 text-ink-400 shrink-0" />}
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-xs font-medium ${ms.status === "completed" ? "line-through text-ink-400" : "text-ink-800"}`}>{ms.title}</p>
+                      {ms.targetDate && <p className="text-[10px] text-ink-400">{new Date(ms.targetDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</p>}
+                    </div>
+                    {ms.status !== "completed" && canManage && (
+                      <button onClick={() => completeMilestone(ms)} className="text-[10px] text-emerald-600 hover:underline">Done</button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* AI Skill Match Card */}
+        {canManage && (
+          <div className="relative rounded-2xl border border-ink-100 overflow-hidden" style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
             <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/80 via-purple-50/50 to-teal-50/60 pointer-events-none" />
             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-indigo-400/15 to-transparent rounded-full blur-2xl pointer-events-none" />
             <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-teal-400/15 to-transparent rounded-full blur-2xl pointer-events-none" />
 
-            <div className="relative space-y-3">
+            <div className="relative p-4 space-y-3">
               <div className="flex items-center justify-between">
-                <h4 className="text-xs font-semibold text-ink-600 flex items-center gap-1">
+                <h4 className="text-xs font-semibold text-ink-600 flex items-center gap-1.5">
+                  <Sparkles className="size-3.5 text-purple-400" />
                   <span className="bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent font-bold">AI</span>
-                  Skill Suggestions
+                  Skill Match
                 </h4>
-                <button onClick={runSkillMatch} disabled={matchLoading} className="text-[10px] text-indigo-deep hover:underline flex items-center gap-0.5">
-                  {matchLoading ? <Loader2 className="size-3 animate-spin" /> : <Sparkles className="size-3" />} Refresh
+                <button onClick={() => { if (skillMatches.length === 0) runSkillMatch(); else runSkillMatch(); }} disabled={matchLoading} className="text-[10px] text-indigo-deep hover:underline flex items-center gap-0.5">
+                  {matchLoading ? <Loader2 className="size-3 animate-spin" /> : <Sparkles className="size-3" />} {skillMatches.length === 0 ? "Find Matches" : "Refresh"}
                 </button>
               </div>
               <p className="text-[10px] text-ink-400 flex items-center gap-1">
-                <Sparkles className="size-2.5 text-purple-400" /> Matched against project skills
+                Matched against project&apos;s required skills
               </p>
 
               {project.requiredSkills.length === 0 ? (
-                <p className="text-xs text-ink-400 text-center py-4">Add required skills to see matches</p>
+                <p className="text-xs text-ink-400 text-center py-3">Add required skills to see matches</p>
               ) : matchLoading ? (
-                <div className="flex justify-center py-6"><Loader2 className="size-5 animate-spin text-purple-400" /></div>
+                <div className="flex justify-center py-4"><Loader2 className="size-5 animate-spin text-purple-400" /></div>
               ) : skillMatches.length === 0 ? (
-                <p className="text-xs text-ink-400 text-center py-4">No matches found</p>
+                <p className="text-xs text-ink-400 text-center py-3">Click &ldquo;Find Matches&rdquo; to discover talent</p>
               ) : (
                 <div className="space-y-2">
                   {skillMatches.map((m) => (
@@ -1093,76 +1013,116 @@ export default function ProjectsHubPage() {
           </div>
         )}
 
-        {/* Team tab */}
-        {rightTab === "team" && (
-          <div className="p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <h4 className="text-xs font-semibold text-ink-600 uppercase tracking-wide">Members ({members.length})</h4>
-              {canManage && (
-                <button onClick={() => setShowAddMember(!showAddMember)} className="text-[10px] text-indigo-deep hover:underline flex items-center gap-0.5"><UserPlus className="size-3" /> Add</button>
+        {/* Team Card */}
+        <div className="bg-white rounded-2xl border border-ink-100 p-4" style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-xs font-semibold text-ink-600 uppercase tracking-wide flex items-center gap-1.5">
+              <Users className="size-3.5 text-indigo-deep" />
+              Team ({members.length})
+            </h4>
+            {canManage && (
+              <button onClick={() => setShowAddMember(!showAddMember)} className="text-[10px] text-indigo-deep hover:underline flex items-center gap-0.5"><UserPlus className="size-3" /> Add</button>
+            )}
+          </div>
+
+          {showAddMember && canManage && (
+            <div className="p-2.5 rounded-xl border border-ink-200 bg-ink-50/30 mb-3">
+              <div className="relative">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3 text-ink-400" />
+                <input
+                  type="text"
+                  value={memberSearch}
+                  onChange={(e) => searchUsers(e.target.value)}
+                  placeholder="Search name or email..."
+                  className="w-full pl-8 pr-3 py-2 rounded-lg border border-ink-200 bg-white text-xs focus:outline-none focus:ring-2 focus:ring-indigo-deep/20 transition"
+                />
+                {memberSearching && <Loader2 className="absolute right-2.5 top-1/2 -translate-y-1/2 size-3 animate-spin text-ink-400" />}
+              </div>
+              {memberResults.length > 0 && (
+                <div className="mt-1.5 space-y-1">
+                  {memberResults.map((u) => (
+                    <div key={u.id} className="flex items-center gap-2 p-2 rounded-lg bg-white hover:bg-ink-50 transition">
+                      <Avatar name={u.name} avatar={u.avatar_url} size={24} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium text-ink-800 truncate">{u.name}</p>
+                        <p className="text-[10px] text-ink-400 truncate">{u.email}</p>
+                      </div>
+                      <button
+                        onClick={() => { addMember(u.id); setMemberSearch(""); setMemberResults([]); }}
+                        disabled={addingMember === u.id}
+                        className="shrink-0 rounded-lg bg-indigo-deep p-1.5 text-white hover:bg-indigo-press transition disabled:opacity-50"
+                      >
+                        {addingMember === u.id ? <Loader2 className="size-3 animate-spin" /> : <Plus className="size-3" />}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {memberSearch.trim().length >= 2 && !memberSearching && memberResults.length === 0 && (
+                <p className="text-[10px] text-ink-400 text-center mt-2">No users found</p>
               )}
             </div>
+          )}
 
-            {showAddMember && canManage && (
-              <div className="p-2.5 rounded-xl border border-ink-200 bg-ink-50/30">
-                <div className="relative">
-                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3 text-ink-400" />
-                  <input
-                    type="text"
-                    value={memberSearch}
-                    onChange={(e) => searchUsers(e.target.value)}
-                    placeholder="Search name or email..."
-                    className="w-full pl-8 pr-3 py-2 rounded-lg border border-ink-200 bg-white text-xs focus:outline-none focus:ring-2 focus:ring-indigo-deep/20 transition"
-                  />
-                  {memberSearching && <Loader2 className="absolute right-2.5 top-1/2 -translate-y-1/2 size-3 animate-spin text-ink-400" />}
+          {members.length === 0 ? (
+            <p className="text-xs text-ink-400 text-center py-3">No members</p>
+          ) : (
+            <div className="space-y-1.5">
+              {members.map((m) => (
+                <div key={m.id} className="flex items-center gap-2 p-2 rounded-lg bg-ink-50/50">
+                  <Avatar name={m.userName} avatar={m.userAvatar} size={28} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-ink-800 truncate">{m.userName ?? "Unknown"}</p>
+                    <p className="text-[10px] text-ink-400 truncate">{m.userEmail}</p>
+                  </div>
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${m.role === "lead" ? "bg-indigo-50 text-indigo-deep" : "bg-ink-100 text-ink-500"}`}>
+                    {m.role}
+                  </span>
+                  {canManage && (
+                    <button onClick={() => setRemoveMemberTarget(m)} className="text-ink-300 hover:text-red-500 transition"><Trash2 className="size-3" /></button>
+                  )}
                 </div>
-                {memberResults.length > 0 && (
-                  <div className="mt-1.5 space-y-1">
-                    {memberResults.map((u) => (
-                      <div key={u.id} className="flex items-center gap-2 p-2 rounded-lg bg-white hover:bg-ink-50 transition">
-                        <Avatar name={u.name} avatar={u.avatar_url} size={24} />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium text-ink-800 truncate">{u.name}</p>
-                          <p className="text-[10px] text-ink-400 truncate">{u.email}</p>
-                        </div>
-                        <button
-                          onClick={() => { addMember(u.id); setMemberSearch(""); setMemberResults([]); }}
-                          disabled={addingMember === u.id}
-                          className="shrink-0 rounded-lg bg-indigo-deep p-1.5 text-white hover:bg-indigo-press transition disabled:opacity-50"
-                        >
-                          {addingMember === u.id ? <Loader2 className="size-3 animate-spin" /> : <Plus className="size-3" />}
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {memberSearch.trim().length >= 2 && !memberSearching && memberResults.length === 0 && (
-                  <p className="text-[10px] text-ink-400 text-center mt-2">No users found</p>
-                )}
-              </div>
-            )}
+              ))}
+            </div>
+          )}
+        </div>
 
-            {members.length === 0 ? (
-              <p className="text-xs text-ink-400 text-center py-4">No members</p>
-            ) : (
-              <div className="space-y-1.5">
-                {members.map((m) => (
-                  <div key={m.id} className="flex items-center gap-2 p-2 rounded-lg bg-ink-50/50">
-                    <Avatar name={m.userName} avatar={m.userAvatar} size={28} />
+        {/* Join Requests Card (for managers) */}
+        {canManage && pendingCount > 0 && (
+          <div className="bg-white rounded-2xl border border-amber-100 p-4" style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
+            <h4 className="text-xs font-semibold text-ink-600 uppercase tracking-wide mb-3 flex items-center gap-1.5">
+              <Bell className="size-3.5 text-amber-500" /> Join Requests ({pendingCount})
+            </h4>
+            <div className="space-y-2">
+              {joinRequests.map((jr) => (
+                <div key={jr.id} className="p-2.5 rounded-lg bg-amber-50/60 border border-amber-100">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Avatar name={jr.userName} avatar={jr.userAvatar} size={24} />
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-ink-800 truncate">{m.userName ?? "Unknown"}</p>
-                      <p className="text-[10px] text-ink-400 truncate">{m.userEmail}</p>
+                      <p className="text-xs font-medium text-ink-800">{jr.userName}</p>
+                      <p className="text-[10px] text-ink-400">{jr.userEmail}</p>
                     </div>
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${m.role === "lead" ? "bg-indigo-50 text-indigo-deep" : "bg-ink-100 text-ink-500"}`}>
-                      {m.role}
-                    </span>
-                    {canManage && (
-                      <button onClick={() => setRemoveMemberTarget(m)} className="text-ink-300 hover:text-red-500 transition"><Trash2 className="size-3" /></button>
-                    )}
                   </div>
-                ))}
-              </div>
-            )}
+                  {jr.message && <p className="text-[11px] text-ink-500 mb-1.5 ml-8">&ldquo;{jr.message}&rdquo;</p>}
+                  <div className="flex gap-1.5 ml-8">
+                    <button
+                      onClick={() => reviewRequest(jr.id, "approved")}
+                      disabled={reviewingRequest === jr.id}
+                      className="rounded-lg bg-emerald-500 px-2.5 py-1 text-[10px] text-white hover:bg-emerald-600 transition disabled:opacity-50"
+                    >
+                      {reviewingRequest === jr.id ? <Loader2 className="size-3 animate-spin" /> : "Approve"}
+                    </button>
+                    <button
+                      onClick={() => reviewRequest(jr.id, "rejected")}
+                      disabled={reviewingRequest === jr.id}
+                      className="rounded-lg bg-ink-100 px-2.5 py-1 text-[10px] text-ink-600 hover:bg-ink-200 transition disabled:opacity-50"
+                    >
+                      Reject
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
@@ -1170,8 +1130,27 @@ export default function ProjectsHubPage() {
   ) : null;
 
   return (
-    <div className="-my-4 sm:-my-6" style={{ height: "calc(100vh - 80px)" }}>
-      <div className="flex h-full bg-white overflow-hidden" style={{ borderRadius: 20, boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+    <div className="-my-4 sm:-my-6 flex flex-col" style={{ height: "calc(100vh - 80px)" }}>
+      {/* Page header — outside the panel, matching other pages */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-1 py-4 sm:py-5 shrink-0">
+        <div>
+          <h1 className="text-2xl font-bold text-ink-800 flex items-center gap-2">
+            <FolderKanban className="size-6 text-indigo-deep" />
+            ProjectsHub
+          </h1>
+          <p className="mt-0.5 text-sm text-ink-500">Browse and join projects across the organization</p>
+        </div>
+        {canManage && (
+          <Link
+            href="/apps/projectshub/create"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-deep px-5 py-2.5 text-sm font-medium text-white hover:bg-indigo-press transition shadow-sm"
+          >
+            <Plus className="size-4" /> New Project
+          </Link>
+        )}
+      </div>
+
+      <div className="flex flex-1 min-h-0 bg-white overflow-hidden" style={{ borderRadius: 20, boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
         {/* Left Panel */}
         <div className={`w-full lg:w-[280px] xl:w-[300px] lg:shrink-0 border-r border-ink-100 ${
           mobileView === "list" ? "block" : "hidden lg:block"
@@ -1187,7 +1166,7 @@ export default function ProjectsHubPage() {
         </div>
 
         {/* Right Panel */}
-        <div className={`w-full lg:w-[280px] xl:w-[300px] lg:shrink-0 border-l border-ink-100 ${
+        <div className={`w-full lg:w-[280px] xl:w-[300px] lg:shrink-0 border-l border-ink-100 bg-ink-50/30 ${
           mobileView === "info" ? "block" : "hidden lg:block"
         }`}>
           {rightPanel}
